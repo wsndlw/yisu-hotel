@@ -1,0 +1,18 @@
+.page {
+  padding: 24px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filterInput {
+  width: 220px;
+}
+
+.filterSelect {
+  width: 180px;
+}

@@ -1,0 +1,68 @@
+.facilitySelector .displayArea {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.facilitySelector .displayArea:hover {
+  border-color: #40a9ff;
+  background-color: #f0f7ff;
+}
+
+.facilitySelector .displayArea .emptyText {
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.facilitySelector .displayArea .selectedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.facilitySelector .categorySection {
+  margin-bottom: 24px;
+}
+
+.facilitySelector .categorySection:last-child {
+  margin-bottom: 0;
+}
+
+.facilitySelector .categorySection .categoryTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid #1890ff;
+}
+
+.facilitySelector .categorySection .facilityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  background-color: #fafafa;
+  border-radius: 4px;
+  min-height: 48px;
+}
+
+.facilitySelector .categorySection .facilityList .facilityItem {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+}
+
+.facilitySelector .categorySection .facilityList .facilityItem:hover {
+  transform: scale(1.05);
+}
+
+.facilitySelector .categorySection .facilityList .emptyHint {
+  color: #999;
+  font-size: 12px;
+}
