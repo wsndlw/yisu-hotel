@@ -1,0 +1,179 @@
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { NearbyPoiItem } from '../../poi/dto/poi.type';
+
+@ObjectType({ description: '移动端 Banner' })
+export class MobileBanner {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  imageUrl: string;
+
+  @Field(() => String, { nullable: true })
+  redirectHotelId?: string | null;
+}
+
+@ObjectType({ description: '热门城市' })
+export class MobileCity {
+  @Field(() => String)
+  code: string;
+
+  @Field(() => String)
+  name: string;
+}
+
+@ObjectType({ description: '快捷设施（移动端）' })
+export class MobileFacility {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  name: string;
+}
+
+@ObjectType({ description: '首页配置（移动端）' })
+export class MobileHomeConfig {
+  @Field(() => [MobileBanner])
+  banners: MobileBanner[];
+
+  @Field(() => [MobileCity])
+  cities: MobileCity[];
+
+  @Field(() => [MobileFacility])
+  facilities: MobileFacility[];
+}
+
+@ObjectType({ description: '酒店列表项（移动端）' })
+export class MobileHotelListItem {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String, { nullable: true })
+  hotelNo?: string | null;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
+  coverImage?: string | null;
+
+  @Field(() => Number, { nullable: true })
+  score?: number | null;
+
+  @Field(() => Number, { nullable: true, description: '起步价' })
+  minPrice?: number | null;
+
+  @Field(() => Number, { nullable: true, description: '距离(公里)' })
+  distance?: number | null;
+
+  @Field(() => String, { nullable: true, description: '距离文案' })
+  distanceText?: string | null;
+
+  @Field(() => String, { nullable: true })
+  address?: string | null;
+}
+
+@ObjectType({ description: '酒店列表返回（移动端）' })
+export class HotelConnection {
+  @Field(() => [MobileHotelListItem])
+  items: MobileHotelListItem[];
+
+  @Field(() => Number)
+  total: number;
+}
+
+@ObjectType({ description: '房型信息（移动端）' })
+export class MobileRoom {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  title: string;
+
+  @Field(() => String, { nullable: true })
+  coverImage?: string | null;
+
+  @Field(() => Number)
+  price: number;
+
+  @Field(() => Number, { nullable: true })
+  stock?: number | null;
+
+  @Field(() => String, { nullable: true })
+  bedType?: string | null;
+
+  @Field(() => Boolean, { nullable: true })
+  hasBreakfast?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  refundable?: boolean | null;
+
+  @Field(() => Number, { nullable: true })
+  area?: number | null;
+
+  @Field(() => Boolean, { nullable: true })
+  hasWindow?: boolean | null;
+}
+
+@ObjectType({ description: '酒店详情（移动端）' })
+export class MobileHotelDetail {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
+  address?: string | null;
+
+  @Field(() => String, { nullable: true })
+  description?: string | null;
+
+  @Field(() => [String])
+  images: string[];
+
+  @Field(() => [String])
+  facilities: string[];
+
+  @Field(() => [MobileRoom])
+  rooms: MobileRoom[];
+
+  @Field(() => [NearbyPoiItem], { nullable: true })
+  nearbyPoi?: NearbyPoiItem[];
+}
+
+@ObjectType({ description: 'HotelConnection结果' })
+export class HotelConnectionResult {
+  @Field(() => Number)
+  code: number;
+
+  @Field(() => String)
+  message: string;
+
+  @Field(() => HotelConnection, { nullable: true })
+  data?: HotelConnection;
+}
+
+@ObjectType({ description: '首页配置结果' })
+export class MobileHomeConfigResult {
+  @Field(() => Number)
+  code: number;
+
+  @Field(() => String)
+  message: string;
+
+  @Field(() => MobileHomeConfig, { nullable: true })
+  data?: MobileHomeConfig;
+}
+
+@ObjectType({ description: '酒店详情结果' })
+export class MobileHotelDetailResult {
+  @Field(() => Number)
+  code: number;
+
+  @Field(() => String)
+  message: string;
+
+  @Field(() => MobileHotelDetail, { nullable: true })
+  data?: MobileHotelDetail;
+}

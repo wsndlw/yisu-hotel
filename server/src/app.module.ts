@@ -9,6 +9,12 @@ import { UserModule } from './modules/user/user.module';
 import { BannerModule } from './modules/banner/banner.module';
 import { OssModule } from './modules/oss/oss.module';
 import { FacilityModule } from './modules/facility/facility.module';
+import { AuditModule } from './modules/audit-record/audit.module';
+import { RoomTypeModule } from './modules/roomType/roomType.module';
+import { HotelImageModule } from './modules/hotelImage/hotelImage.module';
+import { HotelModule } from './modules/hotel/hotel.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
+import { PoiModule } from './modules/poi/poi.module';
 
 @Module({
   imports: [
@@ -33,9 +39,15 @@ import { FacilityModule } from './modules/facility/facility.module';
     }),
     AuthModule,
     UserModule,
+    FacilityModule,
+    RoomTypeModule,
+    HotelImageModule,
+    HotelModule,
     BannerModule,
     OssModule,
-    FacilityModule,
+    CalendarModule,
+    PoiModule,
+    AuditModule,
   ],
 })
 export class AppModule {}
