@@ -88,7 +88,7 @@ const FacilitySelector = ({ value = [], onChange }: FacilitySelectorProps) => {
             {selectedFacilities.map((facility: any) => {
               const categoryInfo = categoryConfig[facility.category as keyof typeof categoryConfig];
               return (
-                <Tag key={facility.id} color={categoryInfo?.color || 'default'} >
+                <Tag key={facility.id} color={ 'default'} >
                   {facility.name}
                 </Tag>
               );
@@ -123,7 +123,7 @@ const FacilitySelector = ({ value = [], onChange }: FacilitySelectorProps) => {
             return (
               <div key={category} style={{ marginBottom: 24 }}>
                 <Divider orientation="center" style={{ margin: '12px 0' }}>
-                  <span style={{ color: config.color, fontSize: 16, fontWeight: 500 }}>
+                  <span style={{ color: '#000000ff', fontSize: 16, fontWeight: 500 }}>
                     {config.label}
                   </span>
                 </Divider>
