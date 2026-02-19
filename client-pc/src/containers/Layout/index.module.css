@@ -1,0 +1,15 @@
+.logoutLink {
+  cursor: pointer;
+}
+.logo {
+  width: 32px;
+  height: 32px;
+  background: #1677ff;
+  border-radius: 6px;
+}
+.avatarTrigger {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

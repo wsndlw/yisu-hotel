@@ -1,0 +1,1277 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""管理员仪表盘统计数据"""
+type AdminDashboardStats {
+  """近7日每日新增酒店数（真实统计）"""
+  dailyNewHotels: [DailyNewHotel!]!
+
+  """酒店总数（真实）"""
+  hotelCount: Int!
+
+  """近7日新增酒店总数（真实）"""
+  newHotelCount: Int!
+
+  """近7日新增酒店列表"""
+  newHotels: [NewHotelItem!]!
+
+  """待审核酒店数（真实）"""
+  pendingHotelCount: Int!
+
+  """平台总交易额（演示用）"""
+  totalRevenue: Float!
+}
+
+"""审核记录列表"""
+type AuditRecordListResult {
+  items: [AuditRecordView!]!
+  total: Float!
+}
+
+"""审核记录查询"""
+input AuditRecordQueryInput {
+  action: HotelAuditAction
+
+  """结束日期（YYYY-MM-DD）"""
+  endDate: String
+  hotelId: ID
+  operatorId: ID
+  page: Int! = 1
+  pageSize: Int! = 20
+
+  """开始日期（YYYY-MM-DD）"""
+  startDate: String
+}
+
+"""审核记录展示"""
+type AuditRecordView {
+  """动作类型"""
+  action: HotelAuditAction!
+
+  """创建时间"""
+  createdAt: DateTime!
+
+  """酒店ID"""
+  hotelId: ID!
+  hotelName: String
+
+  """审核记录ID"""
+  id: ID!
+
+  """操作人ID"""
+  operatorId: ID
+  operatorName: String
+
+  """原因（驳回原因等）"""
+  reason: String
+}
+
+"""认证返回（含 Token 与用户信息）"""
+type AuthPayload {
+  """访问令牌（JWT）"""
+  accessToken: String!
+
+  """用户信息"""
+  user: User!
+}
+
+type AuthResult {
+  code: Int!
+  data: AuthPayload
+  message: String!
+}
+
+"""首页 Banner（移动端首页轮播）"""
+type Banner {
+  """创建时间"""
+  createdAt: DateTime!
+
+  """是否启用"""
+  enabled: Boolean!
+
+  """结束时间（可选）"""
+  endAt: DateTime
+
+  """Banner ID"""
+  id: ID!
+
+  """图片地址"""
+  imageUrl: String!
+
+  """排序（数值越小越靠前）"""
+  sort: Int!
+
+  """开始时间（可选）"""
+  startAt: DateTime
+
+  """跳转酒店ID"""
+  targetHotelId: String!
+
+  """标题"""
+  title: String!
+
+  """更新时间"""
+  updatedAt: DateTime!
+}
+
+"""Banner 新增/更新入参"""
+input BannerUpsertInput {
+  """是否启用"""
+  enabled: Boolean! = true
+
+  """结束时间（ISO 字符串，可选）"""
+  endAt: String
+
+  """图片URL"""
+  imageUrl: String!
+
+  """排序（数值越小越靠前）"""
+  sort: Int! = 0
+
+  """开始时间（ISO 字符串，可选）"""
+  startAt: String
+
+  """跳转酒店ID"""
+  targetHotelId: ID!
+
+  """标题"""
+  title: String!
+}
+
+"""清空日期范围内的日历覆盖（价格或库存）"""
+input CalendarClearRangeInput {
+  endDate: String!
+  roomTypeId: ID!
+  startDate: String!
+}
+
+"""批量设置日历价格（日期范围，包含起止）"""
+input CalendarPriceBatchSetInput {
+  endDate: String!
+
+  """价格（单位：分）"""
+  price: Int!
+  roomTypeId: ID!
+  startDate: String!
+}
+
+"""日历查询（按日期范围）"""
+input CalendarRangeQueryInput {
+  """结束日期（YYYY-MM-DD，包含）"""
+  endDate: String!
+  roomTypeId: ID!
+
+  """开始日期（YYYY-MM-DD）"""
+  startDate: String!
+}
+
+"""批量设置日历库存（日期范围，包含起止）"""
+input CalendarStockBatchSetInput {
+  endDate: String!
+  roomTypeId: ID!
+  startDate: String!
+
+  """库存（>=0）"""
+  stock: Int!
+}
+
+"""每日新增酒店数"""
+type DailyNewHotel {
+  """新增酒店数"""
+  count: Int!
+
+  """日期（YYYY-MM-DD）"""
+  date: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""酒店设施/标签（统一管理）"""
+type Facility {
+  """设施分类（必填）"""
+  category: FacilityCategory!
+
+  """创建时间"""
+  createdAt: DateTime!
+
+  """是否启用"""
+  enabled: Boolean!
+
+  """设施ID"""
+  id: ID!
+
+  """设施名称"""
+  name: String!
+
+  """设施类型"""
+  type: FacilityType!
+
+  """更新时间"""
+  updatedAt: DateTime!
+}
+
+"""设施分类"""
+enum FacilityCategory {
+  """基础设施"""
+  BASIC
+
+  """商务服务"""
+  BUSINESS
+
+  """餐饮服务"""
+  DINING
+
+  """娱乐休闲"""
+  ENTERTAINMENT
+
+  """其他"""
+  OTHER
+
+  """客房设施"""
+  ROOM
+}
+
+type FacilityResult {
+  code: Int!
+  data: Facility
+  message: String!
+}
+
+type FacilityResults {
+  code: Int!
+  data: [Facility!]
+  message: String!
+  page: Page
+}
+
+"""设施类型：TAG（标签类）/ FACILITY（设施类）"""
+enum FacilityType {
+  """设施类 - 用于酒店硬件设施（如：免费WiFi、停车场）"""
+  FACILITY
+
+  """标签类 - 用于酒店特色标记（如：近地铁、亲子友好）"""
+  TAG
+}
+
+"""设施创建/更新入参"""
+input FacilityUpsertInput {
+  """设施分类（必填）"""
+  category: FacilityCategory!
+
+  """是否启用"""
+  enabled: Boolean = true
+
+  """设施ID（为空则新增）"""
+  id: ID
+
+  """设施名称"""
+  name: String!
+
+  """设施类型"""
+  type: FacilityType!
+}
+
+"""酒店信息"""
+type Hotel {
+  """酒店地址（用于展示）"""
+  address: String
+
+  """所属城市"""
+  city: String
+
+  """创建时间"""
+  createdAt: DateTime!
+
+  """优惠/折扣描述（可选）"""
+  discountInfo: String
+
+  """距离（公里）"""
+  distance: Float
+
+  """距离文案"""
+  distanceText: String
+
+  """酒店设施列表"""
+  facilities: [Facility!]
+
+  """收藏数（展示用，可后续接真实收藏逻辑）"""
+  favoriteCount: Float
+
+  """酒店业务ID"""
+  hotelID: String
+
+  """酒店ID"""
+  id: ID!
+
+  """图片列表"""
+  images: [HotelImage!]!
+
+  """纬度（来自地图选点）"""
+  latitude: Float
+
+  """经度（来自地图选点）"""
+  longitude: Float
+
+  """所属商户信息"""
+  merchant: User
+
+  """所属商户ID"""
+  merchantId: ID!
+
+  """最低起价（自动由房型价格计算）"""
+  miniPrice: Float
+
+  """酒店名称（英文，可选）"""
+  nameEn: String
+
+  """酒店名称（中文）"""
+  nameZh: String!
+
+  """附近信息（景点/交通/商场等，可选）"""
+  nearby: [String!]
+
+  """开业时间（YYYY-MM-DD 格式）"""
+  openSince: String
+
+  """驳回原因（审核不通过时填写）"""
+  rejectReason: String
+
+  """房型列表"""
+  roomTypes: [RoomTypeEntity!]!
+
+  """酒店评分（0-5分）"""
+  score: Float
+
+  """酒店星级（0-10）"""
+  starLevel: Float
+
+  """酒店状态"""
+  status: HotelStatus!
+
+  """酒店标签列表（从设施表中筛选 TAG 类型）"""
+  tags: [Facility!]
+
+  """更新时间"""
+  updatedAt: DateTime!
+}
+
+"""酒店审核/发布动作"""
+enum HotelAuditAction {
+  APPROVE
+  OFFLINE
+  OFFLINE_REQUEST
+  PUBLISH
+  REJECT
+  RESTORE
+  SUBMIT
+  WITHDRAW
+}
+
+"""酒店日历（按房型列表）"""
+type HotelCalendar {
+  hotelId: ID!
+  roomTypeCalendars: [RoomTypeCalendar!]!
+}
+
+"""酒店日历查询（按日期范围）"""
+input HotelCalendarRangeQueryInput {
+  """结束日期（YYYY-MM-DD，包含）"""
+  endDate: String!
+  hotelId: ID!
+
+  """开始日期（YYYY-MM-DD）"""
+  startDate: String!
+}
+
+"""酒店列表返回（移动端）"""
+type HotelConnection {
+  items: [MobileHotelListItem!]!
+  total: Float!
+}
+
+"""HotelConnection结果"""
+type HotelConnectionResult {
+  code: Float!
+  data: HotelConnection
+  message: String!
+}
+
+"""酒店图片"""
+type HotelImage {
+  """创建时间"""
+  createdAt: DateTime!
+
+  """所属酒店ID"""
+  hotelId: ID!
+
+  """图片ID"""
+  id: ID!
+
+  """排序（越小越靠前）"""
+  sortOrder: Float!
+
+  """更新时间"""
+  updatedAt: DateTime!
+
+  """图片URL"""
+  url: String!
+}
+
+"""酒店列表查询入参"""
+input HotelListInput {
+  """所属城市（可选）"""
+  city: String
+
+  """按设施筛选（设施ID）"""
+  facilityIds: [ID!]
+
+  """关键词（可选，匹配酒店名称/地址）"""
+  keyword: String
+
+  """商户名称关键词（可选，匹配商户用户名）"""
+  merchantKeyword: String
+
+  """页码（从1开始）"""
+  page: Int! = 1
+
+  """每页数量"""
+  pageSize: Int! = 10
+
+  """星级（可选）"""
+  starLevel: Int
+
+  """酒店状态（可选，管理端常用）"""
+  status: HotelStatus
+
+  """按标签筛选（标签ID）"""
+  tagIds: [ID!]
+}
+
+input HotelPoiLinkInput {
+  hotelId: ID!
+  poiId: ID!
+}
+
+type HotelResult {
+  code: Int!
+  data: Hotel
+  message: String!
+}
+
+type HotelResults {
+  code: Int!
+  data: [Hotel!]
+  message: String!
+  page: Page
+}
+
+"""酒店状态"""
+enum HotelStatus {
+  DRAFT
+  OFFLINE
+  PUBLISHED
+  REJECTED
+  REVIEWING
+}
+
+"""酒店创建/更新入参"""
+input HotelUpsertInput {
+  """酒店地址（用于展示）"""
+  address: String
+
+  """所属城市"""
+  city: String
+
+  """优惠/折扣描述（可选）"""
+  discountInfo: String
+
+  """设施ID列表（从设施库中选择，可选）"""
+  facilityIds: [ID!]
+
+  """是否提交审核（true=提交审核，false=保存草稿）"""
+  isSubmit: Boolean!
+
+  """纬度（地图选点）"""
+  latitude: Float
+
+  """经度（地图选点）"""
+  longitude: Float
+
+  """酒店名称（英文，可选）"""
+  nameEn: String
+
+  """酒店名称（中文）"""
+  nameZh: String!
+
+  """附近信息（可选）"""
+  nearby: [String!]
+
+  """开业时间（YYYY-MM-DD）"""
+  openSince: String
+
+  """星级（0-10）"""
+  starLevel: Int
+
+  """标签ID列表（从标签库中选择，可选）"""
+  tagIds: [ID!]
+}
+
+"""登录入参"""
+input LoginInput {
+  """密码"""
+  password: String!
+
+  """用户名"""
+  username: String!
+}
+
+"""移动端 Banner"""
+type MobileBanner {
+  id: ID!
+  imageUrl: String!
+  redirectHotelId: String
+}
+
+"""热门城市"""
+type MobileCity {
+  code: String!
+  name: String!
+}
+
+"""快捷设施（移动端）"""
+type MobileFacility {
+  id: ID!
+  name: String!
+}
+
+"""首页配置（移动端）"""
+type MobileHomeConfig {
+  banners: [MobileBanner!]!
+  cities: [MobileCity!]!
+  facilities: [MobileFacility!]!
+}
+
+"""首页配置结果"""
+type MobileHomeConfigResult {
+  code: Float!
+  data: MobileHomeConfig
+  message: String!
+}
+
+"""酒店详情（移动端）"""
+type MobileHotelDetail {
+  address: String
+  description: String
+  facilities: [String!]!
+  id: ID!
+  images: [String!]!
+  name: String!
+  nearbyPoi: [NearbyPoiItem!]
+  rooms: [MobileRoom!]!
+}
+
+"""酒店详情结果"""
+type MobileHotelDetailResult {
+  code: Float!
+  data: MobileHotelDetail
+  message: String!
+}
+
+"""酒店列表项（移动端）"""
+type MobileHotelListItem {
+  address: String
+  coverImage: String
+
+  """距离(公里)"""
+  distance: Float
+
+  """距离文案"""
+  distanceText: String
+  hotelNo: String
+  id: ID!
+
+  """起步价"""
+  minPrice: Float
+  name: String!
+  score: Float
+}
+
+"""酒店排序方式"""
+enum MobileHotelSort {
+  DEFAULT
+  DISTANCE_ASC
+  PRICE_ASC
+  SCORE_DESC
+}
+
+"""房型信息（移动端）"""
+type MobileRoom {
+  area: Float
+  bedType: String
+  coverImage: String
+  hasBreakfast: Boolean
+  hasWindow: Boolean
+  id: ID!
+  price: Float!
+  refundable: Boolean
+  stock: Float
+  title: String!
+}
+
+type Mutation {
+  """管理员审核通过（记录审核通过，不改变发布状态）"""
+  approveHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """批量设置房型日历价格（商户）"""
+  batchSetRoomTypePrice(input: CalendarPriceBatchSetInput!): Result!
+
+  """批量设置房型日历库存（商户）"""
+  batchSetRoomTypeStock(input: CalendarStockBatchSetInput!): Result!
+
+  """清空房型日历价格覆盖（商户）"""
+  clearRoomTypePrice(input: CalendarClearRangeInput!): Result!
+
+  """清空房型日历库存覆盖（商户）"""
+  clearRoomTypeStock(input: CalendarClearRangeInput!): Result!
+
+  """商户创建酒店（草稿状态）"""
+  createHotel(
+    """酒店信息（包含标签ID/设施ID等）"""
+    input: HotelUpsertInput!
+  ): HotelResult!
+
+  """删除 Banner（管理员）"""
+  deleteBanner(
+    """Banner ID"""
+    id: ID!
+  ): Boolean!
+
+  """删除设施（管理员，软删除=禁用）"""
+  deleteFacility(
+    """设施ID"""
+    id: ID!
+  ): FacilityResult!
+
+  """商户删除酒店（仅草稿/未通过可删除）"""
+  deleteHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """删除房型（商户）"""
+  deleteRoomType(roomTypeId: ID!): Result!
+
+  """彻底删除设施（管理员）。若设施被酒店引用，则不允许删除"""
+  hardDeleteFacility(
+    """设施ID"""
+    id: ID!
+  ): Result!
+
+  """酒店关联 POI"""
+  linkHotelPoi(input: HotelPoiLinkInput!): Boolean!
+
+  """账号登录（返回 JWT Token）"""
+  login(
+    """登录信息"""
+    input: LoginInput!
+  ): AuthResult!
+
+  """管理员下线酒店（状态变为 OFFLINE，可恢复）"""
+  offlineHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """管理员发布酒店（状态变为 PUBLISHED）"""
+  publishHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """注册账号（可选择商户/管理员角色）"""
+  register(
+    """注册信息"""
+    input: RegisterInput!
+  ): AuthResult!
+
+  """管理员驳回（进入 REJECTED，并记录驳回原因）"""
+  rejectHotel(
+    """酒店ID"""
+    id: ID!
+
+    """驳回原因"""
+    reason: String!
+  ): HotelResult!
+
+  """商户申请下线（已发布 -> 已下线）"""
+  requestOffline(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """管理员恢复酒店（OFFLINE -> PUBLISHED）"""
+  restoreHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """启用/禁用 Banner（管理员）"""
+  setBannerEnabled(
+    """是否启用"""
+    enabled: Boolean!
+
+    """Banner ID"""
+    id: ID!
+  ): Banner!
+
+  """启用/禁用设施（管理员）"""
+  setFacilityEnabled(
+    """是否启用"""
+    enabled: Boolean!
+
+    """设施ID"""
+    id: ID!
+  ): FacilityResult!
+
+  """设置酒店图片列表（简化：直接传 URL）"""
+  setHotelImages(
+    """酒店图片参数"""
+    input: SetHotelImagesInput!
+  ): HotelResult!
+
+  """商户提交酒店进入审核"""
+  submitHotelForReview(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """商户更新酒店（仅草稿/未通过可编辑）"""
+  updateHotel(
+    """酒店ID"""
+    id: ID!
+
+    """酒店信息（包含标签ID/设施ID等）"""
+    input: HotelUpsertInput!
+  ): HotelResult!
+
+  """更新当前用户信息（用户名/密码）"""
+  updateMe(
+    """更新信息"""
+    input: UpdateMeInput!
+  ): UserResult!
+
+  """运营调整房型（商户）"""
+  updateRoomOps(input: RoomTypeOpsInput!, roomTypeId: ID!): Result!
+
+  """新增/更新 Banner（管理员）"""
+  upsertBanner(
+    """Banner ID（为空则新增）"""
+    id: ID
+
+    """Banner 配置"""
+    input: BannerUpsertInput!
+  ): Banner!
+
+  """新增/更新设施（管理员）"""
+  upsertFacility(input: FacilityUpsertInput!): FacilityResult!
+
+  """新增/更新 POI"""
+  upsertPoi(input: PoiUpsertInput!): PoiEntity!
+
+  """新增/更新房型（商户）"""
+  upsertRoomType(hotelId: ID!, input: RoomTypeUpsertInput!, roomTypeId: ID): HotelResult!
+
+  """商户撤回审核（审核中 -> 草稿）"""
+  withdrawHotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+}
+
+"""酒店附近 POI（含距离）"""
+type NearbyPoiItem {
+  """地址"""
+  address: String
+
+  """基础热度评分"""
+  baseScore: Float!
+
+  """城市"""
+  city: String!
+
+  """距离（km）"""
+  distanceKm: Float!
+  id: ID!
+
+  """纬度"""
+  latitude: Float
+
+  """经度"""
+  longitude: Float
+
+  """名称"""
+  name: String!
+
+  """类型（shopping/spot/subway/food/medical 等）"""
+  type: String!
+}
+
+"""酒店附近 POI 查询"""
+input NearbyPoiQueryInput {
+  hotelId: ID!
+
+  """最大数量"""
+  limit: Int! = 20
+
+  """半径（km）"""
+  radiusKm: Int! = 5
+
+  """类型过滤"""
+  type: String
+}
+
+"""新增酒店记录（近7天）"""
+type NewHotelItem {
+  """创建日期（YYYY-MM-DD）"""
+  createdDate: String!
+
+  """酒店ID"""
+  hotelId: String!
+
+  """酒店名称"""
+  hotelName: String!
+
+  """商户名称"""
+  merchantName: String!
+}
+
+"""OSS 表单直传签名信息"""
+type OssType {
+  """上传目录前缀"""
+  dir: String!
+
+  """过期时间（x-oss-date）"""
+  expire: String!
+
+  """上传 Host"""
+  host: String!
+
+  """上传策略（Base64）"""
+  policy: String!
+
+  """STS 临时令牌（可选）"""
+  security_token: String
+
+  """签名"""
+  signature: String!
+
+  """凭证"""
+  x_oss_credential: String!
+
+  """签名版本"""
+  x_oss_signature_version: String!
+}
+
+type Page {
+  """当前页码"""
+  pageNum: Int
+
+  """每页数量"""
+  pageSize: Int
+
+  """总条数"""
+  total: Int!
+}
+
+"""分页参数"""
+input PaginationInput {
+  """页码"""
+  page: Int! = 1
+
+  """每页数量"""
+  pageSize: Int! = 10
+}
+
+"""周边 POI（商场/景点等）"""
+type PoiEntity {
+  """地址"""
+  address: String
+
+  """基础热度评分"""
+  baseScore: Float!
+
+  """城市"""
+  city: String!
+  id: ID!
+
+  """纬度"""
+  latitude: Float
+
+  """经度"""
+  longitude: Float
+
+  """名称"""
+  name: String!
+
+  """类型（shopping/spot/subway/food/medical 等）"""
+  type: String!
+}
+
+"""关联 POI 到酒店"""
+input PoiListQueryInput {
+  """城市"""
+  city: String!
+
+  """关键词"""
+  keyword: String
+
+  """最大数量"""
+  limit: Int! = 50
+
+  """类型过滤"""
+  type: String
+}
+
+"""创建/更新 POI"""
+input PoiUpsertInput {
+  address: String
+
+  """基础热度评分"""
+  baseScore: Float
+  city: String!
+  latitude: Float
+  longitude: Float
+  name: String!
+  type: String!
+}
+
+type Query {
+  """管理员仪表盘统计（部分为演示数据）"""
+  adminDashboardStats(
+    """展示数量"""
+    topN: Int! = 10
+  ): AdminDashboardStats!
+
+  """获取全部 Banner（管理端，包含禁用）"""
+  allBannersQuery: [Banner!]!
+
+  """获取全部设施（管理员，包含已禁用）"""
+  allFacilities: FacilityResults!
+
+  """审核记录列表（管理员）"""
+  auditRecords(input: AuditRecordQueryInput!): AuditRecordListResult!
+
+  """获取首页 Banner 列表（移动端）"""
+  bannersQuery: [Banner!]!
+
+  """获取启用的设施列表（用于商户选择与用户筛选）"""
+  facilities: FacilityResults!
+
+  """【移动端】获取设施列表 - 用于筛选条件"""
+  getFacilitiesForH5: FacilityResults!
+
+  """获取 OSS 签名（用于前端表单直传）"""
+  getOssInfo: OssType!
+
+  """移动端首页聚合配置"""
+  homeConfig: MobileHomeConfigResult!
+
+  """酒店详情查询（包含标签、设施、房型、图片）"""
+  hotel(
+    """酒店ID"""
+    id: ID!
+  ): HotelResult!
+
+  """移动端酒店详情"""
+  hotelDetail(checkIn: String, checkOut: String, id: String!): MobileHotelDetailResult!
+
+  """酒店列表查询（支持城市/关键词/星级/标签/设施/状态筛选）"""
+  hotels(
+    """列表查询条件"""
+    input: HotelListInput!
+  ): HotelResults!
+
+  """获取当前登录用户信息"""
+  me: UserResult!
+
+  """酒店日历（商户）"""
+  merchantHotelCalendar(input: HotelCalendarRangeQueryInput!): HotelCalendar!
+
+  """房型日历（商户）"""
+  merchantRoomTypeCalendar(input: CalendarRangeQueryInput!): RoomTypeCalendar!
+
+  """我的酒店列表（商户返回自己的酒店；管理员返回全量酒店）"""
+  myHotels(
+    """按状态筛选（可选）"""
+    status: HotelStatus
+  ): HotelResults!
+
+  """查询酒店附近 POI（按距离排序）"""
+  nearbyPoi(input: NearbyPoiQueryInput!): [NearbyPoiItem!]!
+
+  """移动端 POI 列表（按城市/类型/关键词）"""
+  poiList(input: PoiListQueryInput!): [PoiEntity!]!
+
+  """房型日历（移动端）"""
+  roomTypeCalendar(endDate: String!, roomTypeId: ID!, startDate: String!): RoomTypeCalendar!
+
+  """移动端搜索酒店列表"""
+  searchHotels(
+    """支持城市、日期、设施等"""
+    input: SearchHotelInput!
+  ): HotelConnectionResult!
+}
+
+"""注册入参"""
+input RegisterInput {
+  """密码（至少6位）"""
+  password: String!
+
+  """角色（商户/管理员）"""
+  role: UserRole!
+
+  """用户名"""
+  username: String!
+}
+
+type Result {
+  code: Int!
+  data: String
+  message: String!
+}
+
+"""房型日历返回"""
+type RoomTypeCalendar {
+  days: [RoomTypeCalendarDay!]!
+  roomTypeId: ID!
+}
+
+"""房型日历（按天）"""
+type RoomTypeCalendarDay {
+  """日期（YYYY-MM-DD）"""
+  date: String!
+
+  """价格（单位：分）"""
+  price: Int!
+
+  """库存（为空表示不限制或未知）"""
+  stock: Int
+}
+
+"""房型实体"""
+type RoomTypeEntity {
+  """房间面积(㎡)"""
+  area: Float
+  basePrice: Float!
+
+  """床型（可选）"""
+  bedType: String
+  createdAt: DateTime!
+
+  """楼层"""
+  floor: String
+
+  """含早"""
+  hasBreakfast: Boolean
+
+  """有窗"""
+  hasWindow: Boolean
+  hotelId: String!
+  id: ID!
+
+  """房型图片（JSON 字符串）"""
+  images: String
+
+  """是否开售"""
+  isOnSale: Boolean
+
+  """可住人数（可选）"""
+  maxGuests: Float
+  name: String!
+
+  """可退"""
+  refundable: Boolean
+  sortOrder: Float!
+
+  """库存（可选）"""
+  stock: Float
+  updatedAt: DateTime!
+}
+
+"""房型运营调整入参"""
+input RoomTypeOpsInput {
+  """房型基础价格"""
+  basePrice: Float
+
+  """含早"""
+  hasBreakfast: Boolean
+
+  """是否开售"""
+  isOnSale: Boolean
+
+  """可退"""
+  refundable: Boolean
+
+  """库存"""
+  stock: Int
+}
+
+"""房型创建/更新入参"""
+input RoomTypeUpsertInput {
+  """房间面积(㎡)"""
+  area: Float
+
+  """房型基础价格"""
+  basePrice: Float!
+
+  """床型（可选）"""
+  bedType: String
+
+  """楼层"""
+  floor: String
+
+  """含早"""
+  hasBreakfast: Boolean
+
+  """有窗"""
+  hasWindow: Boolean
+
+  """房型图片（JSON 字符串）"""
+  images: String
+
+  """是否开售"""
+  isOnSale: Boolean
+
+  """可住人数（可选）"""
+  maxGuests: Int
+
+  """房型名称"""
+  name: String!
+
+  """可退"""
+  refundable: Boolean
+
+  """排序（可选）"""
+  sortOrder: Int
+
+  """库存（可选）"""
+  stock: Int
+}
+
+"""酒店搜索条件（移动端）"""
+input SearchHotelInput {
+  """入住日期（YYYY-MM-DD）"""
+  checkIn: String!
+
+  """离店日期（YYYY-MM-DD）"""
+  checkOut: String!
+
+  """城市编码"""
+  cityCode: String!
+
+  """最大距离（公里，筛选）"""
+  distanceMax: Float
+
+  """设施ID列表（筛选）"""
+  facilityIds: [String!]
+
+  """关键词（酒店名/地址）"""
+  keyword: String
+
+  """用户纬度（用于距离筛选/排序）"""
+  latitude: Float
+
+  """用户经度（用于距离筛选/排序）"""
+  longitude: Float
+
+  """分页"""
+  pagination: PaginationInput
+
+  """POI ID（单选）"""
+  poiId: String
+
+  """最高价"""
+  priceMax: Float
+
+  """最低价"""
+  priceMin: Float
+
+  """排序"""
+  sort: MobileHotelSort! = DEFAULT
+
+  """星级"""
+  starRating: Int
+}
+
+"""设置酒店图片入参"""
+input SetHotelImagesInput {
+  """酒店ID"""
+  hotelId: ID!
+
+  """图片URL列表"""
+  urls: [String!]!
+}
+
+"""更新当前用户信息入参"""
+input UpdateMeInput {
+  """头像URL（可选）"""
+  avatarUrl: String
+
+  """新密码（可选，至少6位）"""
+  password: String
+
+  """常用设施ID（可选）"""
+  preferredFacilityIds: [String!]
+
+  """常用标签ID（可选）"""
+  preferredTagIds: [String!]
+
+  """新用户名（可选）"""
+  username: String
+}
+
+"""系统用户"""
+type User {
+  """头像URL（可选）"""
+  avatarUrl: String
+
+  """创建时间"""
+  createdAt: DateTime!
+
+  """用户ID"""
+  id: ID!
+
+  """商户常用设施ID（用于新建酒店默认值）"""
+  preferredFacilityIds: [String!]
+
+  """商户常用标签ID（用于新建酒店默认值）"""
+  preferredTagIds: [String!]
+
+  """用户角色（商户/管理员）"""
+  role: UserRole!
+
+  """更新时间"""
+  updatedAt: DateTime!
+
+  """用户名（唯一）"""
+  username: String!
+}
+
+type UserResult {
+  code: Int!
+  data: User
+  message: String!
+}
+
+"""用户角色"""
+enum UserRole {
+  ADMIN
+  MERCHANT
+}
