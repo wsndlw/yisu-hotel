@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Like, Repository } from 'typeorm';
 
 import { UserEntity, UserRole } from '../user/models/user.entity';
-// import { HotelAuditAction } from '../audit-record/models/audit-record.entity';
-// import { AuditService } from '../audit-record/audit.service';
+import { HotelAuditAction } from '../audit-record/models/audit-record.entity';
+import { AuditService } from '../audit-record/audit.service';
 import { HotelEntity, HotelStatus } from './models/hotel.entity';
 import { HotelImageEntity } from '../hotelImage/models/hotel-image.entity';
 import { RoomTypeEntity } from '../roomType/models/room-type.entity';
@@ -600,8 +600,8 @@ export class HotelService {
     const total = await qb.getCount();
 
     const listWithDistance = entities.map((hotel) => {
-      let distance ;
-      let distanceText ;
+      let distance;
+      let distanceText;
 
       if (
         input.latitude &&
@@ -680,7 +680,7 @@ export class HotelService {
     }
 
     // 2. 计算距离
-    let distance ;
+    let distance;
     let distanceText;
 
     if (
@@ -745,8 +745,8 @@ export class HotelService {
     // 计算距离并排序
     const hotelsWithDistance = hotels
       .map((hotel) => {
-        let distance ;
-        let distanceText ;
+        let distance;
+        let distanceText;
         if (hotel.latitude != null && hotel.longitude != null) {
           const distKm = this.calculateDistance(
             latitude,
