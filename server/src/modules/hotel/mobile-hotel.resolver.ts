@@ -68,6 +68,7 @@ export class MobileHotelResolver {
   ): Promise<HotelConnectionResult> {
     const page = input.pagination?.page ?? 1;
     const pageSize = input.pagination?.pageSize ?? 10;
+    const hasGeo = input.latitude != null && input.longitude != null;
     const sortBy =
       input.sort === MobileHotelSort.PRICE_ASC
         ? 'price'
@@ -75,7 +76,9 @@ export class MobileHotelResolver {
           ? 'starLevel'
           : input.sort === MobileHotelSort.DISTANCE_ASC
             ? 'distance'
-            : 'updatedAt';
+            : hasGeo
+              ? 'distance'
+              : 'updatedAt';
 
     // 旧版：不含 POI 筛选逻辑
     // const result = await this.hotelService.listHotelsForH5({ ... })
@@ -96,8 +99,6 @@ export class MobileHotelResolver {
       pageSize,
       sortBy,
     });
-    console.log('result', result);
-    const formatDistanceText = result.list.distanceText
 
     const rawItems = Array.isArray(result)
       ? result
