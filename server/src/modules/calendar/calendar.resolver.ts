@@ -9,7 +9,7 @@ import {
   CalendarRangeQueryInput,
   CalendarStockBatchSetInput,
 } from './common/calendar.input';
-import { RoomTypeCalendar } from './common/calendar.type';
+import { HotelMinPriceCalendar, RoomTypeCalendar } from './common/calendar.type';
 import { HotelCalendar } from './common/hotel-calendar.type';
 import { HotelCalendarRangeQueryInput } from './common/hotel-calendar.input';
 import { GqlAuthGuard } from '../../common/guards/gql-auth.guard';
@@ -34,15 +34,15 @@ export class CalendarResolver {
   ) {}
 
   /**
-   * 移动端：获取房型日历（价格+库存）
+   * 移动端：获取酒店最低价日历（默认返回未来 30 天）
    */
-  @Query(() => RoomTypeCalendar, { description: '房型日历（移动端）' })
-  roomTypeCalendar(
-    @Args('roomTypeId', { type: () => ID }) roomTypeId: string,
-    @Args('startDate', { type: () => String }) startDate: string,
-    @Args('endDate', { type: () => String }) endDate: string,
+  @Query(() => HotelMinPriceCalendar, { description: '酒店最低价日历（移动端）' })
+  hotelMinPriceCalendar(
+    @Args('hotelId', { type: () => ID }) hotelId: string,
+    @Args('startDate', { type: () => String, nullable: true }) startDate?: string,
+    @Args('endDate', { type: () => String, nullable: true }) endDate?: string,
   ) {
-    return this.calendarService.getRoomTypeCalendar(roomTypeId, startDate, endDate);
+    return this.calendarService.getHotelMinPriceCalendar(hotelId, startDate, endDate);
   }
 
   /**

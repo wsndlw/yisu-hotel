@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import style from './index.module.less';
+import style from './index.module.css';
 import { Card, Col, Row, Statistic, Table, Tag } from 'antd';
 import { useAdminDashboardStats } from '../../../services/stats';
 

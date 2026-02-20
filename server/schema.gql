@@ -451,6 +451,21 @@ input HotelListInput {
   tagIds: [ID!]
 }
 
+"""酒店最低价日历返回"""
+type HotelMinPriceCalendar {
+  days: [HotelMinPriceCalendarDay!]!
+  hotelId: ID!
+}
+
+"""酒店最低价日历（按天）"""
+type HotelMinPriceCalendarDay {
+  """日期（YYYY-MM-DD）"""
+  date: String!
+
+  """最低价（单位：分）"""
+  price: Int!
+}
+
 input HotelPoiLinkInput {
   hotelId: ID!
   poiId: ID!
@@ -997,6 +1012,9 @@ type Query {
   """移动端酒店详情"""
   hotelDetail(checkIn: String, checkOut: String, id: String!): MobileHotelDetailResult!
 
+  """酒店最低价日历（移动端）"""
+  hotelMinPriceCalendar(endDate: String, hotelId: ID!, startDate: String): HotelMinPriceCalendar!
+
   """酒店列表查询（支持城市/关键词/星级/标签/设施/状态筛选）"""
   hotels(
     """列表查询条件"""
@@ -1023,9 +1041,6 @@ type Query {
 
   """移动端 POI 列表（按城市/类型/关键词）"""
   poiList(input: PoiListQueryInput!): [PoiEntity!]!
-
-  """房型日历（移动端）"""
-  roomTypeCalendar(endDate: String!, roomTypeId: ID!, startDate: String!): RoomTypeCalendar!
 
   """移动端搜索酒店列表"""
   searchHotels(

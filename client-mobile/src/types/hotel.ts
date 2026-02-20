@@ -122,20 +122,19 @@ export interface PoiListInput {
   type?: string;
 }
 
-export interface RoomTypeCalendarDay {
+export interface HotelMinPriceCalendarDay {
   date: string;
   price: number;
-  stock?: number | null;
 }
 
-export interface RoomTypeCalendar {
-  roomTypeId: string;
-  days: RoomTypeCalendarDay[];
+export interface HotelMinPriceCalendar {
+  hotelId: string;
+  days: HotelMinPriceCalendarDay[];
 }
 
-export interface RoomTypeCalendarInput {
-  roomTypeId: string;
-  startDate: string;
-  endDate: string;
+export interface HotelMinPriceCalendarInput {
+  hotelId: string;
+  startDate?: string;
+  endDate?: string;
 }
 

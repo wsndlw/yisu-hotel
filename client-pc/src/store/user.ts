@@ -13,7 +13,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { AUTH_TOKEN } from '../utils/constants';
+import { AUTH_TOKEN } from '../constants/constants';
 
 export type UserRole = 'ADMIN' | 'MERCHANT' | null;
 

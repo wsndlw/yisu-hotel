@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useLazyQuery, useQuery } from '@apollo/client';
-import { GET_HOME_CONFIG, SEARCH_HOTELS, GET_HOTEL_DETAIL, POI_LIST, ROOM_TYPE_CALENDAR } from '../graphql/hotel-h5';
+import { GET_HOME_CONFIG, SEARCH_HOTELS, GET_HOTEL_DETAIL, POI_LIST, HOTEL_MIN_PRICE_CALENDAR } from '../graphql/hotel-h5';
 import { useBanners } from './banner-h5';
-import { SearchHotelInput, HotelDetail, PoiListInput, PoiItem, RoomTypeCalendarInput, RoomTypeCalendar } from '../types/hotel';
+import { SearchHotelInput, HotelDetail, PoiListInput, PoiItem, HotelMinPriceCalendarInput, HotelMinPriceCalendar } from '../types/hotel';
 
 function buildBizError(result: any) {
   return result && result.code !== 200 ? new Error(result.message || '请求失败') : undefined;
@@ -118,9 +118,9 @@ export function usePoiList(input?: PoiListInput) {
   };
 }
 
-export function useRoomTypeCalendar(input?: RoomTypeCalendarInput) {
-  const { data, loading, error, refetch } = useQuery<{ roomTypeCalendar: RoomTypeCalendar }>(
-    ROOM_TYPE_CALENDAR,
+export function useHotelMinPriceCalendar(input?: HotelMinPriceCalendarInput) {
+  const { data, loading, error, refetch } = useQuery<{ hotelMinPriceCalendar: HotelMinPriceCalendar }>(
+    HOTEL_MIN_PRICE_CALENDAR,
     {
       variables: input,
       skip: !input,
@@ -129,7 +129,7 @@ export function useRoomTypeCalendar(input?: RoomTypeCalendarInput) {
   );
 
   return {
-    data: data?.roomTypeCalendar,
+    data: data?.hotelMinPriceCalendar,
     loading,
     error,
     refetch,

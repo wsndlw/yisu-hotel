@@ -18,7 +18,7 @@ import {
   WITHDRAW_HOTEL,
   REQUEST_OFFLINE,
 } from '../graphql/hotel';
-import { DEFAULT_PAGE_SIZE } from '../utils/constants';
+import { DEFAULT_PAGE_SIZE } from '../constants/constants';
 
 /**
  * 获取酒店列表（支持分页和筛选）

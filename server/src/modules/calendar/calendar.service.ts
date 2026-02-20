@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { RoomTypeService } from '../roomType/roomType.service';
 import { CalendarPriceService } from '../calendarPrice/calendarPrice.service';
 import { CalendarStockService } from '../calendarStock/calendarStock.service';
-import { RoomTypeCalendar, RoomTypeCalendarDay } from './common/calendar.type';
+import { HotelMinPriceCalendar, RoomTypeCalendar, RoomTypeCalendarDay } from './common/calendar.type';
+import { HotelEntity } from '../hotel/models/hotel.entity';
 
 function enumerateDates(start: string, end: string): string[] {
   const out: string[] = [];
@@ -18,10 +21,56 @@ function enumerateDates(start: string, end: string): string[] {
 @Injectable()
 export class CalendarService {
   constructor(
+    @InjectRepository(HotelEntity)
+    private readonly hotelRepo: Repository<HotelEntity>,
     private readonly roomTypeService: RoomTypeService,
     private readonly priceService: CalendarPriceService,
     private readonly stockService: CalendarStockService,
-  ) {}
+  ) { }
+
+  private resolveRange(startDate?: string, endDate?: string) {
+    const today = new Date();
+    const start = startDate ? new Date(startDate + 'T00:00:00.000Z') : new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const end = endDate
+      ? new Date(endDate + 'T00:00:00.000Z')
+      : new Date(start.getTime() + 30 * 24 * 3600 * 1000);
+    const format = (d: Date) => d.toISOString().slice(0, 10);
+    return { start: format(start), end: format(end) };
+  }
+
+  async getHotelMinPriceCalendar(hotelId: string, startDate?: string, endDate?: string) {
+    const { start, end } = this.resolveRange(startDate, endDate);
+    const hotel = await this.hotelRepo.findOne({
+      where: { id: hotelId },
+      relations: ['roomTypes'],
+    });
+
+    const roomTypes = hotel?.roomTypes || [];
+    if (roomTypes.length === 0) {
+      return { hotelId, days: [] };
+    }
+
+    const dateList = enumerateDates(start, end);
+    const days = dateList.map((date) => ({ date, price: Number.POSITIVE_INFINITY }));
+
+    for (const room of roomTypes) {
+      const prices = await this.priceService.list(room.id, start, end);
+      const priceMap = new Map(prices.map((p) => [p.date, p.price]));
+      days.forEach((day) => {
+        const price = priceMap.has(day.date) ? Number(priceMap.get(day.date)!) : Number(room.basePrice);
+        if (price < day.price) {
+          day.price = price;
+        }
+      });
+    }
+
+    const normalized = days.map((day) => ({
+      date: day.date,
+      price: Number.isFinite(day.price) ? day.price : 0,
+    }));
+
+    return { hotelId, days: normalized };
+  }
 
   /**
    * 获取房型某日期范围内的可售日历：优先取日历覆盖，否则回退到房型 basePrice/stock。
@@ -76,8 +125,15 @@ export class CalendarService {
 
     // 检查每一晚：优先用日历库存，否则用房型基础库存
     for (const night of nights) {
-      const stock = stockMap.has(night) ? stockMap.get(night)! : (roomType.stock ?? 0);
-      if (stock <= 0) return false; // 任意一晚无库存则不可订
+      if (stockMap.has(night)) {
+        const stock = stockMap.get(night)!;
+        if (stock <= 0) return false;
+        continue;
+      }
+
+      // 未设置日历库存，回退到基础库存；若基础库存为空则视为可订
+      if (roomType.stock == null) continue;
+      if (roomType.stock <= 0) return false;
     }
 
     return true;

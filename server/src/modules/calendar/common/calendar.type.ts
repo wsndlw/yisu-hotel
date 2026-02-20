@@ -20,3 +20,21 @@ export class RoomTypeCalendar {
   @Field(() => [RoomTypeCalendarDay])
   days: RoomTypeCalendarDay[];
 }
+
+@ObjectType({ description: '酒店最低价日历（按天）' })
+export class HotelMinPriceCalendarDay {
+  @Field(() => String, { description: '日期（YYYY-MM-DD）' })
+  date: string;
+
+  @Field(() => Int, { description: '最低价（单位：分）' })
+  price: number;
+}
+
+@ObjectType({ description: '酒店最低价日历返回' })
+export class HotelMinPriceCalendar {
+  @Field(() => ID)
+  hotelId: string;
+
+  @Field(() => [HotelMinPriceCalendarDay])
+  days: HotelMinPriceCalendarDay[];
+}

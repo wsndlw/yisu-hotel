@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import style from './index.module.less';
+import style from './index.module.css';
 import { Button, Image, Descriptions, Drawer, Skeleton, Space, Table, Tag } from 'antd';
 import { useHotelDetail } from '../../../../services/hotel';
 import { getCityName } from '../../../../constants/cities';

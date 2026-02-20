@@ -11,8 +11,8 @@
 
 import { Navigate } from 'react-router-dom';
 import { useUserStore } from '../store/user';
-import { AUTH_TOKEN } from '../utils/constants';
 import { useMe } from '../services/auth';
+import { AUTH_TOKEN } from '../constants/constants';
 
 export default function RootRedirect() {
   const { token, role, syncToken, setToken } = useUserStore();

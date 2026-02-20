@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import style from './index.module.less';
+import style from './index.module.css';
 import { App, Button, Card, Form, Input, Modal, Select, Space, Table, Tabs } from 'antd';
 import HotelDetail from './components/HotelDetail';
 import { getColumns, STAR_OPTIONS, TAB_ITEMS } from './constants';
@@ -100,11 +100,11 @@ const HotelList = ({ }) => {
   };
 
   //发布回调，已和通过合二为一
-  const onPublish = async (id: string) => {
-    await publishHandler(id, () => {
-      refetch(queryInput);
-    });
-  };
+  // const onPublish = async (id: string) => {
+  //   await publishHandler(id, () => {
+  //     refetch(queryInput);
+  //   });
+  // };
 
   const onOffline = async (id: string) => {
     await offlineHandler(id, () => {

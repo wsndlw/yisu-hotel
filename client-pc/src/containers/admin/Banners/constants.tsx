@@ -30,7 +30,7 @@ export const getColumns = ({ hotelNameMap, onToggle, openEdit, onDelete }: IColu
   {
     title: '关联酒店',
     dataIndex: 'targetHotelId',
-    width: 220,
+    width: 160,
     ellipsis: true,
     render: (id: string) => hotelNameMap.get(id) || `未知酒店（${id}）`,
   },
