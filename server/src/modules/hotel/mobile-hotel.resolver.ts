@@ -246,6 +246,7 @@ export class MobileHotelResolver {
       address: hotel.address ?? null,
       description: hotel.discountInfo ?? null,
       images: (hotel.images || []).map((img: any) => img.url),
+      favoriteCount: hotel.favoriteCount ?? 0,
       facilities: (hotel.facilities || []).map((f: any) => f.name),
       rooms,
       nearbyPoi,

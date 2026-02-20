@@ -567,6 +567,7 @@ type MobileHotelDetail {
   address: String
   description: String
   facilities: [String!]!
+  favoriteCount: Float
   id: ID!
   images: [String!]!
   name: String!
@@ -591,6 +592,7 @@ type MobileHotelListItem {
 
   """距离文案"""
   distanceText: String
+  favoriteCount: Float
   hotelNo: String
   id: ID!
   latitude: String

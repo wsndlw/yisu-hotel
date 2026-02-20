@@ -6,11 +6,14 @@ export interface SearchHotelInput {
   priceMin?: number;
   priceMax?: number;
   starRating?: number;
-  sort?: 'PRICE_ASC' | 'SCORE_DESC' | 'DISTANCE_ASC' | 'DEFAULT';
+  sort?: 'DEFAULT' | 'DISTANCE_ASC' | 'PRICE_ASC' | 'SCORE_DESC';
   facilityIds?: string[];
   latitude?: number;
   longitude?: number;
   distanceMax?: number;
+  poiId?: string;
+  bedType?: string;
+  guestCount?: number;
   pagination?: {
     page: number;
     pageSize: number;
@@ -35,13 +38,33 @@ export interface Hotel {
   hotelNo?: string | null;
   name: string;
   coverImage?: string | null;
+  favoriteCount?: number | null;
   score?: number | null;
   minPrice?: number | null;
-  favoriteCount?: number | null;
   distance?: number | null;
   distanceText?: string | null;
   address?: string | null;
-  facilities?: string[];
+  latitude?: string | null;
+  longitude?: string | null;
+  roomType?: RoomType[] | null;
+  facilities?: { id: string; name: string }[];
+}
+
+export interface RoomType {
+  id: string;
+  name: string;
+  bedType?: string | null;
+  basePrice?: number | null;
+  maxGuests?: number | null;
+  hasBreakfast?: boolean | null;
+  refundable?: boolean | null;
+  hasWindow?: boolean | null;
+  area?: number | null;
+  floor?: string | null;
+  isOnSale?: boolean | null;
+  sortOrder?: number | null;
+  stock?: number | null;
+  images?: string | null;
 }
 
 export interface Room {
@@ -56,3 +79,63 @@ export interface Room {
   area?: number | null;
   hasWindow?: boolean | null;
 }
+
+export interface NearbyPoi {
+  id: string;
+  name: string;
+  type: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  distanceKm?: number | null;
+  baseScore?: number | null;
+  city: string;
+}
+
+export interface HotelDetail {
+  id: string;
+  name: string;
+  address?: string | null;
+  description?: string | null;
+  favoriteCount?: number | null;
+  images: string[];
+  facilities: string[];
+  nearbyPoi?: NearbyPoi[] | null;
+  rooms: Room[];
+}
+
+export interface PoiItem {
+  id: string;
+  name: string;
+  type: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  baseScore?: number | null;
+  city: string;
+}
+
+export interface PoiListInput {
+  city: string;
+  keyword?: string;
+  limit?: number;
+  type?: string;
+}
+
+export interface RoomTypeCalendarDay {
+  date: string;
+  price: number;
+  stock?: number | null;
+}
+
+export interface RoomTypeCalendar {
+  roomTypeId: string;
+  days: RoomTypeCalendarDay[];
+}
+
+export interface RoomTypeCalendarInput {
+  roomTypeId: string;
+  startDate: string;
+  endDate: string;
+}
+

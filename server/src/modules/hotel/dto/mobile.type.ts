@@ -73,8 +73,12 @@ export class MobileHotelListItem {
   @Field(() => String, { nullable: true })
   address?: string | null;
 
+  @Field(() => Number, { nullable: true })
+  favoriteCount?: number | null;
+
   @Field(() => String, { nullable: true })
   latitude?: string | null;
+
   @Field(() => String, { nullable: true })
   longitude?: string | null;
 
@@ -137,6 +141,9 @@ export class MobileHotelDetail {
 
   @Field(() => String, { nullable: true })
   description?: string | null;
+
+  @Field(() => Number, { nullable: true })
+  favoriteCount?: number | null;
 
   @Field(() => [String])
   images: string[];

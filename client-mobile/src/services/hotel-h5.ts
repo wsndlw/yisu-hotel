@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useLazyQuery, useQuery } from '@apollo/client';
-import { GET_HOME_CONFIG, SEARCH_HOTELS, GET_HOTEL_DETAIL } from '../graphql/hotel-h5';
+import { GET_HOME_CONFIG, SEARCH_HOTELS, GET_HOTEL_DETAIL, POI_LIST, ROOM_TYPE_CALENDAR } from '../graphql/hotel-h5';
 import { useBanners } from './banner-h5';
-import { SearchHotelInput } from '../types/hotel';
+import { SearchHotelInput, HotelDetail, PoiListInput, PoiItem, RoomTypeCalendarInput, RoomTypeCalendar } from '../types/hotel';
 
 function buildBizError(result: any) {
   return result && result.code !== 200 ? new Error(result.message || '请求失败') : undefined;
@@ -31,7 +31,7 @@ export function useHomeConfig() {
 }
 
 /**
- * 首页数据（推荐用法）：cities/tags 走 homeConfig，banners 走 bannersQuery。
+ * 首页数据（推荐用法）：cities/facilities 走 homeConfig，banners 走 bannersQuery。
  *
  * 这样 banner 一定会在后端按 enabled + startAt/endAt 做过滤。
  */
@@ -86,9 +86,9 @@ export function useHotelSearch() {
 /**
  * 酒店详情与房型列表（React Hooks）
  */
-export function useHotelDetail(id?: string) {
+export function useHotelDetail(id?: string, checkIn?: string, checkOut?: string) {
   const { data, loading, error, refetch } = useQuery(GET_HOTEL_DETAIL, {
-    variables: { id },
+    variables: { id, checkIn, checkOut },
     skip: !id,
     fetchPolicy: 'network-only',
   });
@@ -97,9 +97,41 @@ export function useHotelDetail(id?: string) {
   const bizError = buildBizError(result);
 
   return {
-    data: result?.code === 200 ? result.data : undefined,
+    data: result?.code === 200 ? (result.data as HotelDetail) : undefined,
     loading,
     error: error || bizError,
+    refetch,
+  };
+}
+
+export function usePoiList(input?: PoiListInput) {
+  const { data, loading, error, refetch } = useQuery<{ poiList: PoiItem[] }>(POI_LIST, {
+    variables: { input },
+    skip: !input,
+  });
+
+  return {
+    data: data?.poiList ?? [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useRoomTypeCalendar(input?: RoomTypeCalendarInput) {
+  const { data, loading, error, refetch } = useQuery<{ roomTypeCalendar: RoomTypeCalendar }>(
+    ROOM_TYPE_CALENDAR,
+    {
+      variables: input,
+      skip: !input,
+      fetchPolicy: 'network-only',
+    },
+  );
+
+  return {
+    data: data?.roomTypeCalendar,
+    loading,
+    error,
     refetch,
   };
 }

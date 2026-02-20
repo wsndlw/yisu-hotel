@@ -27,7 +27,7 @@ export const GET_HOME_CONFIG = gql`
           code
           name
         }
-        tags {
+        facilities {
           id
           name
         }
@@ -56,6 +56,24 @@ export const SEARCH_HOTELS = gql`
           distance
           distanceText
           address
+          latitude
+          longitude
+          roomType {
+            id
+            name
+            bedType
+            basePrice
+            maxGuests
+            hasBreakfast
+            refundable
+            hasWindow
+            area
+            floor
+            isOnSale
+            sortOrder
+            stock
+            images
+          }
         }
         minPrice
         total
@@ -73,8 +91,8 @@ export const SEARCH_HOTELS = gql`
  * 酒店详情 + 房型列表（按价格升序）
  */
 export const GET_HOTEL_DETAIL = gql`
-  query GetHotelDetail($id: ID!) {
-    hotelDetail(id: $id) {
+  query GetHotelDetail($id: ID!, $checkIn: String, $checkOut: String) {
+    hotelDetail(id: $id, checkIn: $checkIn, checkOut: $checkOut) {
       code
       message
       data {
@@ -82,8 +100,20 @@ export const GET_HOTEL_DETAIL = gql`
         name
         address
         description
+        favoriteCount
         images
         facilities
+        nearbyPoi {
+          id
+          name
+          type
+          address
+          latitude
+          longitude
+          distanceKm
+          baseScore
+          city
+        }
         rooms {
           id
           title
@@ -96,6 +126,34 @@ export const GET_HOTEL_DETAIL = gql`
           stock
           bedType
         }
+      }
+    }
+  }
+`;
+
+export const POI_LIST = gql`
+  query PoiList($input: PoiListQueryInput!) {
+    poiList(input: $input) {
+      id
+      name
+      type
+      address
+      latitude
+      longitude
+      baseScore
+      city
+    }
+  }
+`;
+
+export const ROOM_TYPE_CALENDAR = gql`
+  query RoomTypeCalendar($roomTypeId: ID!, $startDate: String!, $endDate: String!) {
+    roomTypeCalendar(roomTypeId: $roomTypeId, startDate: $startDate, endDate: $endDate) {
+      roomTypeId
+      days {
+        date
+        price
+        stock
       }
     }
   }
