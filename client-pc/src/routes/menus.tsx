@@ -15,6 +15,7 @@ export const ROUTE_KEY = {
   ADMIN_HOTELS: 'admin_hotels',
   ADMIN_BANNERS: 'admin_banners',
   ADMIN_AUDIT_RECORDS: 'admin_audit_records',
+  ADMIN_FACILITIES: 'admin_facilities',
 } as const;
 
 export const ROUTE_CONFIG: Record<string, IRoute> = {
@@ -48,11 +49,12 @@ export const ROUTE_CONFIG: Record<string, IRoute> = {
     name: '审核记录',
     icon: <HomeOutlined />,
   },
-  admin_meta: {
+    [ROUTE_KEY.ADMIN_FACILITIES]: {
     path: 'admin/meta',
     name: '设施管理',
     icon: <SettingOutlined />,
   },
+
 };
 
 export const routes = Object.keys(ROUTE_CONFIG).map((key) => ({ ...ROUTE_CONFIG[key], key }));
