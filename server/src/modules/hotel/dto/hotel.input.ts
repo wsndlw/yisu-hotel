@@ -192,62 +192,62 @@ export class RoomTypeOpsInput {
   refundable?: boolean;
 }
 
-/**
- * 【移动端专用】酒店列表查询条件
- */
-@InputType({ description: '【移动端】酒店列表查询入参 - 支持多维度筛选' })
-export class HotelH5ListInput {
-  @Field(() => Int, { nullable: true, defaultValue: 1, description: '页码（从1开始）' })
-  @IsOptional()
-  @IsInt()
-  page?: number;
+// /**
+//  * 【移动端专用】酒店列表查询条件
+//  */
+// @InputType({ description: '【移动端】酒店列表查询入参 - 支持多维度筛选' })
+// export class HotelH5ListInput {
+//   @Field(() => Int, { nullable: true, defaultValue: 1, description: '页码（从1开始）' })
+//   @IsOptional()
+//   @IsInt()
+//   page?: number;
 
-  @Field(() => Int, { nullable: true, defaultValue: 10, description: '每页数量' })
-  @IsOptional()
-  @IsInt()
-  pageSize?: number;
+//   @Field(() => Int, { nullable: true, defaultValue: 10, description: '每页数量' })
+//   @IsOptional()
+//   @IsInt()
+//   pageSize?: number;
 
-  @Field(() => String, { nullable: true, description: '城市编码或城市名称' })
-  @IsOptional()
-  city?: string;
+//   @Field(() => String, { nullable: true, description: '城市编码或城市名称' })
+//   @IsOptional()
+//   city?: string;
 
-  @Field(() => String, { nullable: true, description: '搜索关键词（酒店名称）' })
-  @IsOptional()
-  keyword?: string;
+//   @Field(() => String, { nullable: true, description: '搜索关键词（酒店名称）' })
+//   @IsOptional()
+//   keyword?: string;
 
-  @Field(() => Int, { nullable: true, description: '星级筛选（0-5）' })
-  @IsOptional()
-  @IsInt()
-  starLevel?: number;
+//   @Field(() => Int, { nullable: true, description: '星级筛选（0-5）' })
+//   @IsOptional()
+//   @IsInt()
+//   starLevel?: number;
 
-  @Field(() => Number, { nullable: true, description: '最低价格' })
-  @IsOptional()
-  minPrice?: number;
+//   @Field(() => Number, { nullable: true, description: '最低价格' })
+//   @IsOptional()
+//   minPrice?: number;
 
-  @Field(() => Number, { nullable: true, description: '最高价格' })
-  @IsOptional()
-  maxPrice?: number;
+//   @Field(() => Number, { nullable: true, description: '最高价格' })
+//   @IsOptional()
+//   maxPrice?: number;
 
-  @Field(() => [ID], { nullable: true, description: '标签ID数组（多选）' })
-  @IsOptional()
-  tagIds?: string[];
+//   @Field(() => [ID], { nullable: true, description: '标签ID数组（多选）' })
+//   @IsOptional()
+//   tagIds?: string[];
 
-  @Field(() => [ID], { nullable: true, description: '设施ID数组（多选）' })
-  @IsOptional()
-  facilityIds?: string[];
+//   @Field(() => [ID], { nullable: true, description: '设施ID数组（多选）' })
+//   @IsOptional()
+//   facilityIds?: string[];
 
-  @Field(() => Number, { nullable: true, description: '用户当前纬度（用于计算距离）' })
-  @IsOptional()
-  latitude?: number;
+//   @Field(() => Number, { nullable: true, description: '用户当前纬度（用于计算距离）' })
+//   @IsOptional()
+//   latitude?: number;
 
-  @Field(() => Number, { nullable: true, description: '用户当前经度（用于计算距离）' })
-  @IsOptional()
-  longitude?: number;
+//   @Field(() => Number, { nullable: true, description: '用户当前经度（用于计算距离）' })
+//   @IsOptional()
+//   longitude?: number;
 
-  @Field(() => String, {
-    nullable: true,
-    description: '排序方式：distance（距离）、price（价格）、starLevel（星级）',
-  })
-  @IsOptional()
-  sortBy?: string;
-}
+//   @Field(() => String, {
+//     nullable: true,
+//     description: '排序方式：distance（距离）、price（价格）、starLevel（星级）',
+//   })
+//   @IsOptional()
+//   sortBy?: string;
+// }

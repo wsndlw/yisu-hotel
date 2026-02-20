@@ -35,6 +35,12 @@ export class SearchHotelInput {
   @Field(() => String, { nullable: true, description: '关键词（酒店名/地址）' })
   keyword?: string;
 
+  @Field(() => String, { nullable: true, description: '床型枚举（可选）' })
+  bedType?: string;
+
+  @Field(() => Int, { nullable: true, description: '入住人数（可选）' })
+  guestCount?: number;
+
   @Field(() => Number, { nullable: true, description: '最低价' })
   priceMin?: number;
 

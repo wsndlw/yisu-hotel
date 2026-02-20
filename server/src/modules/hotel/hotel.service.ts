@@ -15,6 +15,7 @@ import { HotelUpsertInput } from './dto/hotel.input';
 import { FacilityEntity, FacilityType } from '../facility/models/facility.entity';
 import { FacilityService } from '../facility/facility.service';
 import { migrateCityData } from '../../shared/utils/city';
+import { getCityByCode } from '../../common/constants/city';
 
 @Injectable()
 export class HotelService {
@@ -575,6 +576,14 @@ export class HotelService {
       qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
     }
 
+    if (input.bedType) {
+      qb.andWhere('roomType.bedType = :bedType', { bedType: input.bedType });
+    }
+
+    if (typeof input.guestCount === 'number') {
+      qb.andWhere('roomType.maxGuests >= :guestCount', { guestCount: input.guestCount });
+    }
+
     // 排序
     const sortBy = input.sortBy || 'updatedAt';
     if (sortBy === 'price') {
@@ -600,8 +609,8 @@ export class HotelService {
     const total = await qb.getCount();
 
     const listWithDistance = entities.map((hotel) => {
-      let distance;
-      let distanceText;
+      let distance: number | null = null;
+      let distanceText: string | null = null;
 
       if (
         input.latitude &&
@@ -627,7 +636,7 @@ export class HotelService {
         }
 
         /*
-        // 旧的 JS 计算逻辑（已注释，供参考）
+        // 旧的 JS 计算逻辑
         const distKm = this.calculateDistance(
           input.latitude,
           input.longitude,
@@ -638,11 +647,11 @@ export class HotelService {
         */
 
         // 生成文案
-        if (distance < 1000) {
+        if (distance !== null && distance < 1000) {
           // 小于1000米：精确到10米（如 358 -> 360）
           const tens = Math.round(distance / 10) * 10;
           distanceText = `${tens}m`;
-        } else {
+        } else if (distance !== null) {
           // 大于1000米：保留1位小数（如 1.2km）
           distanceText = `${(distance / 1000).toFixed(1)}km`;
         }
@@ -830,7 +839,6 @@ export class HotelService {
    * 根据城市编码获取城市名称
    */
   private getCityName(cityCode: string): string {
-    const { getCityByCode } = require('../../common/constants/city');
     const city = getCityByCode(cityCode);
     return city ? city.name : cityCode;
   }

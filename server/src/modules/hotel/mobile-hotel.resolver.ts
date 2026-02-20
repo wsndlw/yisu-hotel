@@ -87,6 +87,8 @@ export class MobileHotelResolver {
       maxPrice: input.priceMax,
       starLevel: input.starRating,
       facilityIds: input.facilityIds,
+      bedType: input.bedType,
+      guestCount: input.guestCount,
       latitude: input.latitude,
       longitude: input.longitude,
       distanceMax: input.distanceMax,
@@ -114,6 +116,7 @@ export class MobileHotelResolver {
       favoriteCount: hotel.favoriteCount ?? 0,
       latitude: hotel.latitude ?? null,
       longitude: hotel.longitude ?? null,
+      roomType: Array.isArray(hotel.roomTypes) ? hotel.roomTypes ?? null : null,
     }));
     console.log('items', items);
     // POI 筛选（单选）

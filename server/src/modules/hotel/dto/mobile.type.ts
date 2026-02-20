@@ -1,5 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { NearbyPoiItem } from '../../poi/dto/poi.type';
+import { RoomTypeEntity } from 'src/modules/roomType/models/room-type.entity';
 
 @ObjectType({ description: '移动端 Banner' })
 export class MobileBanner {
@@ -71,6 +72,14 @@ export class MobileHotelListItem {
 
   @Field(() => String, { nullable: true })
   address?: string | null;
+
+  @Field(() => String, { nullable: true })
+  latitude?: string | null;
+  @Field(() => String, { nullable: true })
+  longitude?: string | null;
+
+  @Field(() => [RoomTypeEntity], { nullable: true })
+  roomType?: [RoomTypeEntity] | [];
 }
 
 @ObjectType({ description: '酒店列表返回（移动端）' })

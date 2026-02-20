@@ -593,10 +593,13 @@ type MobileHotelListItem {
   distanceText: String
   hotelNo: String
   id: ID!
+  latitude: String
+  longitude: String
 
   """起步价"""
   minPrice: Float
   name: String!
+  roomType: [RoomTypeEntity!]
   score: Float
 }
 
@@ -1167,6 +1170,9 @@ input RoomTypeUpsertInput {
 
 """酒店搜索条件（移动端）"""
 input SearchHotelInput {
+  """床型枚举（可选）"""
+  bedType: String
+
   """入住日期（YYYY-MM-DD）"""
   checkIn: String!
 
@@ -1181,6 +1187,9 @@ input SearchHotelInput {
 
   """设施ID列表（筛选）"""
   facilityIds: [String!]
+
+  """入住人数（可选）"""
+  guestCount: Int
 
   """关键词（酒店名/地址）"""
   keyword: String
