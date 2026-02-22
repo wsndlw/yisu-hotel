@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 
-import style from './index.module.css';
+import styles from './index.module.css';
 import { App, Button, Card, Form, Input, Modal, Select, Space, Table, Tabs } from 'antd';
 import HotelDetail from './components/HotelDetail';
+import RejectModal from './components/RejectModal';
 import { getColumns, STAR_OPTIONS, TAB_ITEMS } from './constants';
 import { useApproveHotel, useHotels, useOfflineHotel, usePublishHotel, useRejectHotel, useRestoreHotel } from '../../../services/hotel';
 
@@ -18,6 +19,9 @@ const HotelList = ({ }) => {
 
   const [viewId, setViewId] = useState<string | undefined>();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string>('');
 
   const values = form.getFieldsValue();
   const queryInput = {
@@ -51,52 +55,8 @@ const HotelList = ({ }) => {
   };
 
   const onReject = async (id: string) => {
-    const presetReasons = ['图片含有水印', '价格设置错误', '地址不存在'];
-    let selected: string[] = [];
-    let extraText = '';
-
-    Modal.confirm({
-      title: '驳回酒店',
-      icon: null,
-      content: (
-        <div>
-          <div style={{ marginBottom: 8, color: '#666' }}>常见原因（可多选）：</div>
-          <div style={{ marginBottom: 12 }}>
-            {presetReasons.map((r) => (
-              <label key={r} style={{ display: 'block', marginBottom: 6 }}>
-                <input
-                  type="checkbox"
-                  onChange={(e) => {
-                    const checked = (e.target as HTMLInputElement).checked;
-                    selected = checked ? Array.from(new Set([...selected, r])) : selected.filter((x) => x !== r);
-                  }}
-                />{' '}
-                {r}
-              </label>
-            ))}
-          </div>
-          <div style={{ marginBottom: 8, color: '#666' }}>补充说明（可选）：</div>
-          <input
-            style={{ width: '100%' }}
-            placeholder="例如：请补充酒店门头照片"
-            onChange={(e) => {
-              extraText = (e.target as HTMLInputElement).value;
-            }}
-          />
-        </div>
-      ),
-      onOk: async () => {
-        const combined = [...selected, extraText?.trim()].filter(Boolean).join('；');
-        if (!combined) {
-          message.warning('请至少选择或填写一个驳回原因');
-          throw new Error('缺少驳回原因');
-        }
-
-        await rejectHandler(id, combined, () => {
-          refetch(queryInput);
-        });
-      },
-    });
+    setRejectTargetId(id);
+    setRejectModalVisible(true);
   };
 
   //发布回调，已和通过合二为一
@@ -227,6 +187,17 @@ const HotelList = ({ }) => {
         onReject={(id) => {
           setDrawerOpen(false);
           onReject(id);
+        }}
+      />
+
+      <RejectModal
+        open={rejectModalVisible}
+        onCancel={() => setRejectModalVisible(false)}
+        onOk={async (reason) => {
+          await rejectHandler(rejectTargetId, reason, () => {
+            refetch(queryInput);
+          });
+          setRejectModalVisible(false);
         }}
       />
     </Card>
