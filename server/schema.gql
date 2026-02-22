@@ -600,7 +600,6 @@ type MobileHotelDetailResult {
 """酒店列表项（移动端）"""
 type MobileHotelListItem {
   address: String
-  coverImage: String
 
   """距离(公里)"""
   distance: Float
@@ -610,14 +609,26 @@ type MobileHotelListItem {
   favoriteCount: Float
   hotelNo: String
   id: ID!
+
+  """酒店图片列表"""
+  images: [HotelImage!]
   latitude: String
   longitude: String
 
   """起步价"""
   minPrice: Float
+
+  """最低起价（自动由房型价格计算）"""
+  miniPrice: Float
   name: String!
+
+  """开业时间（YYYY-MM-DD 格式）"""
+  openSince: String
   roomType: [RoomTypeEntity!]
   score: Float
+
+  """酒店星级（0-10）"""
+  starLevel: Float
 }
 
 """酒店排序方式"""

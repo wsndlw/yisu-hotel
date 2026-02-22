@@ -8,7 +8,6 @@ import { CalendarPriceService } from '../calendarPrice/calendarPrice.service';
 import { CalendarStockService } from '../calendarStock/calendarStock.service';
 import { RoomTypeModule } from '../roomType/roomType.module';
 import { HotelModule } from '../hotel/hotel.module';
-
 import { HotelEntity } from '../hotel/models/hotel.entity';
 
 @Module({

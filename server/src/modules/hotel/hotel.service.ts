@@ -521,149 +521,318 @@ export class HotelService {
   /**
    * 【移动端专用】获取酒店列表 - 支持多维度筛选和距离计算
    */
-  async listHotelsForH5(input: any): Promise<any> {
-    const page = Math.max(1, input.page || 1);
-    const pageSize = Math.min(50, Math.max(1, input.pageSize || 10));
+  // async listHotelsForH5(input: any): Promise<any> {
+  //   const page = Math.max(1, input.page || 1);
+  //   const pageSize = Math.min(50, Math.max(1, input.pageSize || 10));
 
-    const qb = this.hotelRepo
-      .createQueryBuilder('hotel')
-      .leftJoinAndSelect('hotel.tags', 'tag')
-      .leftJoinAndSelect('hotel.facilities', 'facility')
-      .leftJoinAndSelect('hotel.roomTypes', 'roomType')
-      .leftJoinAndSelect('hotel.images', 'image')
+  //   const qb = this.hotelRepo
+  //     .createQueryBuilder('hotel')
+  //     .leftJoinAndSelect('hotel.tags', 'tag')
+  //     .leftJoinAndSelect('hotel.facilities', 'facility')
+  //     .leftJoinAndSelect('hotel.roomTypes', 'roomType')
+  //     .leftJoinAndSelect('hotel.images', 'image')
+  //     .where('hotel.status = :status', { status: HotelStatus.PUBLISHED });
+
+  //   const hasGeo = input.latitude != null && input.longitude != null;
+  //   if (hasGeo) {
+  //     qb.addSelect(
+  //       'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude))',
+  //       'distance',
+  //     ).setParameters({ lng: input.longitude, lat: input.latitude });
+  //   }
+
+  //   // 城市筛选
+  //   if (input.city) {
+  //     qb.andWhere('hotel.city = :city', { city: input.city });
+  //   }
+
+  //   // 关键词搜索
+  //   if (input.keyword) {
+  //     qb.andWhere('(hotel.nameZh LIKE :kw OR hotel.nameEn LIKE :kw OR hotel.address LIKE :kw)', {
+  //       kw: `%${input.keyword}%`,
+  //     });
+  //   }
+
+  //   // 星级筛选
+  //   if (typeof input.starLevel === 'number') {
+  //     qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
+  //   }
+
+  //   // 价格区间筛选
+  //   if (typeof input.minPrice === 'number') {
+  //     qb.andWhere('hotel.miniPrice >= :minPrice', { minPrice: input.minPrice });
+  //   }
+  //   if (typeof input.maxPrice === 'number') {
+  //     qb.andWhere('hotel.miniPrice <= :maxPrice', { maxPrice: input.maxPrice });
+  //   }
+
+  //   // 标签筛选
+  //   if (input.tagIds && input.tagIds.length > 0) {
+  //     qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
+  //   }
+
+  //   // 设施筛选
+  //   if (input.facilityIds && input.facilityIds.length > 0) {
+  //     qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
+  //   }
+
+  //   if (input.bedType) {
+  //     qb.andWhere('roomType.bedType = :bedType', { bedType: input.bedType });
+  //   }
+
+  //   if (typeof input.guestCount === 'number') {
+  //     qb.andWhere('roomType.maxGuests >= :guestCount', { guestCount: input.guestCount });
+  //   }
+
+  //   // 排序
+  //   const sortBy = input.sortBy || 'updatedAt';
+  //   if (sortBy === 'price') {
+  //     qb.orderBy('hotel.miniPrice', 'ASC');
+  //   } else if (sortBy === 'starLevel') {
+  //     qb.orderBy('hotel.starLevel', 'DESC');
+  //   } else if (sortBy === 'distance' && hasGeo) {
+  //     qb.orderBy('distance', 'ASC');
+  //   } else {
+  //     qb.orderBy('hotel.updatedAt', 'DESC');
+  //   }
+
+  //   qb.skip((page - 1) * pageSize).take(pageSize);
+
+  //   if (hasGeo && typeof input.distanceMax === 'number') {
+  //     qb.andWhere(
+  //       'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude)) <= :maxDistance',
+  //       { maxDistance: input.distanceMax * 1000 },
+  //     );
+  //   }
+
+  //   const { entities, raw } = await qb.getRawAndEntities();
+  //   const total = await qb.getCount();
+
+  //   const listWithDistance = entities.map((hotel) => {
+  //     let distance: number | null = null;
+  //     let distanceText: string | null = null;
+
+  //     if (
+  //       input.latitude &&
+  //       input.longitude &&
+  //       hotel.latitude != null &&
+  //       hotel.longitude != null
+  //     ) {
+  //       // 【优先使用数据库计算的距离】
+  //       // 数据库返回的 distance 单位是米
+  //       // 注意：getRawAndEntities 会把 raw 结果放在 raw 数组中，需要匹配 id
+  //       const rawData = raw.find((r) => r.hotel_id === hotel.id);
+  //       if (rawData && rawData.distance) {
+  //         distance = Math.round(Number(rawData.distance));
+  //       } else {
+  //         // 降级方案：如果数据库没返回，再使用 JS 计算
+  //         const distKm = this.calculateDistance(
+  //           input.latitude,
+  //           input.longitude,
+  //           hotel.latitude,
+  //           hotel.longitude,
+  //         );
+  //         distance = Math.round(distKm * 1000);
+  //       }
+
+  //       /*
+  //       // 旧的 JS 计算逻辑
+  //       const distKm = this.calculateDistance(
+  //         input.latitude,
+  //         input.longitude,
+  //         hotel.latitude,
+  //         hotel.longitude,
+  //       );
+  //       distance = Math.round(distKm * 1000);
+  //       */
+
+  //       // 生成文案
+  //       if (distance !== null && distance < 1000) {
+  //         // 小于1000米：精确到10米（如 358 -> 360）
+  //         const tens = Math.round(distance / 10) * 10;
+  //         distanceText = `${tens}m`;
+  //       } else if (distance !== null) {
+  //         // 大于1000米：保留1位小数（如 1.2km）
+  //         distanceText = `${(distance / 1000).toFixed(1)}km`;
+  //       }
+  //     }
+
+  //     if (hotel.roomTypes) {
+  //       hotel.roomTypes = hotel.roomTypes
+  //         .slice()
+  //         .sort((a, b) => Number(a.basePrice) - Number(b.basePrice));
+  //     }
+  //     if (hotel.images) {
+  //       hotel.images = hotel.images.slice().sort((a, b) => a.sortOrder - b.sortOrder);
+  //     }
+
+  //     return { ...hotel, distance, distanceText };
+  //   });
+
+  //   return { list: listWithDistance, total, page, pageSize };
+  // }
+
+ async listHotelsForH5(input: any): Promise<any> {
+    const page = Math.max(1, Number(input.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, Number(input.pageSize) || 10));
+
+    const qb = this.hotelRepo.createQueryBuilder('hotel')
       .where('hotel.status = :status', { status: HotelStatus.PUBLISHED });
 
-    const hasGeo = input.latitude != null && input.longitude != null;
-    if (hasGeo) {
+    // ================= 1. 位置与标量条件筛选 (完美双坐标系统) =================
+    const userLat = input.latitude;
+    const userLng = input.longitude;
+    const poiLat = input.filterLatitude;
+    const poiLng = input.filterLongitude;
+
+    // 显示与排序基准点：优先用户位置，降级为 POI 位置
+    const displayLat = userLat != null ? userLat : poiLat;
+    const displayLng = userLng != null ? userLng : poiLng;
+    const hasDisplayGeo = displayLat != null && displayLng != null;
+
+    // 过滤范围中心点：优先 POI 位置，降级为用户位置
+    const filterLat = poiLat != null ? poiLat : userLat;
+    const filterLng = poiLng != null ? poiLng : userLng;
+    const hasFilterGeo = filterLat != null && filterLng != null;
+
+    // 1. 计算距离并作为列返回（无论使用用户位置还是POI位置，只要有坐标就算）
+    if (hasDisplayGeo) {
       qb.addSelect(
-        'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude))',
-        'distance',
-      ).setParameters({ lng: input.longitude, lat: input.latitude });
+        'ST_Distance_Sphere(POINT(:dispLng, :dispLat), POINT(hotel.longitude, hotel.latitude))',
+        'distance'
+      ).setParameters({ dispLng: displayLng, dispLat: displayLat });
     }
 
-    // 城市筛选
-    if (input.city) {
-      qb.andWhere('hotel.city = :city', { city: input.city });
+    // 2. 根据范围圈定距离（使用 filterGeo 中心点）
+    if (input.distanceMax != null && input.distanceMax !== '' && hasFilterGeo) {
+      qb.andWhere(
+        'ST_Distance_Sphere(POINT(:filterLng, :filterLat), POINT(hotel.longitude, hotel.latitude)) <= :maxDistance',
+        { maxDistance: Number(input.distanceMax) * 1000, filterLng, filterLat }
+      );
     }
 
-    // 关键词搜索
+    if (input.city) qb.andWhere('hotel.city = :city', { city: input.city });
+
     if (input.keyword) {
       qb.andWhere('(hotel.nameZh LIKE :kw OR hotel.nameEn LIKE :kw OR hotel.address LIKE :kw)', {
         kw: `%${input.keyword}%`,
       });
     }
 
-    // 星级筛选
-    if (typeof input.starLevel === 'number') {
-      qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
+    if (input.starLevel != null && input.starLevel !== '') {
+      qb.andWhere('hotel.starLevel = :starLevel', { starLevel: Number(input.starLevel) });
+    }
+    if (input.minPrice != null && input.minPrice !== '') {
+      qb.andWhere('hotel.miniPrice >= :minPrice', { minPrice: Number(input.minPrice) });
+    }
+    if (input.maxPrice != null && input.maxPrice !== '') {
+      qb.andWhere('hotel.miniPrice <= :maxPrice', { maxPrice: Number(input.maxPrice) });
     }
 
-    // 价格区间筛选
-    if (typeof input.minPrice === 'number') {
-      qb.andWhere('hotel.miniPrice >= :minPrice', { minPrice: input.minPrice });
-    }
-    if (typeof input.maxPrice === 'number') {
-      qb.andWhere('hotel.miniPrice <= :maxPrice', { maxPrice: input.maxPrice });
-    }
-
-    // 标签筛选
-    if (input.tagIds && input.tagIds.length > 0) {
-      qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
-    }
-
-    // 设施筛选
-    if (input.facilityIds && input.facilityIds.length > 0) {
+    // ================= 2. 关联设施筛选 =================
+    if (Array.isArray(input.facilityIds) && input.facilityIds.length > 0) {
+      qb.innerJoin('hotel.facilities', 'facility');
       qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
     }
 
-    if (input.bedType) {
-      qb.andWhere('roomType.bedType = :bedType', { bedType: input.bedType });
+    // ================= 3. 房型、人数与库存强绑定筛选 =================
+    const hasGuestCount = input.guestCount != null && input.guestCount !== '';
+    const hasRoomFilters = input.bedType || hasGuestCount || (input.checkIn && input.checkOut);
+
+    if (hasRoomFilters) {
+      // 💡注意：如果数据库里有6家酒店连房型都没有录入，这里 innerJoin 会直接过滤掉这6家，这是符合逻辑的。
+      qb.innerJoin('hotel.roomTypes', 'roomType');
+
+      if (input.bedType) {
+        qb.andWhere('roomType.bedType = :bedType', { bedType: input.bedType });
+      }
+
+      if (hasGuestCount) {
+        qb.andWhere('roomType.maxGuests >= :guestCount', { guestCount: Number(input.guestCount) });
+      }
+
+      if (input.checkIn && input.checkOut) {
+        const nights: string[] = [];
+        const d = new Date(`${input.checkIn}T00:00:00.000Z`);
+        const endD = new Date(`${input.checkOut}T00:00:00.000Z`);
+        while (d < endD) {
+          nights.push(d.toISOString().split('T')[0]);
+          d.setUTCDate(d.getUTCDate() + 1);
+        }
+
+        if (nights.length > 0) {
+          qb.andWhere(`
+            NOT EXISTS (
+              SELECT 1 FROM stock s 
+              WHERE s.room_type_id = roomType.id 
+              AND s.date IN (:...dates) 
+              AND s.stock <= 0
+            )
+            AND (
+              (roomType.stock > 0 OR roomType.stock IS NULL)
+              OR 
+              (
+                (SELECT COUNT(1) FROM stock s 
+                 WHERE s.room_type_id = roomType.id 
+                 AND s.date IN (:...dates) 
+                 AND s.stock > 0) = :nightsCount
+              )
+            )
+          `, { dates: nights, nightsCount: nights.length });
+        }
+      }
     }
 
-    if (typeof input.guestCount === 'number') {
-      qb.andWhere('roomType.maxGuests >= :guestCount', { guestCount: input.guestCount });
-    }
-
-    // 排序
+    // ================= 4. 排序与分页执行 =================
     const sortBy = input.sortBy || 'updatedAt';
-    if (sortBy === 'price') {
-      qb.orderBy('hotel.miniPrice', 'ASC');
-    } else if (sortBy === 'starLevel') {
-      qb.orderBy('hotel.starLevel', 'DESC');
-    } else if (sortBy === 'distance' && hasGeo) {
-      qb.orderBy('distance', 'ASC');
-    } else {
-      qb.orderBy('hotel.updatedAt', 'DESC');
-    }
+    if (sortBy === 'price') qb.orderBy('hotel.miniPrice', 'ASC');
+    else if (sortBy === 'score') qb.orderBy('hotel.score', 'DESC');
+    else if (sortBy === 'distance' && hasDisplayGeo) qb.orderBy('distance', 'ASC'); // 修复报错点
+    else qb.orderBy('hotel.updatedAt', 'DESC');
 
-    qb.skip((page - 1) * pageSize).take(pageSize);
-
-    if (hasGeo && typeof input.distanceMax === 'number') {
-      qb.andWhere(
-        'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude)) <= :maxDistance',
-        { maxDistance: input.distanceMax * 1000 },
-      );
-    }
+    // 🔴 必须恢复我给你的终极分页方案：去重与截断
+    qb.groupBy('hotel.id');
+    qb.offset((page - 1) * pageSize).limit(pageSize);
 
     const { entities, raw } = await qb.getRawAndEntities();
     const total = await qb.getCount();
 
+    if (entities.length === 0) {
+      return { list: [], total, page, pageSize };
+    }
+
+    // ================= 5. 数据组装 =================
+    const hotelIds = entities.map(h => h.id);
+    const relationsData = await this.hotelRepo.find({
+      where: { id: In(hotelIds) },
+      relations: ['tags', 'facilities', 'roomTypes', 'images'],
+    });
+
     const listWithDistance = entities.map((hotel) => {
+      const relationInfo = relationsData.find(r => r.id === hotel.id);
+      if (relationInfo) {
+        hotel.tags = relationInfo.tags;
+        hotel.facilities = relationInfo.facilities;
+        hotel.roomTypes = relationInfo.roomTypes?.sort((a, b) => Number(a.basePrice) - Number(b.basePrice)) || [];
+        hotel.images = relationInfo.images?.sort((a, b) => a.sortOrder - b.sortOrder) || [];
+      }
+
       let distance: number | null = null;
       let distanceText: string | null = null;
 
-      if (
-        input.latitude &&
-        input.longitude &&
-        hotel.latitude != null &&
-        hotel.longitude != null
-      ) {
-        // 【优先使用数据库计算的距离】
-        // 数据库返回的 distance 单位是米
-        // 注意：getRawAndEntities 会把 raw 结果放在 raw 数组中，需要匹配 id
+      if (hasDisplayGeo) {
         const rawData = raw.find((r) => r.hotel_id === hotel.id);
-        if (rawData && rawData.distance) {
+        if (rawData?.distance) {
           distance = Math.round(Number(rawData.distance));
-        } else {
-          // 降级方案：如果数据库没返回，再使用 JS 计算
-          const distKm = this.calculateDistance(
-            input.latitude,
-            input.longitude,
-            hotel.latitude,
-            hotel.longitude,
-          );
+        } else if (hotel.latitude != null && hotel.longitude != null) {
+          const distKm = this.calculateDistance(displayLat, displayLng, hotel.latitude, hotel.longitude);
           distance = Math.round(distKm * 1000);
         }
 
-        /*
-        // 旧的 JS 计算逻辑
-        const distKm = this.calculateDistance(
-          input.latitude,
-          input.longitude,
-          hotel.latitude,
-          hotel.longitude,
-        );
-        distance = Math.round(distKm * 1000);
-        */
-
-        // 生成文案
-        if (distance !== null && distance < 1000) {
-          // 小于1000米：精确到10米（如 358 -> 360）
-          const tens = Math.round(distance / 10) * 10;
-          distanceText = `${tens}m`;
-        } else if (distance !== null) {
-          // 大于1000米：保留1位小数（如 1.2km）
-          distanceText = `${(distance / 1000).toFixed(1)}km`;
+        if (distance !== null) {
+          if (distance < 1000) distanceText = `${Math.round(distance / 10) * 10}m`;
+          else distanceText = `${(distance / 1000).toFixed(1)}km`;
         }
-      }
-
-      if (hotel.roomTypes) {
-        hotel.roomTypes = hotel.roomTypes
-          .slice()
-          .sort((a, b) => Number(a.basePrice) - Number(b.basePrice));
-      }
-      if (hotel.images) {
-        hotel.images = hotel.images.slice().sort((a, b) => a.sortOrder - b.sortOrder);
       }
 
       return { ...hotel, distance, distanceText };
@@ -671,6 +840,9 @@ export class HotelService {
 
     return { list: listWithDistance, total, page, pageSize };
   }
+
+
+
 
   /**
    * 【移动端专用】获取酒店详情
