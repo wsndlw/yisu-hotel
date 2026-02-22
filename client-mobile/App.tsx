@@ -1,44 +1,50 @@
 import React from 'react';
-import { Provider } from 'react-redux';
+import { Provider } from 'react-redux'; // Redux
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Provider as AntdProvider } from '@ant-design/react-native'; // Antd RN 的样式注入
+import { Provider as AntdProvider } from '@ant-design/react-native'; // UI库
 
-// 引入 Store
+// ✅ 1. 新增：引入 Apollo 必要组件
+import { ApolloProvider } from '@apollo/client';
+// ⚠️ 注意：请确保这个路径是对的，通常是 src/utils/apollo.ts
+import { client } from './src/utils/apollo'; 
+
 import { store } from './src/store';
 
-// 引入页面 (稍后我们创建这些文件的空壳，防止报错)
+// 引入页面
 import SearchPage from './src/pages/SearchPage';
-import ListPage from './src/pages/ListPage';
-import DetailPage from './src/pages/DetailPage';
+import ListPage from './src/pages/ListPage'; // 确保文件名大小写正确
+import DetailPage from './src/pages/DetailPage'; 
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <Provider store={store}>
-      <AntdProvider>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Search">
-            {/* 定义路由 */}
-            <Stack.Screen 
-              name="Search" 
-              component={SearchPage} 
-              options={{ headerShown: false }} // 隐藏默认的顶部栏
-            />
-            <Stack.Screen 
-              name="List" 
-              component={ListPage} 
-              options={{ headerShown: false }} 
-            />
-            <Stack.Screen 
-              name="Detail" 
-              component={DetailPage} 
-              options={{ headerShown: false }} 
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </AntdProvider>
+      {/* ✅ 2. 关键修改：在这里包裹 ApolloProvider */}
+      <ApolloProvider client={client}>
+        <AntdProvider>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName="Search">
+              <Stack.Screen 
+                name="Search" 
+                component={SearchPage} 
+                options={{ headerShown: false }} 
+              />
+              <Stack.Screen 
+                name="List" // 注意：之前的代码里你跳转的是 'HotelList'，建议这里统一叫 'List' 或者去改跳转代码
+                component={ListPage} 
+                options={{ headerShown: false }} 
+              />
+              <Stack.Screen 
+                name="Detail" 
+                component={DetailPage} 
+                options={{ headerShown: false }} 
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AntdProvider>
+      </ApolloProvider>
     </Provider>
   );
 }

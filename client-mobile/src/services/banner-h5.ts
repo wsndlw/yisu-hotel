@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { GET_BANNERS } from '../graphql/banner-h5';
 import { Banner } from '../types/banner';
 
@@ -11,6 +11,12 @@ type RawBanner = {
   endAt?: string | null;
 };
 
+// 新增这个类型：告诉 TS 接口返回的最外层结构是什么
+type BannersData = {
+  bannersQuery: RawBanner[];
+};
+
+
 /**
  * 移动端 Banner 列表（React Hooks）
  *
@@ -18,7 +24,7 @@ type RawBanner = {
  * - 这里做字段映射：targetHotelId -> redirectHotelId
  */
 export function useBanners() {
-  const { data, loading, error, refetch } = useQuery(GET_BANNERS, {
+  const { data, loading, error, refetch } = useQuery<BannersData>(GET_BANNERS, {
     fetchPolicy: 'network-only',
   });
 
