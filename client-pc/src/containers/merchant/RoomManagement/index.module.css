@@ -1,0 +1,12 @@
+.page {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.fullWidth{
+  width: 180px;
+}
