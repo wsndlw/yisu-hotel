@@ -1,3 +1,13 @@
+if (typeof (globalThis as any).FinalizationRegistry === 'undefined') {
+  (globalThis as any).FinalizationRegistry = class {
+    register() {
+      // 占位函数，防止 Apollo 检查时崩溃
+    }
+    unregister() {
+      // 占位函数
+    }
+  };
+}
 import { registerRootComponent } from 'expo';
 
 import App from './App';

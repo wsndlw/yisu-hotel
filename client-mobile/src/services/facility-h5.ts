@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 import { GET_FACILITIES_FOR_H5, GET_TAGS_FOR_H5, groupFacilitiesByCategory } from '../graphql/facility-h5';
 
 /**
@@ -7,6 +7,30 @@ import { GET_FACILITIES_FOR_H5, GET_TAGS_FOR_H5, groupFacilitiesByCategory } fro
  * 提供设施和标签的查询功能
  * 支持按分类分组展示
  */
+
+export interface FacilityItem {
+  id: string;
+  name: string;
+  icon?: string;
+  type: 'FACILITY' | 'TAG';
+  category: 'BASIC' | 'ROOM' | 'DINING' | 'ENTERTAINMENT' | 'BUSINESS' | 'OTHER';
+}
+
+// ✅ 3. 定义接口返回的通用结构
+interface ApiResponse<T> {
+  code: number;
+  message?: string;
+  data: T;
+}
+
+// ✅ 4. 定义 Query 的返回结构
+interface FacilitiesRes {
+  getFacilitiesForH5: ApiResponse<FacilityItem[]>;
+}
+
+interface TagsRes {
+  getTagsForH5: ApiResponse<FacilityItem[]>;
+}
 
 /**
  * 获取设施列表
@@ -50,7 +74,7 @@ import { GET_FACILITIES_FOR_H5, GET_TAGS_FOR_H5, groupFacilitiesByCategory } fro
  * ```
  */
 export function useFacilitiesForH5() {
-  const { data, loading, error, refetch } = useQuery(GET_FACILITIES_FOR_H5, {
+  const { data, loading, error, refetch } = useQuery<FacilitiesRes>(GET_FACILITIES_FOR_H5, {
     fetchPolicy: 'cache-first', // 设施数据变化不频繁，优先使用缓存
   });
 
@@ -95,7 +119,7 @@ export function useFacilitiesForH5() {
  * ```
  */
 export function useTagsForH5() {
-  const { data, loading, error, refetch } = useQuery(GET_TAGS_FOR_H5, {
+  const { data, loading, error, refetch } = useQuery<TagsRes>(GET_TAGS_FOR_H5, {
     fetchPolicy: 'cache-first',
   });
 

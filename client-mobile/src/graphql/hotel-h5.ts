@@ -146,14 +146,13 @@ export const POI_LIST = gql`
   }
 `;
 
-export const ROOM_TYPE_CALENDAR = gql`
-  query RoomTypeCalendar($roomTypeId: ID!, $startDate: String!, $endDate: String!) {
-    roomTypeCalendar(roomTypeId: $roomTypeId, startDate: $startDate, endDate: $endDate) {
-      roomTypeId
+export const HOTEL_MIN_PRICE_CALENDAR = gql`
+  query HotelMinPriceCalendar($hotelId: ID!, $startDate: String, $endDate: String) {
+    hotelMinPriceCalendar(hotelId: $hotelId, startDate: $startDate, endDate: $endDate) {
+      hotelId
       days {
         date
         price
-        stock
       }
     }
   }
