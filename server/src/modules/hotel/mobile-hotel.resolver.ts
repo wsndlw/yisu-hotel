@@ -35,7 +35,7 @@ export class MobileHotelResolver {
     const [rawBanners, cities, facilities] = await Promise.all([
       this.bannerService.banners(),
       this.hotelService.getHotCities(),
-      this.facilityService.getEnabledFacilitiesByType(FacilityType.TAG),
+      this.facilityService.getEnabledFacilities(),
     ]);
 
     const banners = rawBanners.filter((b) => {
