@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
 import { ProLayout, type MenuDataItem } from '@ant-design/pro-components';
 
 import styles from './index.module.css';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Avatar, Space } from 'antd';
-import { LogoutOutlined } from '@ant-design/icons';
+import { HomeOutlined, LogoutOutlined } from '@ant-design/icons';
 import { AUTH_TOKEN } from '../../constants/constants';
 import { useMe } from '../../services/auth';
 import { useUserStore } from '../../store/user';
@@ -36,7 +35,7 @@ export default function Layout() {
     return true;
   });
 
-  const {go} = useGoTo()
+  const { go } = useGoTo()
 
   return (
     <ProLayout
@@ -54,7 +53,9 @@ export default function Layout() {
           退出
         </Space>,
       ]}
-      logo={<div className={styles.logo} />}
+      logo={<div className={styles.logo}>
+        <HomeOutlined className={styles.logoIcon}/>
+      </div>}
       avatarProps={{
         size: 'small',
         src: data?.avatarUrl,
