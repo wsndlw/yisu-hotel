@@ -153,7 +153,7 @@ const Facilities = ({ }) => {
   return (
     <>
       <Card
-        title="设施管理（管理员）- 统一管理标签和设施"
+        title="设施管理"
         extra={
           <Space>
             <Button onClick={refetch}>刷新</Button>

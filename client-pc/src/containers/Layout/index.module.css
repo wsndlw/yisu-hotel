@@ -6,6 +6,13 @@
   height: 32px;
   background: #1677ff;
   border-radius: 6px;
+    display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logoIcon {
+  font-size:18px;
+  color: #fff;
 }
 .avatarTrigger {
   cursor: pointer;

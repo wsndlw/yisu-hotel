@@ -1,6 +1,7 @@
 import { Space, Tag, type TableProps } from "antd";
 import { getCityName } from "../../../constants/cities";
 import dayjs from 'dayjs';
+import { statusTag } from "../../../utils/tags";
 
 
 interface IColumns {
@@ -35,17 +36,7 @@ export const formatCity = (code?: string) => {
   return `${name}(${code})`;
 };
 
-function statusTag(status: string) {
-  const map: Record<string, { color: string; text: string }> = {
-    DRAFT: { color: 'default', text: '草稿' },
-    REVIEWING: { color: 'processing', text: '审核中' },
-    REJECTED: { color: 'error', text: '未通过' },
-    PUBLISHED: { color: 'success', text: '已发布' },
-    OFFLINE: { color: 'warning', text: '已下线' },
-  };
-  const s = map[status] || { color: 'default', text: status };
-  return <Tag color={s.color}>{s.text}</Tag>;
-}
+
 
 export const getColumns = ({
   onView,
@@ -54,34 +45,73 @@ export const getColumns = ({
   onReject,
   onApprove }: IColumns
 ): TableProps<any>['columns'] => [
-  { title: '酒店ID', dataIndex: 'hotelID', width: 220, render: (v: string) => v || '-' },
-  { title: '名称', dataIndex: 'nameZh' },
-  { title: '商户', dataIndex: ['merchant', 'username'], render: (v: string) => v || '-' },
-  { title: '城市', dataIndex: 'city', render: (v: string) => formatCity(v) },
-  { title: '星级', dataIndex: 'starLevel' },
-  { title: '更新时间', dataIndex: 'updatedAt', render: (v: string) => dayjs(v).format('YYYY年M月D日') },
-  { title: '状态', dataIndex: 'status', render: (v: string) => statusTag(v) },
-  {
-    title: '驳回原因',
-    dataIndex: 'rejectReason',
-    render: (v: string) => (v ? <span style={{ color: '#cf1322' }}>{v}</span> : '-'),
-  },
-  {
-    title: '操作',
-    fixed: 'right' as const,
-    width: 200,
-    render: (_: any, row: any) => (
-      <Space>
-        <a onClick={() => onView(row.id)}>查看</a>
-        {row.status === 'REVIEWING' && (
-          <>
-            <a onClick={() => onApprove(row.id)}>通过</a>
-            <a onClick={() => onReject(row.id)}>驳回</a>
-          </>
-        )}
-        {row.status === 'PUBLISHED' && <a onClick={() => onOffline(row.id)}>下线</a>}
-        {row.status === 'OFFLINE' && <a onClick={() => onRestore(row.id)}>恢复</a>}
-      </Space>
-    ),
-  },
-]
+    {
+      align: 'center',
+      title: '酒店ID',
+      dataIndex: 'hotelID',
+      width: 160,
+      render: (v: string) => v || '-'
+    },
+    {
+      align: 'center',
+      title: '名称',
+      dataIndex: 'nameZh',
+      width: 110
+    },
+    {
+      align: 'center',
+      title: '商户',
+      dataIndex: ['merchant', 'username'],
+      render: (v: string) => v || '-'
+    },
+    {
+      align: 'center',
+      title: '城市',
+      dataIndex: 'city',
+      render: (v: string) => formatCity(v)
+    },
+    {
+      align: 'center',
+      title: '星级',
+      width: 80,
+      dataIndex: 'starLevel'
+    },
+    {
+      align: 'center',
+      title: '更新时间',
+      width: 140,
+      dataIndex: 'updatedAt',
+      render: (v: string) => dayjs(v).format('YYYY年M月D日')
+    },
+    {
+      align: 'center',
+      title: '状态',
+      dataIndex: 'status',
+      render: (v: string) => statusTag(v)
+    },
+    {
+      align: 'center',
+      title: '驳回原因',
+      dataIndex: 'rejectReason',
+      render: (v: string) => (v ? <span style={{ color: '#cf1322' }}>{v}</span> : '-'),
+    },
+    {
+      align: 'center',
+      title: '操作',
+      fixed: 'right' as const,
+      width: 180,
+      render: (_: any, row: any) => (
+        <Space>
+          <a onClick={() => onView(row.id)}>查看</a>
+          {row.status === 'REVIEWING' && (
+            <>
+              <a onClick={() => onApprove(row.id)}>通过</a>
+              <a onClick={() => onReject(row.id)}>驳回</a>
+            </>
+          )}
+          {row.status === 'PUBLISHED' && <a onClick={() => onOffline(row.id)}>下线</a>}
+          {row.status === 'OFFLINE' && <a onClick={() => onRestore(row.id)}>恢复</a>}
+        </Space>
+      ),
+    },
+  ]

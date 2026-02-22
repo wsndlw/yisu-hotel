@@ -4,11 +4,14 @@ export const ADMIN_DASHBOARD_STATS = gql`
   query AdminDashboardStats($topN: Int!) {
     adminDashboardStats(topN: $topN) {
       totalRevenue
-      hotelOrderRank {
+      hotelCount
+      newHotelCount
+      pendingHotelCount
+      newHotels {
         hotelId
         hotelName
         merchantName
-        orderCount
+        createdDate
       }
       dailyNewHotels {
         date

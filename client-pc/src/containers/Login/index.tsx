@@ -18,7 +18,7 @@ export default function Login() {
       if (role) {
         setToken(data.accessToken, role);
       }
-      nav(role === 'ADMIN' ? '/admin/hotels' : '/merchant/monitor');
+      nav(role === 'ADMIN' ? '/admin/dashboard' : '/merchant/monitor');
     });
   };
 

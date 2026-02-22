@@ -1,12 +1,13 @@
 import Monitor from '../containers/merchant/Monitor';
-import MerchantHotels from '../containers/merchant/Hotels';
-import RoomOperations from '../containers/merchant/RoomOperations';
+import MerchantHotels from '../containers/merchant/HotelList';
 import Dashboard from '../containers/admin/Dashboard';
 import AdminHotels from '../containers/admin/HotelList';
 import Facilities from '../containers/admin/Facilities';
 import Banners from '../containers/admin/Banners';
 import AuditRecords from '../containers/admin/AuditRecords';
 import HotelEdit from '../containers/merchant/HotelEdit';
+import RoomManagement from '../containers/merchant/RoomManagement';
+import Profile from '../containers/Profile';
 import { ROUTE_KEY } from './menus';
 
 export const ROUTE_COMPONENT: Record<string, any> = {
@@ -17,7 +18,8 @@ export const ROUTE_COMPONENT: Record<string, any> = {
   [ROUTE_KEY.ADMIN_BANNERS]: Banners,
   [ROUTE_KEY.ADMIN_AUDIT_RECORDS]: AuditRecords,
   [ROUTE_KEY.ADMIN_FACILITIES]: Facilities,
-  // 说明：编辑页不在菜单中，但仍可通过路由访问（已由路由守卫限制角色）。
+  [ROUTE_KEY.MERCHANT_HOTEL_CREATE]: HotelEdit,
+  [ROUTE_KEY.MERCHANT_HOTEL_EDIT]: HotelEdit,
+  [ROUTE_KEY.MERCHANT_ROOM_OPERATIONS]: RoomManagement,
+  [ROUTE_KEY.PROFILE]: Profile,
 };
-
-export { HotelEdit, RoomOperations };
