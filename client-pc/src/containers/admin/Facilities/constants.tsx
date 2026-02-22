@@ -1,5 +1,7 @@
-import { Space, Switch, Tag } from "antd";
+import { Space, Switch, Tag, type TableProps } from "antd";
+
 import { categoryLabels } from "../../../constants/facilities";
+import styles from './index.module.css'
 
 interface IColummn {
   onToggle: (row: any, enabled: boolean) => void,
@@ -7,9 +9,19 @@ interface IColummn {
   onDeleteOne: (row: any) => void
 }
 
-export const getColumns = ({ onToggle, openEdit, onDeleteOne }: IColummn) => [
-  { title: '名称', dataIndex: 'name' },
+export const getColumns = ({ 
+  onToggle, 
+  openEdit, 
+  onDeleteOne 
+}: IColummn): TableProps<any>['columns'] => [
+  { 
+    title: '名称', 
+    dataIndex: 'name' ,
+    align: 'center',
+  },
   {
+    width:130,
+    align: 'center',
     title: '分类',
     dataIndex: 'category',
     render: (category: string) => (
@@ -17,6 +29,7 @@ export const getColumns = ({ onToggle, openEdit, onDeleteOne }: IColummn) => [
     ),
   },
   {
+    align: 'center',
     title: '启用',
     dataIndex: 'enabled',
     render: (v: boolean, row: any) => (
@@ -24,6 +37,7 @@ export const getColumns = ({ onToggle, openEdit, onDeleteOne }: IColummn) => [
     ),
   },
   {
+    align: 'center',
     title: '更新时间',
     dataIndex: 'updatedAt',
     render: (date: string) => {
@@ -33,11 +47,13 @@ export const getColumns = ({ onToggle, openEdit, onDeleteOne }: IColummn) => [
     }
   },
   {
+    width:180,
+    align: 'center',
     title: '操作',
     render: (_: any, row: any) => (
       <Space>
         <a onClick={() => openEdit(row)}>编辑</a>
-        <a style={{ color: '#cf1322' }} onClick={() => onDeleteOne(row)}>
+        <a className={styles.del}  onClick={() => onDeleteOne(row)}>
           删除
         </a>
       </Space>
