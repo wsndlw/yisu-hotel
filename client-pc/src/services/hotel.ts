@@ -331,14 +331,14 @@ export const useSetHotelImages = (): [setImagesHandler: Function, loading: boole
       const res = await setImages({ variables: { input: { hotelId, urls } } });
       const result = res.data?.setHotelImages;
       if (result?.code === 200 && result?.data) {
-        message.success(result.message || '图片设置成功');
+        // message.success(result.message || '图片设置成功');
         callback?.(result.data);
         return result.data;
       }
-      message.error(result?.message || '设置失败');
+      message.error(result?.message || '图片设置失败');
       return null;
     } catch (error: any) {
-      message.error(error.message || '设置失败');
+      message.error(error.message || '图片设置失败');
       return null;
     }
   };
@@ -419,7 +419,7 @@ export const usePublishHotel = (): [publishHandler: Function, loading: boolean] 
       const res = await publish({ variables: { id } });
       const result = res.data?.publishHotel;
       if (result?.code === 200) {
-        message.success(result.message || '发布成功');
+        // message.success(result.message || '发布成功');
         callback?.();
         return result.data;
       }

@@ -58,6 +58,7 @@ export const HOTEL = gql`
       data {
         id
         nameZh
+        hotelID
         nameEn
         address
         latitude
