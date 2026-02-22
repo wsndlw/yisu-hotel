@@ -1,0 +1,50 @@
+.note {
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 12px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.inputNarrow {
+  width: 120px;
+}
+
+.rangePicker {
+  width: 100%;
+}
+
+.rangeRow {
+  margin-bottom: 12px;
+}
+
+.tagZero {
+  margin: 0;
+}
+
+.section {
+  padding: 12px 0;
+}
+
+.sectionLabel {
+  font-weight: 600;
+}
+
+.sectionGroup {
+  margin-left: 12px;
+}
+
+.bottomNote {
+  margin-bottom: 0;
+}
+
+.calendarTag {
+  margin: 0;
+}
+
+.defaultText {
+  color: #ccc;
+  font-size: 12px;
+}
