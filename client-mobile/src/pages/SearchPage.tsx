@@ -76,8 +76,6 @@ const SearchPage = () => {
         console.log("✅ 获取到数据:", JSON.stringify(homeData, null, 2));
     }
 
-     const realData = homeData?.homeConfig?.data || homeData?.homeConfig;
-
     // 🔴 关键修复：使用 useMemo 缓存数据，防止 useEffect 死循环
     const banners = useMemo(() => {
         // 优先取外层的 banners (V2 Hook 处理过的)，如果没有再尝试去深层找，最后给个空数组
@@ -102,6 +100,8 @@ const SearchPage = () => {
             { id: '4', name: '免费停车' }
         ];
     }, [homeData]);
+
+
     // === 状态管理 ===
     // 简化 Tab，只保留 'hotel' (原domestic), 'homestay', 'hourly'
     const [activeTab, setActiveTab] = useState('hotel');
@@ -109,6 +109,8 @@ const SearchPage = () => {
     // 城市状态
     const [city, setCity] = useState({ name: '北京', code: '110100', country: '' });
     const [modalVisible, setModalVisible] = useState(false);
+    // ✅ 新增：绑定搜索框文字
+    const [keyword, setKeyword] = useState('');
 
     // 日期状态
     const [dateModalVisible, setDateModalVisible] = useState(false);
@@ -194,19 +196,72 @@ const SearchPage = () => {
         return `${selectedPrice} ${selectedStar}`.trim();
     };
 
+    // 解析价格字符串，例如 "¥200-¥350" -> { min: 200, max: 350 }
+    const parsePrice = (priceStr: string) => {
+        if (!priceStr) return { min: undefined, max: undefined };
+
+        // 处理 "¥200以下"
+        if (priceStr.includes('以下')) {
+            const max = parseInt(priceStr.replace(/[^0-9]/g, ''));
+            return { min: 0, max };
+        }
+        // 处理 "¥2000以上"
+        if (priceStr.includes('以上')) {
+            const min = parseInt(priceStr.replace(/[^0-9]/g, ''));
+            return { min, max: undefined }; // 或者给个极大值 99999
+        }
+        // 处理区间 "¥200-¥350"
+        const parts = priceStr.split('-');
+        if (parts.length === 2) {
+            return {
+                min: parseInt(parts[0].replace(/[^0-9]/g, '')),
+                max: parseInt(parts[1].replace(/[^0-9]/g, ''))
+            };
+        }
+        return { min: undefined, max: undefined };
+    };
+
+    // 解析星级，例如 "3钻/星" -> 3
+    const parseStar = (starStr: string) => {
+        if (!starStr) return undefined;
+        if (starStr.includes('2')) return 2;
+        if (starStr.includes('3')) return 3;
+        if (starStr.includes('4')) return 4;
+        if (starStr.includes('5')) return 5;
+        if (starStr.includes('金钻')) return 5; // 假设金钻也是5
+        return undefined;
+    };
+
     // 点击查询
     const handleSearch = () => {
-        navigation.navigate('HotelList', { // 确保 App.tsx 里叫 HotelList
+        // 1. 解析价格
+        const { min, max } = parsePrice(selectedPrice);
+
+        // 2. 解析星级
+        const star = parseStar(selectedStar);
+
+        // 3. 构造参数对象
+        const searchParams = {
             cityCode: city.code,
             checkIn: startDate,
             checkOut: endDate,
+            keyword: keyword,      // 搜索框文字
+            minPrice: min,
+            maxPrice: max,
+            starRating: star,
+            tags: selectedTags,    // 标签数组
+
+            // 额外带上显示用的信息（给列表页顶部回显用）
             displayInfo: {
                 cityName: city.name,
-                price: selectedPrice,
-                star: selectedStar,
-                tags: selectedTags
+                dateRange: `${formatDate(startDate)}-${formatDate(endDate)}`,
             }
-        });
+        };
+
+        console.log("🚀 跳转列表页参数:", searchParams);
+
+        // 4. 跳转
+        navigation.navigate('HotelList', searchParams);
     };
 
     if (loading && !homeData) {
@@ -303,7 +358,7 @@ const SearchPage = () => {
                                 <View key={banner.id || index} style={styles.slide}>
                                     <TouchableOpacity
                                         activeOpacity={0.9}
-                                        onPress={() => banner.redirectHotelId && navigation.navigate('HotelDetail', { id: banner.redirectHotelId })}
+                                        onPress={() => banner.redirectHotelId && navigation.navigate('Detail', { id: banner.redirectHotelId })}
                                     >
                                         <Image source={{ uri: banner.imageUrl }} style={styles.image} resizeMode='cover' />
                                     </TouchableOpacity>
@@ -346,7 +401,13 @@ const SearchPage = () => {
                                 </View>
                             </TouchableOpacity>
                             <View style={styles.inputWrapper}>
-                                <TextInput placeholder="关键字/位置/品牌" placeholderTextColor="#ccc" style={styles.searchInput} />
+                                <TextInput
+                                    placeholder="关键字/位置/品牌"
+                                    placeholderTextColor="#ccc"
+                                    style={styles.searchInput}
+                                    value={keyword}                  // 👈 绑定 value
+                                    onChangeText={setKeyword}        // 👈 绑定 onChange
+                                />
                             </View>
                             <TouchableOpacity style={styles.mapIconBtn}>
                                 <Ionicons name="map" size={20} color="#0086F6" />

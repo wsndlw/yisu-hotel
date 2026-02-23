@@ -39,48 +39,88 @@ export const GET_HOME_CONFIG = gql`
 /**
  * 酒店搜索（支持筛选/排序/分页）
  */
+// export const SEARCH_HOTELS = gql`
+//   query SearchHotels($input: SearchHotelInput!) {
+//     searchHotels(input: $input) {
+//       code
+//       message
+//       data {
+//         items {
+//           id
+//           hotelNo
+//           name
+//           coverImage
+//           favoriteCount
+//           score
+//           minPrice
+//           distance
+//           distanceText
+//           address
+//           latitude
+//           longitude
+//           roomType {
+//             id
+//             name
+//             bedType
+//             basePrice
+//             maxGuests
+//             hasBreakfast
+//             refundable
+//             hasWindow
+//             area
+//             floor
+//             isOnSale
+//             sortOrder
+//             stock
+//             images
+//           }
+//         }
+//         minPrice
+//         total
+//         page {
+//           total
+//           pageNum
+//           pageSize
+//         }
+//       }
+//     }
+//   }
+// `;
+
 export const SEARCH_HOTELS = gql`
   query SearchHotels($input: SearchHotelInput!) {
     searchHotels(input: $input) {
       code
       message
       data {
+        total
+        # ❌ 之前报错是因为这里写了 minPrice 和 page，删掉它们！
+        
         items {
           id
-          hotelNo
           name
-          coverImage
-          favoriteCount
-          score
-          minPrice
-          distance
-          distanceText
           address
-          latitude
-          longitude
+          score
+          starLevel
+          favoriteCount
+          
+          # ✅ 修正 1: 价格必须在 items 里面
+          minPrice
+          
+          # ✅ 修正 2: 位置描述
+          distanceText
+
+          # ✅ 修正 3: 图片是数组，不是 coverImage
+          images {
+            url
+          }
+
+          # ✅ 修正 4: 房型信息
           roomType {
-            id
-            name
-            bedType
-            basePrice
-            maxGuests
             hasBreakfast
             refundable
             hasWindow
-            area
-            floor
-            isOnSale
-            sortOrder
-            stock
-            images
           }
-        }
-        minPrice
-        total
-        page {
-          total
-          pageNum
-          pageSize
         }
       }
     }
