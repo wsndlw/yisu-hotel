@@ -32,12 +32,12 @@ export default function App() {
                 options={{ headerShown: false }} 
               />
               <Stack.Screen 
-                name="List" // 注意：之前的代码里你跳转的是 'HotelList'，建议这里统一叫 'List' 或者去改跳转代码
+                name="HotelList" 
                 component={ListPage} 
                 options={{ headerShown: false }} 
               />
               <Stack.Screen 
-                name="Detail" 
+                name="HotelDetail" 
                 component={DetailPage} 
                 options={{ headerShown: false }} 
               />
