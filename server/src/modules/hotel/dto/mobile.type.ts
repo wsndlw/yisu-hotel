@@ -169,6 +169,39 @@ export class MobileHotelDetail {
 
   @Field(() => [NearbyPoiItem], { nullable: true })
   nearbyPoi?: NearbyPoiItem[];
+  //新增
+  @Field(() => Number, { nullable: true })
+  starLevel?: number | null; // 星级
+
+  @Field(() => String, { nullable: true })
+  city?: string | null; // 城市编码
+
+  @Field(() => String, { nullable: true })
+  nameEn?: string | null; // 英文名称
+
+  @Field(() => String, { nullable: true })
+  brand?: string | null; // 品牌
+
+  @Field(() => Number, { nullable: true })
+  score?: number | null; // 评分（decimal转number）
+
+  @Field(() => String, { nullable: true })
+  phone?: string | null; // 电话
+
+  @Field(() => Number, { nullable: true })
+  longitude?: number | null; // 经度
+
+  @Field(() => Number, { nullable: true })
+  latitude?: number | null; // 纬度
+
+  @Field(() => String, { nullable: true })
+  province?: string | null; // 省份
+
+  @Field(() => String, { nullable: true })
+  district?: string | null; // 区县
+
+  @Field(() => Number, { nullable: true })
+  commentCount?: number | null; // 评价数
 }
 
 @ObjectType({ description: 'HotelConnection结果' })
