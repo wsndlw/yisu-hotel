@@ -344,14 +344,26 @@ export class MobileHotelResolver {
 
     const detail: MobileHotelDetail = {
       id: hotel.id,
-      name: hotel.nameZh,
-      address: hotel.address ?? null,
-      description: hotel.discountInfo ?? null,
+      name: hotel.nameZh, // 映射中文名称
+      nameEn: hotel.nameEn, // 映射中文名称
+      address: hotel.address,
+      description: hotel.description,
+      favoriteCount: hotel.favoriteCount,
       images: (hotel.images || []).map((img: any) => img.url),
-      favoriteCount: hotel.favoriteCount ?? 0,
       facilities: (hotel.facilities || []).map((f: any) => f.name),
-      rooms,
-      nearbyPoi,
+      rooms: hotel.rooms || [],
+      nearbyPoi: hotel.nearbyPoi || [],
+      //新增
+      starLevel: hotel.starLevel ?? null,
+      city: hotel.city,
+      brand: hotel.brand,
+      score: hotel.score ? Number(hotel.score) : null, // decimal转number
+      phone: hotel.phone,
+      longitude: hotel.longitude,
+      latitude: hotel.latitude,
+      province: hotel.province,
+      district: hotel.district,
+      commentCount: hotel.commentCount,
     };
 
     return {
