@@ -45,7 +45,7 @@ const DetailPage = () => {
   const [guestCount, setGuestCount] = useState(2);
   const [roomSectionY, setRoomSectionY] = useState(0);
   const [currentScrollY, setCurrentScrollY] = useState(0);
-  
+
   // 日历相关状态（优先用路由参数，兜底默认值 + 统一格式为 YYYY-MM-DD）
   const formatDate = (date: string) => date?.replace(/\//g, '-') || '2026-02-19';
   const [checkInDate, setCheckInDate] = useState(formatDate(routeCheckIn));
@@ -63,17 +63,17 @@ const DetailPage = () => {
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
 
-  // 调用 React Query Hooks 获取数据库数据（适配三层返回结构）
-  const { 
-    data: hotel,  // 这里的 hotel 已经是 result.data（即 HotelDetail 类型）
-    loading: hotelLoading, 
-    error: hotelError, 
-    refetch: refetchHotel 
-  } = useHotelDetail(
-    hotelId || '', // 空值保护
-    checkInDate,
-    checkOutDate
-  );
+    // 调用 React Query Hooks 获取数据库数据（适配三层返回结构）
+    const { 
+      data: hotel,  // 这里的 hotel 已经是 result.data（即 HotelDetail 类型）
+      loading: hotelLoading, 
+      error: hotelError, 
+      refetch: refetchHotel 
+    } = useHotelDetail(
+      hotelId || '', // 空值保护
+      checkInDate,
+      checkOutDate
+    );
 
   // 获取附近POI列表（从酒店数据取城市，兜底上海）
   const { data: poiList } = usePoiList({
@@ -93,6 +93,12 @@ const DetailPage = () => {
       loadFavoriteStatus();
     }
   }, [hotel, hotelId]);
+
+  useEffect(() => {
+    if (hotelError) {
+      console.log("❌ 完整错误信息:", JSON.stringify(hotelError, null, 2));
+    }
+  }, [hotelError]);
 
   // 从本地存储读取收藏状态（增加错误捕获）
   const loadFavoriteStatus = async () => {
@@ -280,9 +286,9 @@ const DetailPage = () => {
         {/* 带动画的收藏心形按钮 */}
         <TouchableOpacity style={styles.headerRightBtn} onPress={toggleFavorite}>
           <Animated.View style={{ transform: [{ scale: heartScale }] }}>
-            <Ionicons 
+            <Ionicons
               name={isFavorite ? "heart" : "heart-outline"}
-              size={24} 
+              size={24}
               color={isFavorite ? "#ff4d4f" : "#fff"}
             />
           </Animated.View>
@@ -343,11 +349,11 @@ const DetailPage = () => {
           {/* 标签：使用facilities字段，后端无tags时兜底 */}
           <View style={styles.tagsRow}>
             {(hotel.facilities && Array.isArray(hotel.facilities) ? hotel.facilities : ['高端酒店', '免费停车', '游泳池']).map((tag, i) => (
-              <View key={i} style={[styles.tag, { 
-                backgroundColor: i%3 ===0 ? '#e6f7ff' : i%3 ===1 ? '#fff7e6' : '#f9f0ff' 
+              <View key={i} style={[styles.tag, {
+                backgroundColor: i % 3 === 0 ? '#e6f7ff' : i % 3 === 1 ? '#fff7e6' : '#f9f0ff'
               }]}>
-                <Text style={[styles.tagText, { 
-                  color: i%3 ===0 ? '#1890ff' : i%3 ===1 ? '#fa8c16' : '#722ed1' 
+                <Text style={[styles.tagText, {
+                  color: i % 3 === 0 ? '#1890ff' : i % 3 === 1 ? '#fa8c16' : '#722ed1'
                 }]}>{tag}</Text>
               </View>
             ))}
@@ -386,8 +392,8 @@ const DetailPage = () => {
         </View>
 
         {/* 日历+入住人数 Banner */}
-        <TouchableOpacity 
-          style={styles.dateBanner} 
+        <TouchableOpacity
+          style={styles.dateBanner}
           onPress={() => setIsDateModalVisible(true)}
         >
           <View style={styles.dateBlock}>
@@ -422,7 +428,7 @@ const DetailPage = () => {
           <Text style={styles.filterTag}>大床房</Text>
           <Text style={styles.filterTag}>双床房</Text>
           <Text style={styles.filterTag}>免费取消</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.filterMore}
             onPress={() => setIsFilterModalVisible(true)}
           >
@@ -446,7 +452,7 @@ const DetailPage = () => {
         </View>
 
         {/* 房型价格列表（适配 Room 类型） */}
-        <View 
+        <View
           style={styles.roomSection}
           onLayout={(event) => {
             const layout = event.nativeEvent.layout;
@@ -462,15 +468,15 @@ const DetailPage = () => {
           {filteredRooms.length > 0 ? (
             filteredRooms.map((room) => (
               <View key={room.id || `room-${Math.random()}`} style={styles.roomCard}>
-                <Image 
-                  source={{ uri: room.coverImage || 'https://placeholder.pics/svg/80x80/EEEEEE/666666/暂无图片' }} 
-                  style={styles.roomImage} 
+                <Image
+                  source={{ uri: room.coverImage || 'https://placeholder.pics/svg/80x80/EEEEEE/666666/暂无图片' }}
+                  style={styles.roomImage}
                 />
                 <View style={styles.roomInfo}>
                   <Text style={styles.roomName}>{room.title || '未知房型'}</Text>
                   <Text style={styles.roomDesc}>
-                    {room.bedType || '未知床型'} · 
-                    {room.area ? `${room.area}㎡` : '暂无面积'} · 
+                    {room.bedType || '未知床型'} ·
+                    {room.area ? `${room.area}㎡` : '暂无面积'} ·
                     最多{guestCount}人
                   </Text>
                   <View style={styles.roomTags}>
@@ -521,10 +527,10 @@ const DetailPage = () => {
           <Text style={styles.bottomPrice}>¥{Math.min(...(hotel.rooms?.map(r => Number(r.price) || 0) || [0]))}</Text>
           <Text style={styles.bottomPriceUnit}>起</Text>
         </View>
-        
+
         {/* 控制查看房型按钮显示/隐藏 */}
         {currentScrollY < roomSectionY && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.bottomBookBtn}
             onPress={() => {
               scrollViewRef.current?.scrollTo({
@@ -564,9 +570,7 @@ const DetailPage = () => {
   );
 };
 
-// 样式部分保持不变，这里省略（和你原有样式一致即可）
 const styles = StyleSheet.create({
-  // 你的原有样式代码...
   container: {
     flex: 1,
     backgroundColor: '#f5f7fa',
