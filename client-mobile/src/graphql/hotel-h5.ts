@@ -131,7 +131,7 @@ export const SEARCH_HOTELS = gql`
  * 酒店详情 + 房型列表（按价格升序）
  */
 export const GET_HOTEL_DETAIL = gql`
-  query GetHotelDetail($id: ID!, $checkIn: String, $checkOut: String) {
+  query GetHotelDetail($id: String!, $checkIn: String, $checkOut: String) {
     hotelDetail(id: $id, checkIn: $checkIn, checkOut: $checkOut) {
       code
       message
@@ -152,19 +152,17 @@ export const GET_HOTEL_DETAIL = gql`
           longitude
           distanceKm
           baseScore
-          city
         }
         rooms {
           id
           title
-          coverImage
+          price
+          bedType
+          area
           hasBreakfast
           refundable
-          area
           hasWindow
-          price
-          stock
-          bedType
+          coverImage
         }
       }
     }
