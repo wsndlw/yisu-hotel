@@ -50,23 +50,6 @@ export interface Hotel {
   facilities?: { id: string; name: string }[];
 }
 
-export interface RoomType {
-  id: string;
-  name: string;
-  bedType?: string | null;
-  basePrice?: number | null;
-  maxGuests?: number | null;
-  hasBreakfast?: boolean | null;
-  refundable?: boolean | null;
-  hasWindow?: boolean | null;
-  area?: number | null;
-  floor?: string | null;
-  isOnSale?: boolean | null;
-  sortOrder?: number | null;
-  stock?: number | null;
-  images?: string | null;
-}
-
 export interface Room {
   id: string;
   title: string;
@@ -102,6 +85,24 @@ export interface HotelDetail {
   facilities: string[];
   nearbyPoi?: NearbyPoi[] | null;
   rooms: Room[];
+  city?: string | null;
+}
+
+export interface RoomType {
+  id: string;
+  name: string;
+  bedType?: string | null;
+  basePrice?: number | null;
+  maxGuests?: number | null;
+  hasBreakfast?: boolean | null;
+  refundable?: boolean | null;
+  hasWindow?: boolean | null;
+  area?: number | null;
+  floor?: string | null;
+  isOnSale?: boolean | null;
+  sortOrder?: number | null;
+  stock?: number | null;
+  images?: string | null;
 }
 
 export interface PoiItem {
@@ -113,6 +114,7 @@ export interface PoiItem {
   longitude?: number | null;
   baseScore?: number | null;
   city: string;
+  distanceKm?: number | null;
 }
 
 export interface PoiListInput {
