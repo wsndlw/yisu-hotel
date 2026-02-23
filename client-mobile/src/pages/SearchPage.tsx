@@ -79,20 +79,29 @@ const SearchPage = () => {
      const realData = homeData?.homeConfig?.data || homeData?.homeConfig;
 
     // 🔴 关键修复：使用 useMemo 缓存数据，防止 useEffect 死循环
-    const banners = useMemo(() => realData?.banners || [], [realData]);
-    const backendCities = useMemo(() => realData?.cities || [], [realData]);
-    const facilities = useMemo(() => {
-        const remote = realData?.facilities || [];
-        if (remote.length > 0) return remote;
+    const banners = useMemo(() => {
+        // 优先取外层的 banners (V2 Hook 处理过的)，如果没有再尝试去深层找，最后给个空数组
+        return homeData?.banners || [];
+    }, [homeData]);
 
-        // Mock 数据
+    // 城市：通常还在原来的深层结构里
+    const backendCities = useMemo(() => {
+        return homeData?.cities || [];
+    }, [homeData]);
+
+    // 标签：也在原来的深层结构里
+    const facilities = useMemo(() => {
+        // 先尝试拿后端数据
+        const remote = homeData?.facilities || [];
+        // 如果后端没数据，用前端 Mock 数据顶一下 (为了UI效果)
+        if (remote.length > 0) return remote;
         return [
             { id: '1', name: '免费取消' },
             { id: '2', name: '近地铁' },
             { id: '3', name: '含早餐' },
             { id: '4', name: '免费停车' }
         ];
-    }, [realData]);
+    }, [homeData]);
     // === 状态管理 ===
     // 简化 Tab，只保留 'hotel' (原domestic), 'homestay', 'hourly'
     const [activeTab, setActiveTab] = useState('hotel');
