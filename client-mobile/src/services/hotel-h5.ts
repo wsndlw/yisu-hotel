@@ -30,6 +30,15 @@ type ApiResponse<T> = {
   data: T;
 };
 
+//detail的response结构
+type HotelDetailResponse = {
+  hotelDetail: {
+    code: number;
+    message?: string;
+    data: HotelDetail;
+  };
+};
+
 type SearchHotelsRes = {
   searchHotels: ApiResponse<HotelConnection>; // 直接使用 HotelConnection，因为它包含了 items, total, page
 };
@@ -141,25 +150,27 @@ export const useHotelDetail = (
   checkIn: string,
   checkOut: string
 ) => {
-  // 指定返回类型为 ApiResponse<HotelDetail>
-  const { data: result, loading, error, refetch } = useQuery<ApiResponse<HotelDetail>>(
-    GET_HOTEL_DETAIL,
-    {
-      variables: { id: hotelId, checkIn, checkOut }, // 关键：保持 id，不要改 hotelId
-      skip: !hotelId,
-      fetchPolicy: 'network-only',
-    }
-  );
 
-  const bizError = result?.code !== 200 ? new Error(result?.message || '获取酒店信息失败') : null;
+  const { data: result, loading, error, refetch } = useQuery<HotelDetailResponse>(
+  GET_HOTEL_DETAIL,
+  {
+    variables: { id: hotelId, checkIn, checkOut },
+    skip: !hotelId,
+    fetchPolicy: 'network-only',
+  }
+);
+
+  const bizError = result?.hotelDetail?.code !== 200 
+  ? new Error(result?.hotelDetail?.message || '获取酒店信息失败') 
+  : null;
 
   return {
-    data: result?.code === 200 ? result.data : undefined,
-    loading,
-    error: error || bizError,
-    refetch,
-  };
+  data: result?.hotelDetail?.code === 200 ? result.hotelDetail.data : undefined,
+  loading,
+  error: error || bizError,
+  refetch,
 };
+}
 
 // 2. 获取POI列表
 export const usePoiList = (input: PoiListInput) => {
