@@ -78,6 +78,7 @@ export interface NearbyPoi {
 export interface HotelDetail {
   id: string;
   name: string;
+  nameEn?: string | null;
   address?: string | null;
   description?: string | null;
   favoriteCount?: number | null;
@@ -85,7 +86,17 @@ export interface HotelDetail {
   facilities: string[];
   nearbyPoi?: NearbyPoi[] | null;
   rooms: Room[];
-  city?: string | null;
+  //新增
+  starLevel?: number | null; // 星级
+  city?: string | null; // 城市编码
+  brand?: string | null;
+  score?: number | null; // 评分
+  phone?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  province?: string | null;
+  district?: string | null;
+  commentCount?: number | null; // 评价数
 }
 
 export interface RoomType {
