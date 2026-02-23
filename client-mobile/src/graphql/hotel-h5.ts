@@ -39,53 +39,6 @@ export const GET_HOME_CONFIG = gql`
 /**
  * 酒店搜索（支持筛选/排序/分页）
  */
-// export const SEARCH_HOTELS = gql`
-//   query SearchHotels($input: SearchHotelInput!) {
-//     searchHotels(input: $input) {
-//       code
-//       message
-//       data {
-//         items {
-//           id
-//           hotelNo
-//           name
-//           coverImage
-//           favoriteCount
-//           score
-//           minPrice
-//           distance
-//           distanceText
-//           address
-//           latitude
-//           longitude
-//           roomType {
-//             id
-//             name
-//             bedType
-//             basePrice
-//             maxGuests
-//             hasBreakfast
-//             refundable
-//             hasWindow
-//             area
-//             floor
-//             isOnSale
-//             sortOrder
-//             stock
-//             images
-//           }
-//         }
-//         minPrice
-//         total
-//         page {
-//           total
-//           pageNum
-//           pageSize
-//         }
-//       }
-//     }
-//   }
-// `;
 
 export const SEARCH_HOTELS = gql`
   query SearchHotels($input: SearchHotelInput!) {
@@ -132,9 +85,11 @@ export const SEARCH_HOTELS = gql`
  */
 export const GET_HOTEL_DETAIL = gql`
   query GetHotelDetail($id: String!, $checkIn: String, $checkOut: String) {
+    # 1. 必须保留 hotelDetail 根字段（与后端 schema 一致）
     hotelDetail(id: $id, checkIn: $checkIn, checkOut: $checkOut) {
       code
       message
+      # 2. 酒店核心信息全部在 data 内部，必须嵌套查询
       data {
         id
         name
@@ -143,6 +98,19 @@ export const GET_HOTEL_DETAIL = gql`
         favoriteCount
         images
         facilities
+        # 新增
+        starLevel
+        city
+        nameEn
+        brand
+        score
+        phone
+        longitude
+        latitude
+        province
+        district
+        commentCount
+
         nearbyPoi {
           id
           name
@@ -153,6 +121,7 @@ export const GET_HOTEL_DETAIL = gql`
           distanceKm
           baseScore
         }
+        # 详情页依赖房型数据
         rooms {
           id
           title
