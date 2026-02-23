@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client/react';
 import {
   GET_HOME_CONFIG,
   SEARCH_HOTELS,
@@ -134,15 +134,24 @@ export function useHotelSearch() {
 /**
  * 酒店详情与房型列表（React Hooks）
  */
-export function useHotelDetail(id?: string, checkIn?: string, checkOut?: string) {
-  const { data, loading, error, refetch } = useQuery<HotelDetailRes>(GET_HOTEL_DETAIL, {
-    variables: { id, checkIn, checkOut },
-    skip: !id,
-    fetchPolicy: 'network-only',
-  });
 
-  const result = data?.hotelDetail;
-  const bizError = buildBizError(result);
+// 1. 获取酒店详情
+export const useHotelDetail = (
+  hotelId: string,
+  checkIn: string,
+  checkOut: string
+) => {
+  // 指定返回类型为 ApiResponse<HotelDetail>
+  const { data: result, loading, error, refetch } = useQuery<ApiResponse<HotelDetail>>(
+    GET_HOTEL_DETAIL,
+    {
+      variables: { id: hotelId, checkIn, checkOut }, // 关键：保持 id，不要改 hotelId
+      skip: !hotelId,
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const bizError = result?.code !== 200 ? new Error(result?.message || '获取酒店信息失败') : null;
 
   return {
     data: result?.code === 200 ? result.data : undefined,
@@ -150,37 +159,38 @@ export function useHotelDetail(id?: string, checkIn?: string, checkOut?: string)
     error: error || bizError,
     refetch,
   };
-}
+};
 
-export function usePoiList(input?: PoiListInput) {
-  // 假设 POI 列表接口返回结构比较简单，如果包含 code/message 请参考上面的写法修改
-  const { data, loading, error, refetch } = useQuery<{ poiList: PoiItem[] }>(POI_LIST, {
-    variables: { input },
-    skip: !input,
-  });
-  
-  return {
-    data: data?.poiList || [],
-    loading,
-    error,
-    refetch,
-  };
-}
-
-export function useHotelMinPriceCalendar(input?: HotelMinPriceCalendarInput) {
-  const { data, loading, error, refetch } = useQuery<{ hotelMinPriceCalendar: HotelMinPriceCalendar }>(
-    HOTEL_MIN_PRICE_CALENDAR,
+// 2. 获取POI列表
+export const usePoiList = (input: PoiListInput) => {
+  const { data: result, loading, error } = useQuery<ApiResponse<PoiItem[]>>(
+    POI_LIST,
     {
       variables: input,
-      skip: !input?.hotelId,
-      fetchPolicy: 'network-only',
-    },
+      skip: !input.city,
+    }
   );
 
   return {
-    data: data?.hotelMinPriceCalendar,
+    data: result?.code === 200 ? result.data : undefined,
     loading,
     error,
-    refetch,
   };
-}
+};
+
+// 3. 获取酒店最低价日历
+export const useHotelMinPriceCalendar = (input: HotelMinPriceCalendarInput) => {
+  const { data: result, loading, error } = useQuery<ApiResponse<HotelMinPriceCalendar>>(
+    HOTEL_MIN_PRICE_CALENDAR,
+    {
+      variables: input,
+      skip: !input.hotelId,
+    }
+  );
+
+  return {
+    data: result?.code === 200 ? result.data : undefined,
+    loading,
+    error,
+  };
+};
