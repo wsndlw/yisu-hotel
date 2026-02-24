@@ -74,7 +74,7 @@ export const getColumns = ({ hotelNameMap, onToggle, openEdit, onDelete }: IColu
     render: (_: any, row: any) => (
       <Space>
         <a onClick={() => openEdit(row)}>编辑</a>
-        <a style={{ color: '#cf1322' }} onClick={() => onDelete(row)}>
+        <a className={styles.dangerLink} onClick={() => onDelete(row)}>
           删除
         </a>
       </Space>

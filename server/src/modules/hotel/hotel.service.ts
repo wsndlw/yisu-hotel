@@ -385,9 +385,9 @@ export class HotelService {
     if (!hotel) throw new NotFoundException('酒店不存在');
     if (hotel.merchantId !== merchant.id) throw new ForbiddenException('不是你的酒店');
 
-    if (![HotelStatus.DRAFT, HotelStatus.REJECTED, HotelStatus.OFFLINE].includes(hotel.status)) {
-      throw new BadRequestException('仅草稿/未通过/已下线状态可提交');
-    }
+    // if (![HotelStatus.DRAFT, HotelStatus.REJECTED, HotelStatus.OFFLINE,HotelStatus.PUBLISHED].includes(hotel.status)) {
+    //   throw new BadRequestException('仅草稿/未通过/已下线状态可提交');
+    // }
 
     hotel.status = HotelStatus.REVIEWING;
     hotel.rejectReason = null;
@@ -679,7 +679,7 @@ export class HotelService {
     const qb = this.hotelRepo.createQueryBuilder('hotel')
       .where('hotel.status = :status', { status: HotelStatus.PUBLISHED });
 
-    // ================= 1. 位置与标量条件筛选 (完美双坐标系统) =================
+    // ================= 1. 位置与标量条件筛选 (双坐标) =================
     const userLat = input.latitude;
     const userLng = input.longitude;
     const poiLat = input.filterLatitude;
@@ -731,8 +731,16 @@ export class HotelService {
 
     // ================= 2. 关联设施筛选 =================
     if (Array.isArray(input.facilityIds) && input.facilityIds.length > 0) {
-      qb.innerJoin('hotel.facilities', 'facility');
-      qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
+      input.facilityIds.forEach((facilityId:string, index:number) => {
+        const alias = `facility_${index}`;
+        // 为每一个选中的设施，单独加一次强制内连接。缺任何一个都会被过滤掉。
+        qb.innerJoin(
+          'hotel.facilities', 
+          alias, 
+          `${alias}.id = :facId_${index}`, 
+          { [`facId_${index}`]: facilityId }
+        );
+      }); 
     }
 
     // ================= 3. 房型、人数与库存强绑定筛选 =================
@@ -740,7 +748,6 @@ export class HotelService {
     const hasRoomFilters = input.bedType || hasGuestCount || (input.checkIn && input.checkOut);
 
     if (hasRoomFilters) {
-      // 💡注意：如果数据库里有6家酒店连房型都没有录入，这里 innerJoin 会直接过滤掉这6家，这是符合逻辑的。
       qb.innerJoin('hotel.roomTypes', 'roomType');
 
       if (input.bedType) {
@@ -790,7 +797,6 @@ export class HotelService {
     else if (sortBy === 'distance' && hasDisplayGeo) qb.orderBy('distance', 'ASC'); // 修复报错点
     else qb.orderBy('hotel.updatedAt', 'DESC');
 
-    // 🔴 必须恢复我给你的终极分页方案：去重与截断
     qb.groupBy('hotel.id');
     qb.offset((page - 1) * pageSize).limit(pageSize);
 

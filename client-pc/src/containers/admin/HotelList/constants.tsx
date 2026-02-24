@@ -2,7 +2,7 @@ import { Space, Tag, type TableProps } from "antd";
 import { getCityName } from "../../../constants/cities";
 import dayjs from 'dayjs';
 import { statusTag } from "../../../utils/tags";
-
+import styles from './index.module.css'
 
 interface IColumns {
   onView: (id: string) => void;
@@ -56,7 +56,7 @@ export const getColumns = ({
       align: 'center',
       title: '名称',
       dataIndex: 'nameZh',
-      width: 110
+      width: 150
     },
     {
       align: 'center',
@@ -109,7 +109,7 @@ export const getColumns = ({
               <a onClick={() => onReject(row.id)}>驳回</a>
             </>
           )}
-          {row.status === 'PUBLISHED' && <a onClick={() => onOffline(row.id)}>下线</a>}
+          {row.status === 'PUBLISHED' && <a className={styles.dangerLink} onClick={() => onOffline(row.id)}>下线</a>}
           {row.status === 'OFFLINE' && <a onClick={() => onRestore(row.id)}>恢复</a>}
         </Space>
       ),

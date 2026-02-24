@@ -12,7 +12,6 @@ import { useApproveHotel, useHotels, useOfflineHotel, usePublishHotel, useReject
 */
 const HotelList = ({ }) => {
 
-  const { message } = App.useApp();
 
   const [status, setStatus] = useState<string>('REVIEWING');
   const [form] = Form.useForm();
