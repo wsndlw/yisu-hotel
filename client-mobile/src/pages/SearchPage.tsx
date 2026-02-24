@@ -15,13 +15,14 @@ import { Carousel } from '@ant-design/react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import dayjs from 'dayjs'; // 如果没装dayjs，可以用原生Date代替
+import dayjs from 'dayjs';
 
 // ✅ 1. 引入后端服务
 import { useHomeConfigV2 } from '../services/hotel-h5';
 // 引入弹窗组件
 import CitySelectorModal from '../components/CitySelectorModal';
 import DateSelectorModal from '../components/DateSelectorModal';
+
 
 // === 静态数据 ===
 const PRICES = ['¥200以下', '¥200-¥350', '¥350-¥450', '¥450-¥550', '¥550-¥750', '¥750-¥1000', '¥1000-¥1500', '¥1500-¥2000', '¥2000以上'];
@@ -32,6 +33,30 @@ const STARS = [
     { label: '5钻/星', desc: '豪华' },
     { label: '金钻酒店', desc: '奢华体验' },
     { label: '铂钻酒店', desc: '超奢品质' }
+];
+// 底部三个小框
+const SPECIAL_BOXES = [
+    {
+        title: '口碑榜',
+        subtitle: '千万好评精选',
+        icon: 'ribbon-outline', // Ionicons 名称
+        color: '#FF9500',       // 主题色 (橙)
+        bg: '#FFF7E6'           // 浅背景色
+    },
+    {
+        title: '特惠套餐',
+        subtitle: '一键省心游',
+        icon: 'gift-outline',   // Ionicons 名称
+        color: '#FF4D4F',       // 主题色 (红)
+        bg: '#FFF1F0'
+    },
+    {
+        title: '超值低价',
+        subtitle: '好货不贵',
+        icon: 'pricetag-outline', // Ionicons 名称
+        color: '#0086F6',         // 主题色 (蓝)
+        bg: '#E6F4FF'
+    },
 ];
 
 const { width } = Dimensions.get('window');
@@ -67,31 +92,32 @@ const SearchPage = () => {
 
     // ✅ 获取后端数据
     const { data: homeData, loading, error } = useHomeConfigV2();
+    
 
-    // 🔴 在这里加一行打印
     if (error) {
         console.log("❌ GraphQL 请求失败:", JSON.stringify(error, null, 2));
     }
-    if (homeData) {
-        console.log("✅ 获取到数据:", JSON.stringify(homeData, null, 2));
-    }
 
-    // 🔴 关键修复：使用 useMemo 缓存数据，防止 useEffect 死循环
+    // 缓存 Banner 数据
     const banners = useMemo(() => {
-        // 优先取外层的 banners (V2 Hook 处理过的)，如果没有再尝试去深层找，最后给个空数组
         return homeData?.banners || [];
     }, [homeData]);
 
-    // 城市：通常还在原来的深层结构里
+    const lastBanner = useMemo(() => {
+        if (banners.length > 0) {
+            return banners[banners.length - 1];
+        }
+        return null;
+    }, [banners]);
+
+    // 缓存城市数据
     const backendCities = useMemo(() => {
         return homeData?.cities || [];
     }, [homeData]);
 
-    // 标签：也在原来的深层结构里
+    // 缓存设施标签
     const facilities = useMemo(() => {
-        // 先尝试拿后端数据
         const remote = homeData?.facilities || [];
-        // 如果后端没数据，用前端 Mock 数据顶一下 (为了UI效果)
         if (remote.length > 0) return remote;
         return [
             { id: '1', name: '免费取消' },
@@ -103,13 +129,13 @@ const SearchPage = () => {
 
 
     // === 状态管理 ===
-    // 简化 Tab，只保留 'hotel' (原domestic), 'homestay', 'hourly'
     const [activeTab, setActiveTab] = useState('hotel');
 
     // 城市状态
     const [city, setCity] = useState({ name: '北京', code: '110100', country: '' });
     const [modalVisible, setModalVisible] = useState(false);
-    // ✅ 新增：绑定搜索框文字
+
+    // 搜索框文字
     const [keyword, setKeyword] = useState('');
 
     // 日期状态
@@ -126,14 +152,11 @@ const SearchPage = () => {
     // 快捷标签状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-    // ✅ 修复后的 useEffect：只在数据加载完成且当前城市不匹配时更新
+    // 初始化城市 (仅一次)
     useEffect(() => {
         if (backendCities.length > 0) {
             const firstCity = backendCities[0];
-            // 只有当当前的 code 和后端第一个城市的 code 不一样时，才执行 setCity
-            // 这样就阻断了无限循环
             if (city.code !== firstCity.code && city.code === '110100') {
-                // 注意：这里加了个判断，只有当前是默认值(北京)时才自动切，避免用户选了别的城市又被切回来
                 setCity({
                     name: firstCity.name,
                     code: firstCity.code,
@@ -141,27 +164,7 @@ const SearchPage = () => {
                 });
             }
         }
-    }, [backendCities]); // 依赖项里去掉了 activeTab，因为现在不需要切来切去了
-
-    // 日历标记逻辑
-    const markedDates = useMemo(() => {
-        let marks: any = {};
-        if (!startDate) return marks;
-        marks[startDate] = { startingDay: true, color: '#0086F6', textColor: 'white' };
-        if (endDate) {
-            marks[endDate] = { endingDay: true, color: '#0086F6', textColor: 'white' };
-            let start = new Date(startDate);
-            let end = new Date(endDate);
-            let curr = new Date(start);
-            curr.setDate(curr.getDate() + 1);
-            while (curr < end) {
-                const dateStr = curr.toISOString().split('T')[0];
-                marks[dateStr] = { color: '#E6F7FF', textColor: '#333' };
-                curr.setDate(curr.getDate() + 1);
-            }
-        }
-        return marks;
-    }, [startDate, endDate]);
+    }, [backendCities]);
 
     // 处理城市选择
     const handleSelectCity = (item: any) => {
@@ -186,9 +189,13 @@ const SearchPage = () => {
     // 价格/标签多选逻辑
     const togglePrice = (p: string) => setSelectedPrice(selectedPrice === p ? '' : p);
     const toggleStar = (s: string) => setSelectedStar(selectedStar === s ? '' : s);
-    const toggleTag = (tagName: string) => {
-        if (selectedTags.includes(tagName)) setSelectedTags(selectedTags.filter(t => t !== tagName));
-        else setSelectedTags([...selectedTags, tagName]);
+    // 这样传给后端更准确
+    const toggleTag = (tagId: string) => {
+        if (selectedTags.includes(tagId)) {
+            setSelectedTags(selectedTags.filter(t => t !== tagId));
+        } else {
+            setSelectedTags([...selectedTags, tagId]);
+        }
     };
 
     const getPriceStarText = () => {
@@ -196,21 +203,21 @@ const SearchPage = () => {
         return `${selectedPrice} ${selectedStar}`.trim();
     };
 
-    // 解析价格字符串，例如 "¥200-¥350" -> { min: 200, max: 350 }
+    // ✅ 解析价格字符串 (严格匹配 PRICES 数组的格式)
     const parsePrice = (priceStr: string) => {
         if (!priceStr) return { min: undefined, max: undefined };
 
-        // 处理 "¥200以下"
+        // 1. 处理 "¥200以下" -> max: 200
         if (priceStr.includes('以下')) {
             const max = parseInt(priceStr.replace(/[^0-9]/g, ''));
             return { min: 0, max };
         }
-        // 处理 "¥2000以上"
+        // 2. 处理 "¥2000以上" -> min: 2000
         if (priceStr.includes('以上')) {
             const min = parseInt(priceStr.replace(/[^0-9]/g, ''));
-            return { min, max: undefined }; // 或者给个极大值 99999
+            return { min, max: undefined };
         }
-        // 处理区间 "¥200-¥350"
+        // 3. 处理 "¥200-¥350" -> min: 200, max: 350
         const parts = priceStr.split('-');
         if (parts.length === 2) {
             return {
@@ -221,37 +228,32 @@ const SearchPage = () => {
         return { min: undefined, max: undefined };
     };
 
-    // 解析星级，例如 "3钻/星" -> 3
+    // ✅ 解析星级 (确保匹配 STARS 数组的 label)
     const parseStar = (starStr: string) => {
         if (!starStr) return undefined;
         if (starStr.includes('2')) return 2;
         if (starStr.includes('3')) return 3;
         if (starStr.includes('4')) return 4;
         if (starStr.includes('5')) return 5;
-        if (starStr.includes('金钻')) return 5; // 假设金钻也是5
+        // 如果有金钻/铂钻，先默认当做 5 星
+        if (starStr.includes('钻')) return 5;
         return undefined;
     };
 
     // 点击查询
     const handleSearch = () => {
-        // 1. 解析价格
         const { min, max } = parsePrice(selectedPrice);
-
-        // 2. 解析星级
         const star = parseStar(selectedStar);
 
-        // 3. 构造参数对象
         const searchParams = {
             cityCode: city.code,
             checkIn: startDate,
             checkOut: endDate,
-            keyword: keyword,      // 搜索框文字
-            minPrice: min,
-            maxPrice: max,
+            keyword: keyword,
+            priceMin: min,
+            priceMax: max,
             starRating: star,
-            tags: selectedTags,    // 标签数组
-
-            // 额外带上显示用的信息（给列表页顶部回显用）
+            tags: selectedTags,
             displayInfo: {
                 cityName: city.name,
                 dateRange: `${formatDate(startDate)}-${formatDate(endDate)}`,
@@ -259,8 +261,6 @@ const SearchPage = () => {
         };
 
         console.log("🚀 跳转列表页参数:", searchParams);
-
-        // 4. 跳转
         navigation.navigate('HotelList', searchParams);
     };
 
@@ -276,7 +276,7 @@ const SearchPage = () => {
         <View style={styles.container}>
             <StatusBar style="light" translucent backgroundColor="transparent" />
 
-            {/* 城市选择弹窗 (只传国内数据) */}
+            {/* 城市选择弹窗 */}
             <CitySelectorModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -293,7 +293,7 @@ const SearchPage = () => {
                 onSelect={handleDateSelect}
             />
 
-            {/* 价格/星级弹窗 */}
+            {/* ✅ 价格/星级弹窗 (已修正位置和常量) */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -301,7 +301,8 @@ const SearchPage = () => {
                 onRequestClose={() => setPriceModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContent, { height: '70%' }]}>
+                    <TouchableOpacity style={{ flex: 1 }} onPress={() => setPriceModalVisible(false)} />
+                    <View style={[styles.modalContent, { height: '60%' }]}>
                         <View style={styles.modalHeader}>
                             <TouchableOpacity onPress={() => setPriceModalVisible(false)}>
                                 <Ionicons name='close' size={24} color='#333' />
@@ -366,29 +367,28 @@ const SearchPage = () => {
                             ))}
                         </Carousel>
                     ) : (
-                        // 🔴 调试用：如果 banners 为空，显示这个红色方块
-                        <View style={{ height: 260, backgroundColor: 'red', justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ color: 'white' }}>Banner 数据为空</Text>
+                        <View style={{ height: 260, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={{ color: '#999' }}>加载 Banner 中...</Text>
                         </View>
                     )}
                 </View>
 
                 {/* 悬浮搜索卡片 */}
                 <View style={styles.searchCard}>
-                    {/* Tab 栏：酒店 | 民宿 | 钟点房 */}
+                    {/* Tab 栏 */}
                     <View style={styles.bookmarkWrapper}>
-                        <TouchableOpacity style={[styles.bookmarkItem, activeTab === 'hotel' && styles.bookmarkActive]} onPress={() => setActiveTab('hotel')}>
-                            <Text style={[styles.tabText, activeTab === 'hotel' && styles.activeTabText]}>酒店</Text>
-                            {activeTab === 'hotel' && <View style={styles.activeLine} />}
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.bookmarkItem, activeTab === 'homestay' && styles.bookmarkActive]} onPress={() => setActiveTab('homestay')}>
-                            <Text style={[styles.tabText, activeTab === 'homestay' && styles.activeTabText]}>民宿</Text>
-                            {activeTab === 'homestay' && <View style={styles.activeLine} />}
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.bookmarkItem, activeTab === 'hourly' && styles.bookmarkActive]} onPress={() => setActiveTab('hourly')}>
-                            <Text style={[styles.tabText, activeTab === 'hourly' && styles.activeTabText]}>钟点房</Text>
-                            {activeTab === 'hourly' && <View style={styles.activeLine} />}
-                        </TouchableOpacity>
+                        {['hotel', 'homestay', 'hourly'].map((tab) => (
+                            <TouchableOpacity
+                                key={tab}
+                                style={[styles.bookmarkItem, activeTab === tab && styles.bookmarkActive]}
+                                onPress={() => setActiveTab(tab)}
+                            >
+                                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                                    {tab === 'hotel' ? '酒店' : tab === 'homestay' ? '民宿' : '钟点房'}
+                                </Text>
+                                {activeTab === tab && <View style={styles.activeLine} />}
+                            </TouchableOpacity>
+                        ))}
                     </View>
 
                     <View style={styles.cardContent}>
@@ -405,8 +405,8 @@ const SearchPage = () => {
                                     placeholder="关键字/位置/品牌"
                                     placeholderTextColor="#ccc"
                                     style={styles.searchInput}
-                                    value={keyword}                  // 👈 绑定 value
-                                    onChangeText={setKeyword}        // 👈 绑定 onChange
+                                    value={keyword}
+                                    onChangeText={setKeyword}
                                 />
                             </View>
                             <TouchableOpacity style={styles.mapIconBtn}>
@@ -442,10 +442,19 @@ const SearchPage = () => {
                                 {facilities.length > 0 && facilities.map((facility: any) => (
                                     <TouchableOpacity
                                         key={facility.id}
-                                        onPress={() => toggleTag(facility.name)}
-                                        style={[styles.tagItem, selectedTags.includes(facility.name) && styles.tagItemSelected]}
+                                        // ✅ 1. 点击存的是 ID
+                                        onPress={() => toggleTag(facility.id)}
+                                        // ✅ 2. 判断样式也要查 ID
+                                        style={[
+                                            styles.tagItem,
+                                            selectedTags.includes(facility.id) && styles.tagItemSelected
+                                        ]}
                                     >
-                                        <Text style={[styles.tagText, selectedTags.includes(facility.name) && styles.tagTextSelected]}>
+                                        {/* ✅ 3. 文字样式判断也要查 ID */}
+                                        <Text style={[
+                                            styles.tagText,
+                                            selectedTags.includes(facility.id) && styles.tagTextSelected
+                                        ]}>
                                             {facility.name}
                                         </Text>
                                     </TouchableOpacity>
@@ -460,11 +469,69 @@ const SearchPage = () => {
                     </View>
                 </View>
 
-                {/* 底部占位 */}
-                <View style={{ padding: 20 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10 }}>本周特惠</Text>
-                    <View style={{ height: 100, backgroundColor: '#f0f0f0', borderRadius: 8 }} />
+                {/* ✅ 底部：本周特惠 (已替换原来的占位符) */}
+                <View style={styles.bottomSection}>
+                    <Text style={styles.sectionTitle}>本周特惠</Text>
+
+                    {/* 1. 大图卡片 (改为 TouchableOpacity) */}
+                    {lastBanner ? (
+                        <TouchableOpacity
+                            style={styles.specialMainCard}
+                            activeOpacity={0.9}
+                            onPress={() => {
+                                // 如果有酒店ID，就跳转到详情页
+                                if (lastBanner.redirectHotelId) {
+                                    navigation.navigate('Detail', { id: lastBanner.redirectHotelId });
+                                }
+                            }}
+                        >
+                            {/* 图片源改为 lastBanner.imageUrl */}
+                            <Image source={{ uri: lastBanner.imageUrl }} style={styles.specialMainImage} resizeMode="cover" />
+
+                            {/* 装饰性蒙层和文字保持不变 */}
+                            <View style={styles.specialImageOverlay}>
+                                <View style={styles.specialTag}>
+                                    <Text style={styles.specialTagText}>当季力荐</Text>
+                                </View>
+                                <View>
+                                    <Text style={styles.specialOverlayText}>品质出行 · 甄选好店</Text>
+                                    {/* 增加一个小箭头提示可以点击 */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                        <Text style={{ color: '#fff', fontSize: 12 }}>立即查看</Text>
+                                        <Ionicons name="arrow-forward" size={12} color="#fff" style={{ marginLeft: 2 }} />
+                                    </View>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ) : (
+                        // 兜底显示
+                        <View style={[styles.specialMainCard, { backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={{ color: '#999' }}>敬请期待更多特惠</Text>
+                        </View>
+                    )}
+
+                    {/* 2. 三个精美小框 */}
+                    <View style={styles.threeBoxesContainer}>
+                        {SPECIAL_BOXES.map((box, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={[styles.smallBox, { backgroundColor: box.bg }]}
+                                activeOpacity={0.8} // 仅做展示，暂无跳转逻辑
+                            >
+                                {/* 右上角的装饰性图标背景 */}
+                                <Ionicons name={box.icon as any} size={60} color={box.color} style={styles.boxDecorationIcon} />
+
+                                {/* 前景内容 */}
+                                <Ionicons name={box.icon as any} size={28} color={box.color} style={{ marginBottom: 8 }} />
+                                <Text style={[styles.boxTitle, { color: box.color }]}>{box.title}</Text>
+                                <Text style={styles.boxSubtitle}>{box.subtitle}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                 </View>
+
+                {/* 底部增加一点安全边距 */}
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -525,7 +592,6 @@ const styles = StyleSheet.create({
     modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, height: '50%' },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
     modalTitle: { fontSize: 18, fontWeight: 'bold' },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#333' },
     gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
     gridItem: { width: '30%', backgroundColor: '#f5f7fa', paddingVertical: 10, borderRadius: 6, marginBottom: 10, alignItems: 'center', justifyContent: 'center' },
     gridItemSelected: { backgroundColor: '#e6f7ff', borderColor: '#0086F6', borderWidth: 1 },
@@ -537,6 +603,98 @@ const styles = StyleSheet.create({
     resetBtnText: { color: '#333', fontSize: 16 },
     okBtn: { flex: 2, height: 44, borderRadius: 22, backgroundColor: '#0086F6', justifyContent: 'center', alignItems: 'center' },
     okBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+
+    // ✅ 新增：底部特惠区域样式
+    bottomSection: {
+        padding: 20,
+        paddingTop: 10,
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 12,
+    },
+
+    // 大图卡片
+    specialMainCard: {
+        height: 140,
+        borderRadius: 16, // 圆角
+        overflow: 'hidden',
+        marginBottom: 15,
+        position: 'relative', // 用于定位蒙层
+        backgroundColor: '#f0f0f0', // 加载时的底色
+    },
+    specialMainImage: {
+        width: '100%',
+        height: '100%',
+    },
+    specialImageOverlay: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.25)', // 轻微的黑色半透明蒙层，让文字更清晰
+        padding: 16,
+        justifyContent: 'space-between',
+    },
+    specialTag: {
+        backgroundColor: '#FF4D4F',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+    },
+    specialTagText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    specialOverlayText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0,0,0,0.3)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 4,
+    },
+
+    // 三个小框容器
+    threeBoxesContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    // 单个小框
+    smallBox: {
+        flex: 1,
+        height: 110, // 固定高度
+        borderRadius: 16, // 圆角
+        padding: 12,
+        marginHorizontal: 5, // 框之间的间距
+        justifyContent: 'center',
+        //alignItems: 'center', // 居中对齐
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    // 小框的装饰性大图标（背景淡化）
+    boxDecorationIcon: {
+        position: 'absolute',
+        right: -15,
+        bottom: -15,
+        opacity: 0.15, // 非常淡的透明度
+        transform: [{ rotate: '-15deg' }] //稍微倾斜一点
+    },
+    boxTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    boxSubtitle: {
+        fontSize: 11,
+        color: '#666',
+    },
+
+    // 特殊处理：第一个和最后一个框去掉外边距，保证对齐
+    // 注意：在 React Native 的 Flex 布局中，更好的做法是让父容器 paddingHorizontal，子元素设置固定的中间间距。
+    // 上面的 marginHorizontal: 5 和父容器 padding: 20 配合已经能达到不错的效果。
 });
 
 export default SearchPage;

@@ -49,7 +49,9 @@ export const GET_HOME_CONFIG = gql`
 //           id
 //           hotelNo
 //           name
-//           coverImage
+//           images {
+//              url
+//            }
 //           favoriteCount
 //           score
 //           minPrice
@@ -57,29 +59,11 @@ export const GET_HOME_CONFIG = gql`
 //           distanceText
 //           address
 //           latitude
-//           longitude
-//           roomType {
-//             id
-//             name
-//             bedType
-//             basePrice
-//             maxGuests
-//             hasBreakfast
-//             refundable
-//             hasWindow
-//             area
-//             floor
-//             isOnSale
-//             sortOrder
-//             stock
-//             images
-//           }
+//           longitude 
 //         }
-//         minPrice
-//         total
 //         page {
 //           total
-//           pageNum
+//           page
 //           pageSize
 //         }
 //       }
@@ -94,8 +78,6 @@ export const SEARCH_HOTELS = gql`
       message
       data {
         total
-        # ❌ 之前报错是因为这里写了 minPrice 和 page，删掉它们！
-        
         items {
           id
           name
@@ -103,24 +85,22 @@ export const SEARCH_HOTELS = gql`
           score
           starLevel
           favoriteCount
-          
-          # ✅ 修正 1: 价格必须在 items 里面
           minPrice
-          
-          # ✅ 修正 2: 位置描述
           distanceText
-
-          # ✅ 修正 3: 图片是数组，不是 coverImage
           images {
             url
           }
-
-          # ✅ 修正 4: 房型信息
           roomType {
-            hasBreakfast
-            refundable
-            hasWindow
-          }
+          id
+          name
+          images       # 图片 (JSON字符串)
+          bedType      # 用于显示 "大床/双床"
+          hasBreakfast # 用于显示 "含早餐"
+          refundable   # 用于显示 "免费取消"
+          hasWindow    # 用于显示 "有窗"
+          isOnSale     # 排除下架房型
+          basePrice    # 备用
+         }
         }
       }
     }
