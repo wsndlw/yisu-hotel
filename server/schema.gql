@@ -710,6 +710,12 @@ type Mutation {
   """删除房型（商户）"""
   deleteRoomType(roomTypeId: ID!): Result!
 
+  """邮箱验证码登录"""
+  emailLogin(code: String!, email: String!): Result!
+
+  """邮箱验证码注册"""
+  emailRegister(code: String!, email: String!, password: String!, role: String!): Result!
+
   """彻底删除设施（管理员）。若设施被酒店引用，则不允许删除"""
   hardDeleteFacility(
     """设施ID"""
@@ -763,6 +769,9 @@ type Mutation {
     """酒店ID"""
     id: ID!
   ): HotelResult!
+
+  """发送邮箱验证码"""
+  sendEmailCode(email: String!): Result!
 
   """启用/禁用 Banner（管理员）"""
   setBannerEnabled(
@@ -1073,6 +1082,12 @@ type Query {
 
 """注册入参"""
 input RegisterInput {
+  """邮箱地址（邮箱注册时必填）"""
+  email: String
+
+  """邮箱验证码（邮箱注册时必填）"""
+  emailCode: String
+
   """密码（至少6位）"""
   password: String!
 
@@ -1292,6 +1307,9 @@ type User {
 
   """创建时间"""
   createdAt: DateTime!
+
+  """邮箱地址"""
+  email: String
 
   """用户ID"""
   id: ID!

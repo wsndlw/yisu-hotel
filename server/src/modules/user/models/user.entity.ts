@@ -24,7 +24,7 @@ export class UserEntity {
 
   @Field(() => String, { description: '用户名（唯一）' })
   @Index({ unique: true })
-  @Column({ type: 'varchar', length: 64, comment: '用户名（唯一）' })
+  @Column({ type: 'varchar', length: 64, comment: '用户名（唯一）', nullable: true })
   username: string;
 
   @Column({ type: 'varchar', length: 255, comment: '密码哈希（不对外暴露）' })
@@ -53,4 +53,29 @@ export class UserEntity {
   @Field(() => Date, { description: '更新时间' })
   @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
+
+    @Field(() => String, { nullable: true, description: '邮箱地址' })
+  @Column({ type: 'varchar', length: 255, nullable: true, comment: '邮箱地址' })
+  email?: string;
+
+  @Column({ type: 'varchar', length: 6, nullable: true, comment: '邮箱验证码' })
+  emailVerifyCode?: string;
+
+  @Column({ type: 'datetime', nullable: true, comment: '验证码过期时间' })
+  emailVerifyCodeExpiry?: Date;
+
+  @Column({ type: 'int', default: 0, comment: '验证码验证失败次数' ,nullable: true,})
+  emailVerifyFailCount?: number;
+
+  @Column({ type: 'datetime', nullable: true, comment: '验证码失败锁定截止时间' })
+  emailVerifyFailLockUntil?: Date;
+
+  @Column({ type: 'datetime', nullable: true, comment: '上次发送邮件时间' })
+  lastEmailSentAt?: Date;
+
+    @Column({ type: 'int', default: 0, comment: '登录失败次数' ,nullable: true,})
+  loginFailCount?: number;
+
+  @Column({ type: 'datetime', nullable: true, comment: '登录失败锁定截止时间' })
+  loginFailLockUntil?: Date | null;
 }

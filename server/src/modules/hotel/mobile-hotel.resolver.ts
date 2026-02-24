@@ -227,14 +227,25 @@ export class MobileHotelResolver {
     const rawItems = result.list || [];
 
     // 组装最终数据并恢复动态价格计算
+  // 组装最终数据并恢复动态价格计算
     const items = await Promise.all(rawItems.map(async (hotel: any) => {
       let finalMinPrice = hotel.miniPrice ?? null;
 
       if (checkInStr && checkOutStr && nightsCount > 0 && hotel.roomTypes?.length > 0) {
         let minAvgPrice = Infinity;
         for (const room of hotel.roomTypes) {
-          const totalPrice = await this.calendarService.getDateRangePrice(room.id, checkInStr, checkOutStr);
-          const avgPrice = totalPrice / nightsCount;
+          // 先查有无库存
+          const available = await this.calendarService.checkAvailability(room.id, checkInStr, checkOutStr);
+          let avgPrice = Number(room.basePrice); // 兜底：用基础价
+
+          if (available) {
+            const totalPrice = await this.calendarService.getDateRangePrice(room.id, checkInStr, checkOutStr);
+            // 防止 totalPrice 为 0 导致 0 元房
+            if (totalPrice > 0) {
+              avgPrice = totalPrice / nightsCount;
+            }
+          }
+          
           if (avgPrice < minAvgPrice) minAvgPrice = avgPrice;
         }
         if (minAvgPrice !== Infinity) finalMinPrice = minAvgPrice;
@@ -246,7 +257,10 @@ export class MobileHotelResolver {
         name: hotel.nameZh,
         images: Array.isArray(hotel.images) ? hotel.images : [],
         coverImage: hotel.images?.[0]?.url || null,
-        score: typeof hotel.score === 'number' ? hotel.score : null,
+        
+        // 使用 Number() 来解析数据库的 Decimal
+        score: hotel.score ? Number(hotel.score) : null,
+        
         minPrice: finalMinPrice,
         distance: hotel.distance ?? null,
         distanceText: hotel.distanceText ?? null,
@@ -255,8 +269,8 @@ export class MobileHotelResolver {
         latitude: hotel.latitude ?? null,
         longitude: hotel.longitude ?? null,
         roomType: hotel.roomTypes ?? null,
-        starLevel:hotel.starLevel ?? null,
-        openSince:hotel.openSince ?? null,
+        starLevel: hotel.starLevel ?? null,
+        openSince: hotel.openSince ?? null,
       };
     }));
 
@@ -291,7 +305,7 @@ export class MobileHotelResolver {
     return Math.max(0, Math.floor((d2.getTime() - d1.getTime()) / (24 * 3600 * 1000)));
   }
 
-  @Query(() => MobileHotelDetailResult, { description: '移动端酒店详情' })
+@Query(() => MobileHotelDetailResult, { description: '移动端酒店详情' })
   async hotelDetail(
     @Args('id') id: string,
     @Args('checkIn', { nullable: true }) checkIn?: string,
@@ -301,6 +315,7 @@ export class MobileHotelResolver {
     const rawRooms = (hotel.roomTypes || []).slice().sort((a: any, b: any) => Number(a.basePrice) - Number(b.basePrice));
     const rooms: MobileRoom[] = [];
 
+    // ================= 1. 计算房型与日历价格 =================
     for (const room of rawRooms) {
       let coverImage: string | null = null;
       if (room.images) {
@@ -322,6 +337,11 @@ export class MobileHotelResolver {
           const totalPrice = await this.calendarService.getDateRangePrice(room.id, checkIn, checkOut);
           const nights = this.calculateNights(checkIn, checkOut);
           price = nights > 0 ? totalPrice / nights : Number(room.basePrice);
+        }else {
+          // 日历表里查不到，按基础价格和基础库存卖！
+          available = true; 
+          price = Number(room.basePrice);
+          // stock 保持原样，不置为 0
         }
         stock = available ? stock : 0;
       }
@@ -340,24 +360,29 @@ export class MobileHotelResolver {
       });
     }
 
+    // ================= 2. 获取附近 POI =================
     const nearbyPoi = await this.poiService.getNearbyPoiByHotel(hotel, undefined, 5, 10);
 
+    // ================= 3. 组装返回数据 =================
     const detail: MobileHotelDetail = {
       id: hotel.id,
-      name: hotel.nameZh, // 映射中文名称
-      nameEn: hotel.nameEn, // 映射中文名称
+      name: hotel.nameZh, 
+      nameEn: hotel.nameEn, 
       address: hotel.address,
       description: hotel.description,
       favoriteCount: hotel.favoriteCount,
       images: (hotel.images || []).map((img: any) => img.url),
       facilities: (hotel.facilities || []).map((f: any) => f.name),
-      rooms: hotel.rooms || [],
-      nearbyPoi: hotel.nearbyPoi || [],
-      //新增
+      
+      // 🔴 修复的两个关键点：使用局部变量 rooms 和 nearbyPoi
+      rooms: rooms, 
+      nearbyPoi: nearbyPoi || [], 
+
+      // 新增字段
       starLevel: hotel.starLevel ?? null,
       city: hotel.city,
       brand: hotel.brand,
-      score: hotel.score ? Number(hotel.score) : null, // decimal转number
+      score: hotel.score ? Number(hotel.score) : null,
       phone: hotel.phone,
       longitude: hotel.longitude,
       latitude: hotel.latitude,

@@ -55,3 +55,14 @@ export const FACILITY_IN_USE = 10514;
 // OSS相关
 export const OSS_CONFIG_ERROR = 10600;
 export const OSS_UPLOAD_FAIL = 10601;
+
+
+// ===== 邮箱验证码功能错误码 10700-10799 =====
+export const EMAIL_SEND_FAILED = 10700; // 邮件发送失败
+export const EMAIL_CODE_INVALID = 10701; // 验证码错误
+export const EMAIL_CODE_EXPIRED = 10702; // 验证码过期
+export const EMAIL_SEND_TOO_FREQUENT = 10703; // 发送过于频繁
+export const EMAIL_VERIFY_LOCKED = 10704; // 验证失败次数过多，已锁定
+export const EMAIL_NOT_FOUND = 10705; // 邮箱不存在
+export const EMAIL_ALREADY_EXISTS = 10706; // 邮箱已被注册
+export const EMAIL_CODE_NOT_SENT = 10707; // 验证码未发送或已失效
