@@ -173,17 +173,32 @@ export const useHotelDetail = (
 }
 
 // 2. 获取POI列表
-export const usePoiList = (input: PoiListInput) => {
-  const { data: result, loading, error } = useQuery<ApiResponse<PoiItem[]>>(
-    POI_LIST,
+// 引入类型 (确保你定义了这些类型，如果没有就用 any)
+// import { PoiListQueryInput, PoiEntity } from ...
+
+export const usePoiList = (input: any) => {
+  // 1. 泛型定义要准确：告诉 Apollo 返回值里有个 poiList 数组
+  const { data: result, loading, error } = useQuery<{ poiList: any[] }>(
+    POI_LIST, 
     {
-      variables: input,
+      // 2. 传参结构必须符合 Schema：需要包一层 input
+      variables: { 
+        input: {
+          city: input.city,
+          // 如果需要其他参数如 limit，也可以在这里解构
+          // limit: 50 
+        }
+      },
+      // 只有当 city 存在时才发请求
       skip: !input.city,
+      fetchPolicy: 'cache-and-network', // 建议加上这个，保证数据新鲜
     }
   );
 
   return {
-    data: result?.code === 200 ? result.data : undefined,
+    // 3. 核心修改：直接取 poiList，不要判断 code === 200
+    // 如果 result 还没回来，或者 poiList 是 null，就返回空数组 []
+    data: result?.poiList || [],
     loading,
     error,
   };

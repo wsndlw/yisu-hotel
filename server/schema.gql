@@ -580,14 +580,25 @@ type MobileHomeConfigResult {
 """酒店详情（移动端）"""
 type MobileHotelDetail {
   address: String
+  brand: String
+  city: String
+  commentCount: Float
   description: String
+  district: String
   facilities: [String!]!
   favoriteCount: Float
   id: ID!
   images: [String!]!
+  latitude: Float
+  longitude: Float
   name: String!
+  nameEn: String
   nearbyPoi: [NearbyPoiItem!]
+  phone: String
+  province: String
   rooms: [MobileRoom!]!
+  score: Float
+  starLevel: Float
 }
 
 """酒店详情结果"""

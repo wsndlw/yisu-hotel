@@ -16,6 +16,8 @@ interface Props {
 }
 
 const LocationFilterModal = ({ visible, cityCode, onClose, onSelect }: Props) => {
+    // 🔍 加这行日志，看看打印出来是什么
+    console.log("📍 Modal接收到的城市:", cityCode)
     const [activeCategory, setActiveCategory] = useState('ALL');
     const [selectedPoiId, setSelectedPoiId] = useState<string>('');
 

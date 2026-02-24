@@ -39,7 +39,6 @@ export const GET_HOME_CONFIG = gql`
 /**
  * 酒店搜索（支持筛选/排序/分页）
  */
-<<<<<<< HEAD
 // export const SEARCH_HOTELS = gql`
 //   query SearchHotels($input: SearchHotelInput!) {
 //     searchHotels(input: $input) {
@@ -71,8 +70,6 @@ export const GET_HOME_CONFIG = gql`
 //     }
 //   }
 // `;
-=======
->>>>>>> b73bc0d1939d7c6bfbaa1a0548375da1c3c221b1
 
 export const SEARCH_HOTELS = gql`
   query SearchHotels($input: SearchHotelInput!) {
