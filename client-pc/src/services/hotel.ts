@@ -102,19 +102,23 @@ export const useHotels = (
 /**
  * 获取当前用户的酒店列表
  */
-export const useMyHotels = (status?: string) => {
+export const useMyHotels = (status?: string,  page = 1, pageSize = DEFAULT_PAGE_SIZE) => {
   const { data, loading, refetch } = useQuery(MY_HOTELS, {
-    variables: { status },
+    variables: { status, page, pageSize },
     fetchPolicy: 'no-cache',
   });
 
   const result = data?.myHotels;
+  const pageInfo = result?.page;
 
   return {
     loading,
     refetch,
     data: result?.data || [],
     list: result?.data || [],
+    total: pageInfo?.total || 0,
+    page: pageInfo?.pageNum || page,
+    pageSize: pageInfo?.pageSize || pageSize,
   };
 };
 

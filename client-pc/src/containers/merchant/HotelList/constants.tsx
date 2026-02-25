@@ -6,6 +6,10 @@ import { formatCity } from "../../admin/HotelList/constants";
 import { statusTag } from "../../../utils/tags";
 
 
+
+
+
+
 interface IColumns {
   onRequestOffline: (id: string) => void,
   onSubmit: (id: string) => void,
@@ -55,7 +59,7 @@ export const getColumns = ({
       title: '状态',
       dataIndex: 'status',
       align: 'center',
-      render: (v: string) => statusTag(v)
+      render: (v, row: any) => statusTag(v, row?.hasEverPublished)
     },
     {
       title: '操作',
@@ -74,12 +78,12 @@ export const getColumns = ({
                     },
                     {
                       key: 'offline',
-                      label: <a  className={styles.dangerLink} onClick={() => onRequestOffline(row.id)} >下架</a>,
+                      label: <a className={styles.dangerLink} onClick={() => onRequestOffline(row.id)} >下架</a>,
                     },
                   ],
                 }}
               >
-                <a  onClick={(e) => e.preventDefault()}>
+                <a onClick={(e) => e.preventDefault()}>
                   更多 <DownOutlined />
                 </a>
               </Dropdown>
@@ -95,7 +99,9 @@ export const getColumns = ({
             <>
               <Link to={`/merchant/hotels/${row.id}`}>编辑</Link>
               <a onClick={() => onSubmit(row.id)}>提交审核</a>
-              <a onClick={() => onDelete(row.id)} className={styles.dangerLink}>删除</a>
+              {!row.hasEverPublished && (
+                <a onClick={() => onDelete(row.id)} className={styles.dangerLink}>删除</a>
+              )}
             </>
           )}
           {row.status === 'REJECTED' && (

@@ -301,6 +301,9 @@ type Hotel {
   """收藏数（展示用，可后续接真实收藏逻辑）"""
   favoriteCount: Float
 
+  """是否曾发布过(用于区分草稿类型)"""
+  hasEverPublished: Boolean!
+
   """酒店业务ID"""
   hotelID: String
 
@@ -464,11 +467,6 @@ type HotelMinPriceCalendarDay {
 
   """最低价（单位：分）"""
   price: Int!
-}
-
-input HotelPoiLinkInput {
-  hotelId: ID!
-  poiId: ID!
 }
 
 type HotelResult {
@@ -722,9 +720,6 @@ type Mutation {
     id: ID!
   ): Result!
 
-  """酒店关联 POI"""
-  linkHotelPoi(input: HotelPoiLinkInput!): Boolean!
-
   """账号登录（返回 JWT Token）"""
   login(
     """登录信息"""
@@ -832,9 +827,6 @@ type Mutation {
 
   """新增/更新设施（管理员）"""
   upsertFacility(input: FacilityUpsertInput!): FacilityResult!
-
-  """新增/更新 POI"""
-  upsertPoi(input: PoiUpsertInput!): PoiEntity!
 
   """新增/更新房型（商户）"""
   upsertRoomType(hotelId: ID!, input: RoomTypeUpsertInput!, roomTypeId: ID): HotelResult!
@@ -990,19 +982,6 @@ input PoiListQueryInput {
   type: String
 }
 
-"""创建/更新 POI"""
-input PoiUpsertInput {
-  address: String
-
-  """基础热度评分"""
-  baseScore: Float
-  city: String!
-  latitude: Float
-  longitude: Float
-  name: String!
-  type: String!
-}
-
 type Query {
   """管理员仪表盘统计（部分为演示数据）"""
   adminDashboardStats(
@@ -1063,6 +1042,9 @@ type Query {
 
   """我的酒店列表（商户返回自己的酒店；管理员返回全量酒店）"""
   myHotels(
+    page: Int = 1
+    pageSize: Int = 10
+
     """按状态筛选（可选）"""
     status: HotelStatus
   ): HotelResults!

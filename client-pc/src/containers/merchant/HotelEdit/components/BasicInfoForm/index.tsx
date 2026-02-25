@@ -119,10 +119,6 @@ export default function BasicInfoForm({ hotelId, initialData, onSaveSuccess, dis
         <Input placeholder="请输入酒店英文名" />
       </Form.Item>
 
-      <Form.Item name="address" label="详细地址" rules={[{ required: true, message: '请输入详细地址' }]}>
-        <Input placeholder="请输入详细地址" />
-      </Form.Item>
-
       <Form.Item name="city" label="所在城市" rules={[{ required: true, message: '请选择城市' }]}>
         <CitySelect />
       </Form.Item>
@@ -141,6 +137,11 @@ export default function BasicInfoForm({ hotelId, initialData, onSaveSuccess, dis
           disabledDate={(current) => current && current > dayjs().endOf('day')}
           placeholder="请选择开业时间"
         />
+      </Form.Item>
+
+
+      <Form.Item name="address" label="详细地址" rules={[{ required: true, message: '请输入详细地址' }]}>
+        <Input placeholder="请输入详细地址" />
       </Form.Item>
 
       <Form.Item name="geo" label="位置坐标">

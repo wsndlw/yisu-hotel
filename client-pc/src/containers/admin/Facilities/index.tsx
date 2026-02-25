@@ -10,7 +10,6 @@ import { getColumns } from './constants';
 *设施管理页面，管理员用。
 */
 const Facilities = ({ }) => {
-  const { message } = App.useApp();
   const { data: allFacilities, loading, refetch } = useAllFacilities();
 
   const [upsertFacility, saving] = useUpsertFacility();
@@ -23,8 +22,6 @@ const Facilities = ({ }) => {
   const [open, setOpen] = useState(false);
   // 批量新增弹窗
   const [batchOpen, setBatchOpen] = useState<boolean>(false);
-  // 批量删除选中行
-  const [selectedFacilityIds, setSelectedFacilityIds] = useState<string[]>([]);
   const [editing, setEditing] = useState<any | null>(null);
   const [form] = Form.useForm();
 
@@ -58,8 +55,9 @@ const Facilities = ({ }) => {
     const success = await upsertFacility(
       editing?.id ?? null,
       values.name,
-      values.type,
+      'FACILITY',
       values.category,
+      values.enabled,
       () => {
         // 成功后的回调：刷新列表并关闭弹窗
         refetch();
@@ -76,7 +74,7 @@ const Facilities = ({ }) => {
   ) => {
     for (const name of names) {
       // 批量新增时，id 传 null
-      const saved = await upsertFacility(null, name, category, undefined, true);
+      const saved = await upsertFacility(null, name, 'FACILITY', category, enabled);
       if (saved) {
         await setFacilityEnabled(saved.id, enabled);
       }
@@ -121,27 +119,6 @@ const Facilities = ({ }) => {
     });
   };
 
-  const onBatchDelete = async () => {
-    const ids = selectedFacilityIds;
-    if (ids.length === 0) {
-      message.warning('请先选择要删除的项');
-      return;
-    }
-
-    Modal.confirm({
-      title: '确认删除',
-      content: `将删除（禁用）${ids.length} 条记录，是否继续？`,
-      onOk: async () => {
-        for (const id of ids) {
-          await deleteFacility(id, () => { }, true);
-        }
-        message.success('批量删除完成');
-        setSelectedFacilityIds([]);
-        refetch();
-      },
-    });
-  };
-
   const modalTitle = useMemo(() => {
     const action = editing ? '编辑' : '新增';
     const typeName = '设施';
@@ -165,16 +142,9 @@ const Facilities = ({ }) => {
             新增设施
           </Button>
           <Button onClick={() => openBatch()}>批量新增</Button>
-          <Button danger onClick={onBatchDelete}>
-            批量删除
-          </Button>
         </Space>
         <Table
           rowKey="id"
-          rowSelection={{
-            selectedRowKeys: selectedFacilityIds,
-            onChange: (keys) => setSelectedFacilityIds(keys as string[]),
-          }}
           loading={loading}
           dataSource={allFacilities}
           columns={getColumns({ onToggle, openEdit, onDeleteOne })}

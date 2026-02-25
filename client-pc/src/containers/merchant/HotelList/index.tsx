@@ -16,17 +16,20 @@ const Hotels = ({ }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const status = (searchParams.get('status') || 'ALL') as 'ALL' | 'PUBLISHED' | 'REVIEWING' | 'DRAFT' | 'REJECTED' | 'OFFLINE';
 
-  const { data, loading, refetch } = useMyHotels();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data, loading, refetch, total } = useMyHotels(status === 'ALL' ? undefined : status, page, pageSize);
   const [submitHandler] = useSubmitHotel();
   const [deleteHandler] = useDeleteHotel();
   const [withdrawHandler] = useWithdrawHotel();
   const [requestOfflineHandler] = useRequestOffline();
 
   const list = data || [];
-  const filteredList = useMemo(() => {
-    if (status === 'ALL') return list;
-    return list.filter((item: any) => item.status === status);
-  }, [list, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [status]);
 
   useEffect(() => {
     if (loc.state) {
@@ -112,7 +115,12 @@ const Hotels = ({ }) => {
         <Select
           value={status}
           className={styles.filterInput}
-          onChange={(val) => setSearchParams({ status: val })}
+          onChange={(val) => {
+            setSearchParams((prev) => {
+              prev.set('status', val);
+              return prev;
+            });
+          }}
           options={[
             { value: 'ALL', label: '全部' },
             { value: 'PUBLISHED', label: '已发布' },
@@ -126,8 +134,19 @@ const Hotels = ({ }) => {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={filteredList}
+        dataSource={list}
         columns={getColumns({ onRequestOffline, onSubmit, onDelete, onWithdraw })}
+        pagination={{
+          current: page,
+          pageSize: pageSize,
+          total: total,
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          onChange: (p, ps) => {
+            setPage(p);
+            setPageSize(ps);
+          },
+        }}
       />
 
     </Card>

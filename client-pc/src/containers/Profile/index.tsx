@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { App, Button, Card, Form, Input, Space } from 'antd';
+import { Button, Card, Form, Input, Space } from 'antd';
 import { useMe } from '../../services/auth';
 import { useUpdateMe } from '../../services/user';
 import OSSImageUpload from '../../componenets/OSSImageUpload';
@@ -15,6 +15,7 @@ export default function Profile() {
     if (!loading && user) {
       form.setFieldsValue({
         username: user.username,
+        email: user.email,
         role: user.role,
         avatarFiles: user.avatarUrl ? [{ uid: '1', name: 'avatar', url: user.avatarUrl }] : []
       });
@@ -40,6 +41,9 @@ export default function Profile() {
     <Card title="个人信息" loading={loading}>
       <Form form={form} layout="vertical">
         <Form.Item name="role" label="角色">
+          <Input disabled />
+        </Form.Item>
+        <Form.Item name="email" label="邮箱">
           <Input disabled />
         </Form.Item>
         <Form.Item name="username" label="用户名" rules={[{ required: true, message: '请输入用户名' }]}>

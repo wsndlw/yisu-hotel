@@ -62,12 +62,14 @@ export const useUpsertFacility = (): [upsertHandler: Function, loading: boolean]
   const upsertHandler = async (
     id: string | null,
     name: string,
+    type: string,
     category?: string,
+    enabled?: boolean,
     callback?: () => void,
     silent?: boolean,
   ) => {
     try {
-      const res = await upsert({ variables: { id: id || undefined, name, category } });
+      const res = await upsert({ variables: { id: id || undefined, name, type, category, enabled } });
       const result = res.data?.upsertFacility;
       if (result?.code === 200) {
         if (!silent) {

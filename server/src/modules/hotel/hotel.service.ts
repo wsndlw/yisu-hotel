@@ -43,9 +43,6 @@ export class HotelService {
     return hotel;
   }
 
-  async getHotelDetail(id: string) {
-    return this.getHotelById(id);
-  }
 
   async updateStatus(id: string, status: HotelStatus) {
     await this.hotelRepo.update({ id }, { status });
@@ -70,6 +67,7 @@ export class HotelService {
     return hotel;
   }
 
+
   async listHotels(input: {
     city?: string;
     keyword?: string;
@@ -86,19 +84,23 @@ export class HotelService {
 
     const hasJoinFilter = (input.tagIds && input.tagIds.length > 0) || (input.facilityIds && input.facilityIds.length > 0);
 
+    // ================= 分支 A：复杂查询 =================
     if (hasJoinFilter || input.merchantKeyword || input.keyword) {
       const qb = this.hotelRepo
         .createQueryBuilder('hotel')
+        // 1. 用于查出全量关联数据（原封不动）
         .leftJoinAndSelect('hotel.tags', 'tag')
         .leftJoinAndSelect('hotel.facilities', 'facility')
         .leftJoinAndSelect('hotel.merchant', 'merchant')
+        // 2. 【修复分页排序】加入二级排序 id
         .orderBy('hotel.updatedAt', 'DESC')
+        .addOrderBy('hotel.id', 'DESC')
         .skip((page - 1) * pageSize)
         .take(pageSize);
 
       if (input.city) qb.andWhere('hotel.city = :city', { city: input.city });
       if (typeof input.starLevel === 'number') qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
-      if (input.status) {
+      if (input.status !== undefined && input.status !== null) {
         qb.andWhere('hotel.status = :status', { status: input.status });
       } else {
         qb.andWhere('hotel.status != :draft', { draft: HotelStatus.DRAFT });
@@ -117,63 +119,175 @@ export class HotelService {
         qb.andWhere('merchant.username LIKE :mkw', { mkw: `%${mkw}%` });
       }
 
+      // 3. 【修复数据截断】创建独立的 InnerJoin 用于条件过滤，不污染 Select 结果
       if (input.tagIds && input.tagIds.length > 0) {
-        qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
+        qb.innerJoin('hotel.tags', 'filterTag', 'filterTag.id IN (:...tagIds)', { tagIds: input.tagIds });
       }
 
       if (input.facilityIds && input.facilityIds.length > 0) {
-        qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
+        qb.innerJoin('hotel.facilities', 'filterFacility', 'filterFacility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
       }
 
       const [list, total] = await qb.getManyAndCount();
       return { list, total, page, pageSize };
     }
 
+    // ================= 分支 B：简单查询 =================
+    // 【修复死代码】清理了永远执行不到的 keyword 逻辑
     const baseWhere: FindOptionsWhere<HotelEntity> = {};
     if (input.city) baseWhere.city = input.city;
     if (typeof input.starLevel === 'number') baseWhere.starLevel = input.starLevel;
-    if (input.status) {
+
+    if (input.status !== undefined && input.status !== null) {
       baseWhere.status = input.status;
     } else {
+      // 如果使用 TypeORM 0.3+，In 需要从 typeorm 导入
       baseWhere.status = In([HotelStatus.REVIEWING, HotelStatus.REJECTED, HotelStatus.PUBLISHED, HotelStatus.OFFLINE]);
     }
 
-    const keyword = input.keyword?.trim();
-    const keywordWheres: FindOptionsWhere<HotelEntity>[] = keyword
-      ? [
-        { ...baseWhere, nameZh: Like(`%${keyword}%`) },
-        { ...baseWhere, nameEn: Like(`%${keyword}%`) },
-        { ...baseWhere, address: Like(`%${keyword}%`) },
-      ]
-      : [{ ...baseWhere }];
-
     const [list, total] = await this.hotelRepo.findAndCount({
-      where: keywordWheres,
+      where: baseWhere,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      order: { updatedAt: 'DESC' },
+      // 2. 【修复分页排序】加入二级排序 id
+      order: {
+        updatedAt: 'DESC',
+        id: 'DESC'
+      },
       relations: ['tags', 'facilities', 'merchant'],
     });
 
     return { list, total, page, pageSize };
   }
 
-  async myHotels(user: UserEntity, status?: HotelStatus): Promise<HotelEntity[]> {
-    if (user.role === UserRole.ADMIN) {
-      return this.hotelRepo.find({
-        where: status ? { status } : {},
-        order: { updatedAt: 'DESC' },
-        relations: ['tags', 'facilities'],
-      });
+
+  // async listHotels(input: {
+  //   city?: string;
+  //   keyword?: string;
+  //   merchantKeyword?: string;
+  //   starLevel?: number;
+  //   tagIds?: string[];
+  //   facilityIds?: string[];
+  //   status?: HotelStatus;
+  //   page: number;
+  //   pageSize: number;
+  // }): Promise<HotelListResult> {
+  //   const page = Math.max(1, input.page || 1);
+  //   const pageSize = Math.min(50, Math.max(1, input.pageSize || 10));
+
+  //   const hasJoinFilter = (input.tagIds && input.tagIds.length > 0) || (input.facilityIds && input.facilityIds.length > 0);
+
+  //   if (hasJoinFilter || input.merchantKeyword || input.keyword) {
+  //     const qb = this.hotelRepo
+  //       .createQueryBuilder('hotel')
+  //       .leftJoinAndSelect('hotel.tags', 'tag')
+  //       .leftJoinAndSelect('hotel.facilities', 'facility')
+  //       .leftJoinAndSelect('hotel.merchant', 'merchant')
+  //       .orderBy('hotel.updatedAt', 'DESC')
+  //       .skip((page - 1) * pageSize)
+  //       .take(pageSize);
+
+  //     if (input.city) qb.andWhere('hotel.city = :city', { city: input.city });
+  //     if (typeof input.starLevel === 'number') qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
+  //     if (input.status) {
+  //       qb.andWhere('hotel.status = :status', { status: input.status });
+  //     } else {
+  //       qb.andWhere('hotel.status != :draft', { draft: HotelStatus.DRAFT });
+  //     }
+
+  //     const keyword = input.keyword?.trim();
+  //     if (keyword) {
+  //       qb.andWhere(
+  //         '(hotel.nameZh LIKE :kw OR hotel.nameEn LIKE :kw OR hotel.address LIKE :kw)',
+  //         { kw: `%${keyword}%` },
+  //       );
+  //     }
+
+  //     const mkw = input.merchantKeyword?.trim();
+  //     if (mkw) {
+  //       qb.andWhere('merchant.username LIKE :mkw', { mkw: `%${mkw}%` });
+  //     }
+
+  //     if (input.tagIds && input.tagIds.length > 0) {
+  //       qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
+  //     }
+
+  //     if (input.facilityIds && input.facilityIds.length > 0) {
+  //       qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
+  //     }
+
+  //     const [list, total] = await qb.getManyAndCount();
+  //     return { list, total, page, pageSize };
+  //   }
+
+  //   const baseWhere: FindOptionsWhere<HotelEntity> = {};
+  //   if (input.city) baseWhere.city = input.city;
+  //   if (typeof input.starLevel === 'number') baseWhere.starLevel = input.starLevel;
+  //   if (input.status) {
+  //     baseWhere.status = input.status;
+  //   } else {
+  //     baseWhere.status = In([HotelStatus.REVIEWING, HotelStatus.REJECTED, HotelStatus.PUBLISHED, HotelStatus.OFFLINE]);
+  //   }
+
+  //   const keyword = input.keyword?.trim();
+  //   const keywordWheres: FindOptionsWhere<HotelEntity>[] = keyword
+  //     ? [
+  //       { ...baseWhere, nameZh: Like(`%${keyword}%`) },
+  //       { ...baseWhere, nameEn: Like(`%${keyword}%`) },
+  //       { ...baseWhere, address: Like(`%${keyword}%`) },
+  //     ]
+  //     : [{ ...baseWhere }];
+
+  //   const [list, total] = await this.hotelRepo.findAndCount({
+  //     where: keywordWheres,
+  //     skip: (page - 1) * pageSize,
+  //     take: pageSize,
+  //     order: { updatedAt: 'DESC' },
+  //     relations: ['tags', 'facilities', 'merchant'],
+  //   });
+
+  //   return { list, total, page, pageSize };
+  // }
+
+  async myHotels(
+    user: UserEntity,
+    status?: HotelStatus,
+    page = 1,
+    pageSize = 10
+  ): Promise<HotelListResult> {
+    // 1. 【修复】防止 page 为 0 或负数导致 SQL 报错
+    const safePage = Math.max(1, page);
+    const safePageSize = Math.max(1, pageSize);
+
+    // 2. 构建查询条件
+    const where: FindOptionsWhere<HotelEntity> = {};
+
+    if (status !== undefined && status !== null) {
+      where.status = status;
     }
 
-    return this.hotelRepo.find({
-      where: status ? { merchantId: user.id, status } : { merchantId: user.id },
-      order: { updatedAt: 'DESC' },
-      relations: ['tags', 'facilities'],
-    });
-  }
+    if (user.role !== UserRole.ADMIN) {
+      where.merchantId = user.id;
+    }
 
+    const [list, total] = await this.hotelRepo.findAndCount({
+      where,
+      order: {
+        updatedAt: 'DESC',
+        id: 'DESC'
+      },
+      relations: ['tags', 'facilities'],
+      skip: (safePage - 1) * safePageSize,
+      take: safePageSize,
+    });
+
+    return {
+      list,
+      total,
+      page: safePage,
+      pageSize: safePageSize
+    };
+  }
   /**
    * 解析标签（从设施表中筛选 TAG 类型）
    */
@@ -318,7 +432,10 @@ export class HotelService {
         operatorId: merchant.id,
       });
     } else if (hotel.status !== HotelStatus.PUBLISHED) {
-      // 保存草稿（已发布酒店不允许回退为草稿）
+      // 保存草稿
+      hotel.status = HotelStatus.DRAFT;
+    } else {
+      // 无论是草稿还是已发布，只要不是提交审核，修改后一律变为草稿
       hotel.status = HotelStatus.DRAFT;
     }
 
@@ -333,6 +450,10 @@ export class HotelService {
 
     if (![HotelStatus.DRAFT, HotelStatus.REJECTED].includes(hotel.status)) {
       throw new BadRequestException('仅草稿/未通过状态可删除');
+    }
+
+        if (hotel.status === HotelStatus.DRAFT && hotel.hasEverPublished) {
+      throw new BadRequestException('已发布过的酒店草稿不允许删除');
     }
 
     // 删除关联数据
@@ -474,6 +595,7 @@ export class HotelService {
     }
 
     hotel.status = HotelStatus.PUBLISHED;
+        hotel.hasEverPublished = true;
     await this.auditService.addRecord({
       hotelId: hotel.id,
       action: HotelAuditAction.PUBLISH,
@@ -672,7 +794,7 @@ export class HotelService {
   //   return { list: listWithDistance, total, page, pageSize };
   // }
 
- async listHotelsForH5(input: any): Promise<any> {
+  async listHotelsForH5(input: any): Promise<any> {
     const page = Math.max(1, Number(input.page) || 1);
     const pageSize = Math.min(50, Math.max(1, Number(input.pageSize) || 10));
 
@@ -731,16 +853,16 @@ export class HotelService {
 
     // ================= 2. 关联设施筛选 =================
     if (Array.isArray(input.facilityIds) && input.facilityIds.length > 0) {
-      input.facilityIds.forEach((facilityId:string, index:number) => {
+      input.facilityIds.forEach((facilityId: string, index: number) => {
         const alias = `facility_${index}`;
         // 为每一个选中的设施，单独加一次强制内连接。缺任何一个都会被过滤掉。
         qb.innerJoin(
-          'hotel.facilities', 
-          alias, 
-          `${alias}.id = :facId_${index}`, 
+          'hotel.facilities',
+          alias,
+          `${alias}.id = :facId_${index}`,
           { [`facId_${index}`]: facilityId }
         );
-      }); 
+      });
     }
 
     // ================= 3. 房型、人数与库存强绑定筛选 =================
