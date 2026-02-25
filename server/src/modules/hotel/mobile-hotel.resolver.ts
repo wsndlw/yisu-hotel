@@ -238,6 +238,7 @@ export class MobileHotelResolver {
         refundable: room.refundable ?? null,
         area: room.area ?? null,
         hasWindow: room.hasWindow ?? null,
+        maxGuests: room.maxGuests ?? null,
       });
     }
 
@@ -247,26 +248,24 @@ export class MobileHotelResolver {
     // ================= 3. 组装返回数据 =================
     const detail: MobileHotelDetail = {
       id: hotel.id,
-      name: hotel.nameZh, 
-      nameEn: hotel.nameEn, 
+      name: hotel.nameZh,
+      nameEn: hotel.nameEn,
       address: hotel.address,
       description: hotel.description,
       favoriteCount: hotel.favoriteCount,
       images: (hotel.images || []).map((img: any) => img.url),
       facilities: (hotel.facilities || []).map((f: any) => f.name),
-      
-      rooms: rooms, 
-      nearbyPoi: nearbyPoi || [], 
-
-      // 新增字段
+      rooms: rooms, // 使用计算后的 rooms 数组
+      nearbyPoi: hotel.nearbyPoi || [],
+      //新增
       starLevel: hotel.starLevel ?? null,
       city: hotel.city,
       brand: hotel.brand,
-      score: hotel.score ? Number(hotel.score) : null,
+      score: hotel.score ? Number(hotel.score) : null, // decimal转number
       phone: hotel.phone,
       longitude: hotel.longitude,
       latitude: hotel.latitude,
-      province: hotel.province,
+      openSince: hotel.openSince,
       district: hotel.district,
       commentCount: hotel.commentCount,
     };
