@@ -151,26 +151,33 @@ export const useHotelDetail = (
   checkOut: string
 ) => {
 
-  const { data: result, loading, error, refetch } = useQuery<HotelDetailResponse>(
-  GET_HOTEL_DETAIL,
-  {
-    variables: { id: hotelId, checkIn, checkOut },
-    skip: !hotelId,
-    fetchPolicy: 'network-only',
-  }
-);
+  // const shouldSkip = !hotelId || !checkIn || !checkOut || new Date(checkIn) >= new Date(checkOut);
 
-  const bizError = result?.hotelDetail?.code !== 200 
-  ? new Error(result?.hotelDetail?.message || '获取酒店信息失败') 
-  : null;
+  const { data, loading, error, refetch } = useQuery<HotelDetailResponse>(
+    GET_HOTEL_DETAIL,
+    {
+      variables: { id: hotelId, checkIn, checkOut },
+      // skip: shouldSkip,
+      skip: !hotelId || !checkIn || !checkOut, // 简化skip逻辑
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  // 正确解构数据
+  const hotelDetail = data?.hotelDetail;
+
+  const bizError = hotelDetail && hotelDetail.code !== 200
+    ? new Error(hotelDetail.message || '获取酒店信息失败')
+    : null;
 
   return {
-  data: result?.hotelDetail?.code === 200 ? result.hotelDetail.data : undefined,
-  loading,
-  error: error || bizError,
-  refetch,
+    // 核心修正：data 应该是 hotelDetail.data，而不是整个对象
+    data: hotelDetail?.code === 200 ? hotelDetail.data : undefined,
+    loading,
+    error: error || bizError,
+    refetch,
+  };
 };
-}
 
 // 2. 获取POI列表
 // 引入类型 (确保你定义了这些类型，如果没有就用 any)
