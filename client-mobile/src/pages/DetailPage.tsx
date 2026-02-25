@@ -38,7 +38,7 @@ const DetailPage = () => {
   // 2. 基础导航和参数（增加默认值，避免undefined）
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { hotelId, checkInDate: routeCheckIn, checkOutDate: routeCheckOut } = route.params || {};
+  const { id, checkIn: routeCheckIn, checkOut: routeCheckOut } = route.params || {};
 
   // 3. 核心状态（优先使用路由传递的日期）
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -75,7 +75,7 @@ const DetailPage = () => {
     error: hotelError,
     refetch: refetchHotel
   } = useHotelDetail(
-    hotelId || '', // 空值保护
+    id || '', // 空值保护
     checkInDate,
     checkOutDate
   );
@@ -94,10 +94,10 @@ const DetailPage = () => {
       setFilteredRooms([]); // 无数据时置空
     }
     // 仅当hotelId有效时加载收藏状态
-    if (hotelId) {
+    if (id) {
       loadFavoriteStatus();
     }
-  }, [hotel, hotelId]);
+  }, [hotel, id]);
 
   useEffect(() => {
     if (hotelError) {
@@ -110,7 +110,7 @@ const DetailPage = () => {
     try {
       const existing = await AsyncStorage.getItem('favoriteHotels');
       const favorites = existing ? JSON.parse(existing) : {};
-      setIsFavorite(!!favorites[hotelId]); // 强制布尔值
+      setIsFavorite(!!favorites[id]); // 强制布尔值
     } catch (e) {
       console.error('加载收藏状态失败:', e);
       setIsFavorite(false);
@@ -119,7 +119,7 @@ const DetailPage = () => {
 
   // 切换收藏状态（带动画）
   const toggleFavorite = async () => {
-    if (!hotelId) return; // 无hotelId时不执行
+    if (!id) return; // 无hotelId时不执行
 
     // 心形点击动画
     Animated.sequence([
@@ -143,7 +143,7 @@ const DetailPage = () => {
     try {
       const existing = await AsyncStorage.getItem('favoriteHotels');
       const favorites = existing ? JSON.parse(existing) : {};
-      favorites[hotelId] = newState;
+      favorites[id] = newState;
       await AsyncStorage.setItem('favoriteHotels', JSON.stringify(favorites));
     } catch (e) {
       console.error('保存收藏状态失败:', e);
@@ -281,10 +281,10 @@ const DetailPage = () => {
   }
 
   // 数据不存在/无hotelId
-  if (!hotelId || !hotel) {
+  if (!id || !hotel) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>{!hotelId ? '缺少酒店ID' : '未找到该酒店信息'}</Text>
+        <Text style={styles.loadingText}>{!id ? '缺少酒店ID' : '未找到该酒店信息'}</Text>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
           <Text style={{ color: '#1890ff', fontSize: 16 }}>返回列表页</Text>
         </TouchableOpacity>
