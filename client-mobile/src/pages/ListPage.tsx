@@ -257,35 +257,39 @@ const ListPage = ({ navigation, route }: any) => {
         const coverImage = (item.images && item.images.length > 0) ? item.images[0].url : '';
         const dynamicTags = [];
         // 1. 获取第一个房型的信息（通常列表页展示最低价房型的属性）
-    const firstRoom = (item.roomType && item.roomType.length > 0) ? item.roomType[0] : null;
+        const firstRoom = (item.roomType && item.roomType.length > 0) ? item.roomType[0] : null;
 
-    // 2. 真实床型标签
-    if (firstRoom && firstRoom.bedType) {
-        // 如果映射里有就用映射的，没有就显示英文原值，或者空
-        const bedText = BED_TYPE_MAP[firstRoom.bedType] || '大床'; 
-        dynamicTags.push({ text: bedText, color: '#333', bg: '#F5F5F5' });
-    }
+        // 2. 真实床型标签
+        if (firstRoom && firstRoom.bedType) {
+            // 如果映射里有就用映射的，没有就显示英文原值，或者空
+            const bedText = BED_TYPE_MAP[firstRoom.bedType] || '大床';
+            dynamicTags.push({ text: bedText, color: '#333', bg: '#F5F5F5' });
+        }
 
-    // 3. 窗户标签 (根据你提供的数据，还有一个 hasWindow 字段)
-    if (firstRoom && firstRoom.hasWindow) {
-         dynamicTags.push({ text: '有窗', color: '#333', bg: '#F5F5F5' });
-    }
+        // 3. 窗户标签 (根据你提供的数据，还有一个 hasWindow 字段)
+        if (firstRoom && firstRoom.hasWindow) {
+            dynamicTags.push({ text: '有窗', color: '#333', bg: '#F5F5F5' });
+        }
 
-    // 4. 免费取消 (保持原有逻辑)
-    if (item.roomType?.some((r: any) => r.refundable)) {
-        dynamicTags.push({ text: '免费取消', color: '#0086F6', bg: '#F0F8FF' });
-    }
+        // 4. 免费取消 (保持原有逻辑)
+        if (item.roomType?.some((r: any) => r.refundable)) {
+            dynamicTags.push({ text: '免费取消', color: '#0086F6', bg: '#F0F8FF' });
+        }
 
-    // 5. 含早餐 (保持原有逻辑)
-    if (item.roomType?.some((r: any) => r.hasBreakfast)) {
-        dynamicTags.push({ text: '含早餐', color: '#FF9500', bg: '#FFF7E6' }); // 换个颜色区分一下
-    }
+        // 5. 含早餐 (保持原有逻辑)
+        if (item.roomType?.some((r: any) => r.hasBreakfast)) {
+            dynamicTags.push({ text: '含早餐', color: '#FF9500', bg: '#FFF7E6' }); // 换个颜色区分一下
+        }
 
         return (
             <TouchableOpacity
                 style={styles.card}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Detail', { id: item.id })}
+                onPress={() => navigation.navigate('Detail', { 
+                    id: item.id,
+                    checkIn: currentCheckIn, // 这里填你 state 里存的入住日期变量
+                    checkOut: currentCheckOut   // 这里填你 state 里存的离店日期变量 
+                })}
             >
                 <View style={styles.imageWrapper}>
                     <Image source={{ uri: formatImageUrl(coverImage) }} style={styles.cardImg} resizeMode="cover" />
@@ -314,7 +318,7 @@ const ListPage = ({ navigation, route }: any) => {
                     <View style={styles.bottomRow}>
                         {/* 新增：钻石贵宾价标签 */}
                         <View style={styles.vipTag}>
-                        <Text style={styles.vipText}>钻石贵宾价</Text>
+                            <Text style={styles.vipText}>钻石贵宾价</Text>
                         </View>
                         <View style={styles.priceContainer}>
                             <Text style={styles.currency}>¥</Text>
@@ -615,12 +619,12 @@ const styles = StyleSheet.create({
     tagRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 },
     tagContainer: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4, marginRight: 4, marginBottom: 4 },
     tagText: { fontSize: 10 },
-    
-    bottomRow: { 
-        flexDirection: 'row', 
+
+    bottomRow: {
+        flexDirection: 'row',
         alignItems: 'flex-end',     // 底部对齐
         justifyContent: 'flex-end', // 靠右对齐
-        marginTop: 8 
+        marginTop: 8
     },
 
     // ✅ 新增：VIP 标签容器样式（带边框）

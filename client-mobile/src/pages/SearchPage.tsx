@@ -15,7 +15,7 @@ import { Carousel } from '@ant-design/react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import dayjs from 'dayjs';
+import * as Location from 'expo-location'; // ✅ 引入定位库
 
 // ✅ 1. 引入后端服务
 import { useHomeConfigV2 } from '../services/hotel-h5';
@@ -92,7 +92,7 @@ const SearchPage = () => {
 
     // ✅ 获取后端数据
     const { data: homeData, loading, error } = useHomeConfigV2();
-    
+
 
     if (error) {
         console.log("❌ GraphQL 请求失败:", JSON.stringify(error, null, 2));
@@ -152,6 +152,12 @@ const SearchPage = () => {
     // 快捷标签状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+    // ✅ [新增] 定位相关状态
+    const [isLocated, setIsLocated] = useState(false); // 是否已定位
+    const [locationTip, setLocationTip] = useState(''); // 顶部气泡提示
+    const [isLocating, setIsLocating] = useState(false); // 定位Loading状态
+
+
     // 初始化城市 (仅一次)
     useEffect(() => {
         if (backendCities.length > 0) {
@@ -173,6 +179,9 @@ const SearchPage = () => {
             code: item.code,
             country: ''
         });
+        // ✅ 关键修改：手动选城市了，就要把“定位状态”关掉！
+        setIsLocated(false); 
+        setLocationTip(''); // 顺便把头顶的气泡也清空（如果有的话）
         setModalVisible(false);
     };
 
@@ -238,6 +247,73 @@ const SearchPage = () => {
         // 如果有金钻/铂钻，先默认当做 5 星
         if (starStr.includes('钻')) return 5;
         return undefined;
+    };
+
+    // ✅ [新增] 定位功能函数
+    const handleLocate = async () => {
+        setIsLocating(true);
+        try {
+            console.log("1. 开始请求权限...");
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                alert('定位权限被拒绝');
+                return;
+            }
+
+            console.log("2. 权限通过，正在获取经纬度...");
+            // ✅ 修改点：增加 accuracy 和 timeout，防止安卓模拟器卡死
+            let location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced, 
+            });
+            
+            console.log("3. 获取到坐标:", location.coords);
+            
+            console.log("4. 正在解析地址(逆地理编码)...");
+            let addressResponse = await Location.reverseGeocodeAsync({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude
+            });
+
+            console.log("5. 解析结果:", addressResponse);
+
+            if (addressResponse.length === 0) {
+                console.log("⚠️ 模拟器无法解析地址，使用兜底数据");
+                addressResponse = [{
+                    city: '旧金山',
+                    name: '苹果总部',
+                    district: 'Cupertino',
+                    street: 'Infinite Loop',
+                    region: 'California',
+                    country: 'USA',
+                    postalCode: '95014',
+                    timezone: 'America/Los_Angeles',
+                    isoCountryCode: 'US',
+                    subregion: 'Santa Clara County'
+                }] as any;
+            }
+
+            if (addressResponse && addressResponse.length > 0) {
+                const addr = addressResponse[0];
+                // 兼容不同系统的字段名
+                const cityName = addr.city || addr.region || addr.subregion || city.name; 
+                const detailName = addr.name || addr.street || addr.district || '附近';
+
+                // ✅ 关键：只有这里执行了，UI 才会变
+                console.log("6. 更新UI状态 ->", cityName);
+                setCity(prev => ({ ...prev, name: cityName }));
+                setIsLocated(true);
+                setLocationTip(`已定位到 ${cityName} · ${detailName}`);
+                
+                setTimeout(() => setLocationTip(''), 3000);
+            } else {
+                alert("未解析到地址信息，请检查网络或模拟器位置设置");
+            }
+        } catch (error: any) {
+            console.log("❌ 定位流程出错:", error);
+            alert("定位失败: " + error.message);
+        } finally {
+            setIsLocating(false);
+        }
     };
 
     // 点击查询
@@ -359,7 +435,11 @@ const SearchPage = () => {
                                 <View key={banner.id || index} style={styles.slide}>
                                     <TouchableOpacity
                                         activeOpacity={0.9}
-                                        onPress={() => banner.redirectHotelId && navigation.navigate('Detail', { id: banner.redirectHotelId })}
+                                        onPress={() => banner.redirectHotelId && navigation.navigate('Detail', {
+                                            id: banner.redirectHotelId,
+                                            checkIn: startDate,
+                                            checkOut: endDate
+                                        })}
                                     >
                                         <Image source={{ uri: banner.imageUrl }} style={styles.image} resizeMode='cover' />
                                     </TouchableOpacity>
@@ -394,12 +474,31 @@ const SearchPage = () => {
                     <View style={styles.cardContent}>
                         {/* 城市与搜索栏 */}
                         <View style={styles.searchRow}>
+                            {/* ✅ [新增] 悬浮气泡提示 (绝对定位) */}
+                            {locationTip ? (
+                                <View style={styles.bubbleContainer}>
+                                    <View style={styles.bubble}>
+                                        <Text style={styles.bubbleText}>{locationTip}</Text>
+                                    </View>
+                                    <View style={styles.triangle} />
+                                </View>
+                            ) : null}
+
+                            {/* 左侧城市/位置选择 */}
                             <TouchableOpacity style={styles.citySelector} onPress={() => setModalVisible(true)}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={styles.cityText}>{city.name}</Text>
-                                    <Ionicons name="caret-down" size={12} color="#333" style={{ marginLeft: 4 }} />
+                                    {/* ✅ [修改] 增加定位状态判断 */}
+                                    <View>
+                                        <Text style={[styles.cityText, isLocated && { fontSize: 16, color: '#0086F6' }]}>
+                                            {isLocated ? '我的位置' : city.name}
+                                        </Text>
+                                        {/* 如果定位了，这里可以额外显示一个小标或者保持原样 */}
+                                    </View>
+                                    {!isLocated && <Ionicons name="caret-down" size={12} color="#333" style={{ marginLeft: 4 }} />}
                                 </View>
                             </TouchableOpacity>
+
+                            {/* 中间输入框 */}
                             <View style={styles.inputWrapper}>
                                 <TextInput
                                     placeholder="关键字/位置/品牌"
@@ -409,9 +508,18 @@ const SearchPage = () => {
                                     onChangeText={setKeyword}
                                 />
                             </View>
-                            <TouchableOpacity style={styles.mapIconBtn}>
-                                <Ionicons name="map" size={20} color="#0086F6" />
-                                <Text style={styles.mapText}>地图</Text>
+
+                            {/* ✅ [修改] 右侧按钮：点击触发定位 */}
+                            <TouchableOpacity style={styles.mapIconBtn} onPress={handleLocate}>
+                                {isLocating ? (
+                                    <ActivityIndicator size="small" color="#0086F6" />
+                                ) : (
+                                    <>
+                                        {/* 图标换成了 locate (靶心) */}
+                                        <Ionicons name={isLocated ? "locate" : "locate-outline"} size={22} color="#0086F6" />
+                                        <Text style={styles.mapText}>{isLocated ? '已定位' : '定位'}</Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
                         </View>
 
@@ -481,7 +589,11 @@ const SearchPage = () => {
                             onPress={() => {
                                 // 如果有酒店ID，就跳转到详情页
                                 if (lastBanner.redirectHotelId) {
-                                    navigation.navigate('Detail', { id: lastBanner.redirectHotelId });
+                                    navigation.navigate('Detail', {
+                                        id: lastBanner.redirectHotelId,
+                                        checkIn: startDate,
+                                        checkOut: endDate
+                                    });
                                 }
                             }}
                         >
@@ -563,6 +675,37 @@ const styles = StyleSheet.create({
     cityText: { fontSize: 20, fontWeight: 'bold', color: '#333' },
     inputWrapper: { flex: 1, height: 40, justifyContent: 'center' },
     searchInput: { fontSize: 16, color: '#333' },
+    // ✅ [新增] 气泡相关样式
+    bubbleContainer: {
+        position: 'absolute',
+        top: -22.5, // 向上浮动
+        left: 0,
+        zIndex: 10,
+    },
+    bubble: {
+        backgroundColor: 'rgba(0,0,0,0.7)', // 半透明黑底
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 4,
+    },
+    bubbleText: {
+        color: '#fff',
+        fontSize: 12,
+    },
+    triangle: {
+        width: 0,
+        height: 0,
+        backgroundColor: 'transparent',
+        borderStyle: 'solid',
+        borderLeftWidth: 5,
+        borderRightWidth: 5,
+        borderBottomWidth: 0,
+        borderTopWidth: 6,
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent',
+        borderTopColor: 'rgba(0,0,0,0.7)', // 颜色要和 bubble 背景一致
+        marginLeft: 10, // 调整小三角的位置
+    },
     mapIconBtn: { alignItems: 'center', marginLeft: 10 },
     mapText: { fontSize: 10, color: '#0086F6' },
 
