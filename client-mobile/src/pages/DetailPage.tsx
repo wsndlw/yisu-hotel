@@ -11,7 +11,7 @@ import type { ScrollView as ScrollViewType } from 'react-native';
 import { RouteProp, NavigationProp } from '@react-navigation/native';
 
 // 导入自定义组件
-import DateSelectorModal from '../components/DateSelectorModal';
+import DateSelectorModal from '../components/Detail-DateSelectorModal';
 import GuestSelectorModal from '../components/GuestSelectorModal';
 import RoomFilterModal, { FilterOptions } from '../components/RoomFilterModal';
 
@@ -62,10 +62,17 @@ const DetailPage = () => {
     if (date.includes('-')) return date;
     return date.replace(/\//g, '-');
   };
-
   const [checkInDate, setCheckInDate] = useState(formatDate(routeCheckIn || ''));
   const [checkOutDate, setCheckOutDate] = useState(formatDate(routeCheckOut || ''));
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
+  // 记录当前展示的月份，用于日期选择器的初始化
+  const [currentViewMonth, setCurrentViewMonth] = useState(() => {
+    // 如果有已选择的日期，则使用该日期所在的月份
+    if (checkInDate) {
+      return new Date(checkInDate);
+    }
+    return new Date();
+  });
 
   // 入住人数
   const [guestCount, setGuestCount] = useState(1);
@@ -180,15 +187,19 @@ const DetailPage = () => {
 
   // 处理日历选择
   const handleDateSelect = (dateStr: string) => {
+    // 更新当前展示的月份为选择的日期所在的月份
+    setCurrentViewMonth(new Date(dateStr));
+
     if (!checkInDate || (checkInDate && checkOutDate)) {
       setCheckInDate(dateStr);
       setCheckOutDate('');
     } else if (checkInDate && !checkOutDate) {
       if (dateStr > checkInDate) {
         setCheckOutDate(dateStr);
+        setIsDateModalVisible(false);
       } else {
-            setCheckInDate(dateStr);
-            setCheckOutDate(checkInDate);
+        setCheckInDate(dateStr);
+        // setCheckOutDate(checkInDate);
       }
     }
   };
@@ -656,6 +667,8 @@ const DetailPage = () => {
         startDate={checkInDate}
         endDate={checkOutDate}
         onSelect={handleDateSelect}
+        currentMonth={currentViewMonth} // 传递当前查看月份
+        onMonthChange={setCurrentViewMonth} // 当用户切换月份时更新
       />
 
       {/* 入住人数弹窗组件 */}
