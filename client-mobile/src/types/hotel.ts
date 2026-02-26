@@ -50,23 +50,6 @@ export interface Hotel {
   facilities?: { id: string; name: string }[];
 }
 
-export interface RoomType {
-  id: string;
-  name: string;
-  bedType?: string | null;
-  basePrice?: number | null;
-  maxGuests?: number | null;
-  hasBreakfast?: boolean | null;
-  refundable?: boolean | null;
-  hasWindow?: boolean | null;
-  area?: number | null;
-  floor?: string | null;
-  isOnSale?: boolean | null;
-  sortOrder?: number | null;
-  stock?: number | null;
-  images?: string | null;
-}
-
 export interface Room {
   id: string;
   title: string;
@@ -78,6 +61,7 @@ export interface Room {
   refundable?: boolean | null;
   area?: number | null;
   hasWindow?: boolean | null;
+  maxGuests?: number | null;
 }
 
 export interface NearbyPoi {
@@ -95,6 +79,7 @@ export interface NearbyPoi {
 export interface HotelDetail {
   id: string;
   name: string;
+  nameEn?: string | null;
   address?: string | null;
   description?: string | null;
   favoriteCount?: number | null;
@@ -102,6 +87,34 @@ export interface HotelDetail {
   facilities: string[];
   nearbyPoi?: NearbyPoi[] | null;
   rooms: Room[];
+  //新增
+  starLevel?: number | null; // 星级
+  city?: string | null; // 城市编码
+  brand?: string | null;
+  score?: number | null; // 评分
+  phone?: string | null;
+  longitude?: number | null;
+  latitude?: number | null;
+  openSince?: string | null; // 开业时间
+  district?: string | null;
+  commentCount?: number | null; // 评价数
+}
+
+export interface RoomType {
+  id: string;
+  name: string;
+  bedType?: string | null;
+  basePrice?: number | null;
+  maxGuests?: number | null;
+  hasBreakfast?: boolean | null;
+  refundable?: boolean | null;
+  hasWindow?: boolean | null;
+  area?: number | null;
+  floor?: string | null;
+  isOnSale?: boolean | null;
+  sortOrder?: number | null;
+  stock?: number | null;
+  images?: string | null;
 }
 
 export interface PoiItem {
@@ -113,6 +126,7 @@ export interface PoiItem {
   longitude?: number | null;
   baseScore?: number | null;
   city: string;
+  distanceKm?: number | null;
 }
 
 export interface PoiListInput {

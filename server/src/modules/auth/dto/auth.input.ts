@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsIn, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { UserRole } from '../../user/models/user.entity';
 
 @InputType({ description: '注册入参' })
@@ -15,6 +15,15 @@ export class RegisterInput {
   @Field(() => UserRole, { description: '角色（商户/管理员）' })
   @IsIn([UserRole.MERCHANT, UserRole.ADMIN])
   role: UserRole;
+
+    @Field(() => String, { nullable: true, description: '邮箱地址（邮箱注册时必填）' })
+  @IsOptional()
+  @IsEmail({}, { message: '请输入有效的邮箱地址' })
+  email?: string;
+
+  @Field(() => String, { nullable: true, description: '邮箱验证码（邮箱注册时必填）' })
+  @IsOptional()
+  emailCode?: string;
 }
 
 @InputType({ description: '登录入参' })

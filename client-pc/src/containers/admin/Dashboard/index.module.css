@@ -1,0 +1,17 @@
+.statCard {
+  text-align: center;
+}
+
+.warningCard {
+  text-align: center;
+  background: #ffd3d3;
+  border-color: #ffccc7;
+}
+
+.topRow {
+  /* 之前是 margin-top: 16px */
+}
+
+.bottomRow {
+  margin-top: 16px;
+}

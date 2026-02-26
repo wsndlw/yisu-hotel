@@ -4,6 +4,8 @@ import { AuthResult } from './dto/result-auth.output';
 import { LoginInput, RegisterInput } from './dto/auth.input';
 import * as CODE from '../../common/constants/code';
 import { getMsg } from '../../shared/utils/msg';
+// ===== 邮箱验证码功能 =====
+import { Result } from '../../common/dto/result.type';
 
 @Resolver()
 export class AuthResolver {
@@ -39,5 +41,48 @@ export class AuthResolver {
     } catch (error) {
       throw error;
     }
+  }
+
+  // ===== 邮箱验证码功能：发送验证码 =====
+  @Mutation(() => Result, { description: '发送邮箱验证码' })
+  async sendEmailCode(@Args('email') email: string): Promise<Result> {
+    return this.auth.sendEmailCode(email);
+  }
+
+  // ===== 邮箱验证码功能：邮箱验证码登录 =====
+  @Mutation(() => AuthResult, { description: '邮箱验证码登录' })
+  async emailLogin(
+    @Args('email') email: string,
+    @Args('code') code: string,
+  ): Promise<AuthResult> {
+    try {
+      const data = await this.auth.emailLogin(email, code);
+      if ('code' in data && (data as any).code !== 200) {
+        const res = data as any;
+        return {
+           code: res.code,
+           message: res.message,
+        } as any;
+      }
+
+      return {
+        code: CODE.SUCCESS,
+        message: getMsg(CODE.SUCCESS, '登录成功'),
+        data: data as any, // { accessToken, user }
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ===== 邮箱验证码功能：邮箱验证码注册 =====
+  @Mutation(() => Result, { description: '邮箱验证码注册' })
+  async emailRegister(
+    @Args('email') email: string,
+    @Args('code') code: string,
+    @Args('password') password: string,
+    @Args('role') role: string,
+  ): Promise<Result> {
+    return this.auth.emailRegister(email, code, password, role);
   }
 }

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client/react';
 import {
   GET_HOME_CONFIG,
   SEARCH_HOTELS,
@@ -28,6 +28,15 @@ type ApiResponse<T> = {
   code: number;
   message?: string;
   data: T;
+};
+
+//detail的response结构
+type HotelDetailResponse = {
+  hotelDetail: {
+    code: number;
+    message?: string;
+    data: HotelDetail;
+  };
 };
 
 type SearchHotelsRes = {
@@ -134,53 +143,87 @@ export function useHotelSearch() {
 /**
  * 酒店详情与房型列表（React Hooks）
  */
-export function useHotelDetail(id?: string, checkIn?: string, checkOut?: string) {
-  const { data, loading, error, refetch } = useQuery<HotelDetailRes>(GET_HOTEL_DETAIL, {
-    variables: { id, checkIn, checkOut },
-    skip: !id,
-    fetchPolicy: 'network-only',
-  });
 
-  const result = data?.hotelDetail;
-  const bizError = buildBizError(result);
+// 1. 获取酒店详情
+export const useHotelDetail = (
+  hotelId: string,
+  checkIn: string,
+  checkOut: string
+) => {
+
+  // const shouldSkip = !hotelId || !checkIn || !checkOut || new Date(checkIn) >= new Date(checkOut);
+
+  const { data, loading, error, refetch } = useQuery<HotelDetailResponse>(
+    GET_HOTEL_DETAIL,
+    {
+      variables: { id: hotelId, checkIn, checkOut },
+      // skip: shouldSkip,
+      skip: !hotelId || !checkIn || !checkOut, // 简化skip逻辑
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  // 正确解构数据
+  const hotelDetail = data?.hotelDetail;
+
+  const bizError = hotelDetail && hotelDetail.code !== 200
+    ? new Error(hotelDetail.message || '获取酒店信息失败')
+    : null;
 
   return {
-    data: result?.code === 200 ? result.data : undefined,
+    // 核心修正：data 应该是 hotelDetail.data，而不是整个对象
+    data: hotelDetail?.code === 200 ? hotelDetail.data : undefined,
     loading,
     error: error || bizError,
     refetch,
   };
-}
+};
 
-export function usePoiList(input?: PoiListInput) {
-  // 假设 POI 列表接口返回结构比较简单，如果包含 code/message 请参考上面的写法修改
-  const { data, loading, error, refetch } = useQuery<{ poiList: PoiItem[] }>(POI_LIST, {
-    variables: { input },
-    skip: !input,
-  });
-  
-  return {
-    data: data?.poiList || [],
-    loading,
-    error,
-    refetch,
-  };
-}
+// 2. 获取POI列表
+// 引入类型 (确保你定义了这些类型，如果没有就用 any)
+// import { PoiListQueryInput, PoiEntity } from ...
 
-export function useHotelMinPriceCalendar(input?: HotelMinPriceCalendarInput) {
-  const { data, loading, error, refetch } = useQuery<{ hotelMinPriceCalendar: HotelMinPriceCalendar }>(
-    HOTEL_MIN_PRICE_CALENDAR,
+export const usePoiList = (input: any) => {
+  // 1. 泛型定义要准确：告诉 Apollo 返回值里有个 poiList 数组
+  const { data: result, loading, error } = useQuery<{ poiList: any[] }>(
+    POI_LIST, 
     {
-      variables: input,
-      skip: !input?.hotelId,
-      fetchPolicy: 'network-only',
-    },
+      // 2. 传参结构必须符合 Schema：需要包一层 input
+      variables: { 
+        input: {
+          city: input.city,
+          // 如果需要其他参数如 limit，也可以在这里解构
+          // limit: 50 
+        }
+      },
+      // 只有当 city 存在时才发请求
+      skip: !input.city,
+      fetchPolicy: 'cache-and-network', // 建议加上这个，保证数据新鲜
+    }
   );
 
   return {
-    data: data?.hotelMinPriceCalendar,
+    // 3. 核心修改：直接取 poiList，不要判断 code === 200
+    // 如果 result 还没回来，或者 poiList 是 null，就返回空数组 []
+    data: result?.poiList || [],
     loading,
     error,
-    refetch,
   };
-}
+};
+
+// 3. 获取酒店最低价日历
+export const useHotelMinPriceCalendar = (input: HotelMinPriceCalendarInput) => {
+  const { data: result, loading, error } = useQuery<ApiResponse<HotelMinPriceCalendar>>(
+    HOTEL_MIN_PRICE_CALENDAR,
+    {
+      variables: input,
+      skip: !input.hotelId,
+    }
+  );
+
+  return {
+    data: result?.code === 200 ? result.data : undefined,
+    loading,
+    error,
+  };
+};

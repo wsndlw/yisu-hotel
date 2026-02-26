@@ -7,6 +7,8 @@ export default function CitySelect(props: {
   onChange?: (code: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
 }) {
   const [searchValue, setSearchValue] = useState('');
 
@@ -49,7 +51,8 @@ export default function CitySelect(props: {
       onSearch={setSearchValue}
       filterOption={false}
       options={options}
-      style={{ width: '100%' }}
+      className={props.className}
+      style={{ width: '100%', ...props.style }}
     />
   );
 }

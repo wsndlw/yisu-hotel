@@ -1,0 +1,6 @@
+.dangerLink {
+  color: #ff4d4f;
+}
+.dangerLink:hover {
+  color: #ff7875;
+}

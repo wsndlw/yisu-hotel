@@ -54,6 +54,8 @@ export const GET_FACILITIES_FOR_H5 = gql`
  * - category: 分类（用于分组展示）
  * - type: 类型（固定为 TAG）
  */
+
+//有问题
 export const GET_TAGS_FOR_H5 = gql`
   query GetTagsForH5 {
     getTagsForH5 {

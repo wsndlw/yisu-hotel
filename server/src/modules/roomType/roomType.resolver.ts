@@ -63,7 +63,7 @@ export class RoomTypeResolver {
   ): Promise<Result> {
     const roomType = await this.roomTypeService.getRoomTypeById(roomTypeId);
     await this.hotelService.assertMerchantHotel(roomType.hotelId, user);
-    const hotel = await this.hotelService.getHotelDetail(roomType.hotelId);
+    const hotel = await this.hotelService.getHotelById(roomType.hotelId);
     await this.roomTypeService.deleteRoomType(roomTypeId);
     // 刷新最低价
     await this.hotelService.refreshMiniPrice(roomType.hotelId);

@@ -86,7 +86,6 @@ const FacilitySelector = ({ value = [], onChange }: FacilitySelectorProps) => {
         ) : (
           <div className={styles.selectedTags}>
             {selectedFacilities.map((facility: any) => {
-              const categoryInfo = categoryConfig[facility.category as keyof typeof categoryConfig];
               return (
                 <Tag key={facility.id} color={ 'default'} >
                   {facility.name}

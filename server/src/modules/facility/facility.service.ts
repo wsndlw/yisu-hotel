@@ -59,9 +59,9 @@ export class FacilityService {
       where: { name, type },
     });
 
-    if (existing && (!id || existing.id !== id)) {
-      throw new BadRequestException('该类型下已存在同名设施');
-    }
+    // if (existing && (!id || existing.id !== id)) {
+    //   throw new BadRequestException('该类型下已存在同名设施');
+    // }
 
     const saveData: Partial<FacilityEntity> = {
       name,

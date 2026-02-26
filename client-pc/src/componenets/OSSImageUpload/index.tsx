@@ -25,7 +25,7 @@ export default function OSSImageUpload(props: Readonly<OSSImageUploadProps>) {
   const { data, loading, refetch } = useQuery(GET_OSS_INFO, {
     fetchPolicy: 'no-cache',
   });
-
+  
   const OSSData = data?.getOssInfo;
 
   const getKey = (file: UploadFile) => {

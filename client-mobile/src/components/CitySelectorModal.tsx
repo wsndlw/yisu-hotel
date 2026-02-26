@@ -51,7 +51,7 @@ const CitySelectorModal: React.FC<Props> = ({ visible, onClose, onSelect, data }
                                 >
                                     <Text style={styles.cityText}>
                                         {/* 如果是字符串直接显示，如果是对象显示 "国家 · 城市" */}
-                                        {isString ? item : `${item.country} · ${item.name}`}
+                                        {isString ? item : `${item.name}`}
                                     </Text>
                                     
                                     {/* (可选) 如果是海外，可以给个小标签或者不同的样式 */}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import style from './index.module.css';
+import styles from './index.module.css';
 import { Card, Col, Row, Statistic, Table, Tag } from 'antd';
 import { useAdminDashboardStats } from '../../../services/stats';
 
@@ -28,26 +28,25 @@ const Dashboard = ({ }) => {
 
       <Row gutter={16}>
         <Col span={6}>
-          <Card>
+          <Card className={styles.statCard}>
             <Statistic title="平台总交易额（演示）" value={stats?.totalRevenue || 0} prefix="¥" />
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card className={styles.statCard}>
             <Statistic title="酒店数" value={stats?.hotelCount || 0} suffix="家" />
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card className={styles.statCard}>
             <Statistic
-
               title="近7日新增酒店总数"
               value={stats?.newHotelCount || 0}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card style={{ background: '#ffd3d3', borderColor: '#ffccc7', }}>
+          <Card className={styles.warningCard}>
             <Statistic
               title="待审核酒店数"
               value={stats?.pendingHotelCount || 0}
@@ -56,7 +55,7 @@ const Dashboard = ({ }) => {
         </Col>
       </Row>
 
-      <Row gutter={16} style={{ marginTop: 16 }}>
+      <Row gutter={16} className={styles.bottomRow}>
         <Col span={14}>
           <Card title="新增酒店（近7天）" size="small">
             <Table

@@ -1,0 +1,23 @@
+.actions {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.link {
+  color: inherit;
+}
+
+.linkDisabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.addWrap {
+  margin-bottom: 16px;
+}
+
+.fullWidth {
+  width: 100%;
+}
+

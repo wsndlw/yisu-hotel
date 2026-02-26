@@ -1,0 +1,18 @@
+.actions {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.link {
+  color: #1677ff;;
+}
+
+.linkDisabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.dangerLink{
+  color: red;
+}

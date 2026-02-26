@@ -2,6 +2,8 @@ import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { NearbyPoiItem } from '../../poi/dto/poi.type';
 import { RoomTypeEntity } from 'src/modules/roomType/models/room-type.entity';
 
+import { HotelImageEntity } from '../../hotelImage/models/hotel-image.entity';
+
 @ObjectType({ description: '移动端 Banner' })
 export class MobileBanner {
   @Field(() => ID)
@@ -55,8 +57,8 @@ export class MobileHotelListItem {
   @Field(() => String)
   name: string;
 
-  @Field(() => String, { nullable: true })
-  coverImage?: string | null;
+  @Field(() => [HotelImageEntity], { nullable: true, description: '酒店图片列表' })
+  images?: HotelImageEntity[] | [];
 
   @Field(() => Number, { nullable: true })
   score?: number | null;
@@ -76,11 +78,22 @@ export class MobileHotelListItem {
   @Field(() => Number, { nullable: true })
   favoriteCount?: number | null;
 
+  @Field(() => Number, { nullable: true, description: '最低起价（自动由房型价格计算）' })
+  miniPrice?: number | null;
+
+  @Field(() => Number, { nullable: true, description: '酒店星级（0-10）' })
+  starLevel?: number | null;
+
   @Field(() => String, { nullable: true })
   latitude?: string | null;
 
   @Field(() => String, { nullable: true })
   longitude?: string | null;
+
+  @Field(() => String, { nullable: true, description: '开业时间（YYYY-MM-DD 格式）' })
+  openSince?: string | null;
+
+
 
   @Field(() => [RoomTypeEntity], { nullable: true })
   roomType?: [RoomTypeEntity] | [];
@@ -126,6 +139,9 @@ export class MobileRoom {
 
   @Field(() => Boolean, { nullable: true })
   hasWindow?: boolean | null;
+
+  @Field(() => Number, { nullable: true })
+  maxGuests?: number | null;
 }
 
 @ObjectType({ description: '酒店详情（移动端）' })
@@ -156,6 +172,39 @@ export class MobileHotelDetail {
 
   @Field(() => [NearbyPoiItem], { nullable: true })
   nearbyPoi?: NearbyPoiItem[];
+  //新增
+  @Field(() => Number, { nullable: true })
+  starLevel?: number | null; // 星级
+
+  @Field(() => String, { nullable: true })
+  city?: string | null; // 城市编码
+
+  @Field(() => String, { nullable: true })
+  nameEn?: string | null; // 英文名称
+
+  @Field(() => String, { nullable: true })
+  brand?: string | null; // 品牌
+
+  @Field(() => Number, { nullable: true })
+  score?: number | null; // 评分（decimal转number）
+
+  @Field(() => String, { nullable: true })
+  phone?: string | null; // 电话
+
+  @Field(() => Number, { nullable: true })
+  longitude?: number | null; // 经度
+
+  @Field(() => Number, { nullable: true })
+  latitude?: number | null; // 纬度
+
+  @Field(() => String, { nullable: true })
+  openSince?: string | null; // 开业时间
+
+  @Field(() => String, { nullable: true })
+  district?: string | null; // 区县
+
+  @Field(() => Number, { nullable: true })
+  commentCount?: number | null; // 评价数
 }
 
 @ObjectType({ description: 'HotelConnection结果' })

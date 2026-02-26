@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
 import dayjs from 'dayjs';
-import styles from './index.module.css';
+import styles  from './index.module.css';
 import { Card, Space, Button, Table, Modal, Select, DatePicker, InputNumber, Switch, Form, App } from 'antd';
 import OSSImageUpload from '../../../componenets/OSSImageUpload';
 import { useQuery } from '@apollo/client';
@@ -12,9 +12,9 @@ import { getColumns } from './constants';
 /**
 *移动端首页轮播图管理，由商户上传并关联酒店
 */
-const Banners = ({}) => {
+const Banners = ({ }) => {
 
-    const { message } = App.useApp();
+  const { message } = App.useApp();
 
   const { data: banners, loading, refetch } = useAllBanners();
   const [upsertBanner, saving] = useUpsertBanner();
@@ -61,13 +61,13 @@ const Banners = ({}) => {
         timeRange: [row.startAt ? dayjs(row.startAt) : null, row.endAt ? dayjs(row.endAt) : null],
         image: row.imageUrl
           ? [
-              {
-                uid: `banner-${row.id}`,
-                name: 'banner',
-                status: 'done',
-                url: row.imageUrl,
-              },
-            ]
+            {
+              uid: `banner-${row.id}`,
+              name: 'banner',
+              status: 'done',
+              url: row.imageUrl,
+            },
+          ]
           : [],
       });
     }, 0);
@@ -125,13 +125,13 @@ const Banners = ({}) => {
     });
   };
 
-  
 
 
- return (
+
+  return (
     <>
       <Card
-        title="首页轮播图管理（管理员）"
+        title="首页轮播图管理"
         extra={
           <Space>
             <Button onClick={refetch}>刷新</Button>
@@ -150,7 +150,7 @@ const Banners = ({}) => {
         onCancel={() => setOpen(false)}
         onOk={onSave}
         confirmLoading={saving}
-        destroyOnClose
+        destroyOnHidden
         afterOpenChange={(visible) => {
           if (!visible) form.resetFields();
         }}
@@ -177,11 +177,8 @@ const Banners = ({}) => {
                 okText: '确认裁剪',
                 cancelText: '取消',
                 maskClosable: false,
-                // 让裁剪弹窗的遮罩更明显，避免和“编辑轮播图”的确定按钮混淆
                 maskStyle: { backgroundColor: 'rgba(0,0,0,0.55)' },
-                // 提高层级，确保裁剪弹窗压住编辑 Modal
                 zIndex: 2000,
-                // 始终挂到 body（避免被父 Modal 的 stacking context 影响）
                 getContainer: document.body,
               }}
             />
@@ -201,7 +198,7 @@ const Banners = ({}) => {
             />
           </Form.Item>
 
-          <Form.Item name="timeRange" label="投放时间（可选）" tooltip="不填表示不限制投放时间">
+          <Form.Item name="timeRange" label="投放时间" tooltip="不填表示不限制投放时间">
             <DatePicker.RangePicker style={{ width: '100%' }} showTime />
           </Form.Item>
 

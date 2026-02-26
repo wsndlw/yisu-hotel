@@ -39,48 +39,68 @@ export const GET_HOME_CONFIG = gql`
 /**
  * 酒店搜索（支持筛选/排序/分页）
  */
+// export const SEARCH_HOTELS = gql`
+//   query SearchHotels($input: SearchHotelInput!) {
+//     searchHotels(input: $input) {
+//       code
+//       message
+//       data {
+//         items {
+//           id
+//           hotelNo
+//           name
+//           images {
+//              url
+//            }
+//           favoriteCount
+//           score
+//           minPrice
+//           distance
+//           distanceText
+//           address
+//           latitude
+//           longitude 
+//         }
+//         page {
+//           total
+//           page
+//           pageSize
+//         }
+//       }
+//     }
+//   }
+// `;
+
 export const SEARCH_HOTELS = gql`
   query SearchHotels($input: SearchHotelInput!) {
     searchHotels(input: $input) {
       code
       message
       data {
+        total
         items {
           id
-          hotelNo
           name
-          coverImage
-          favoriteCount
-          score
-          minPrice
-          distance
-          distanceText
           address
-          latitude
-          longitude
-          roomType {
-            id
-            name
-            bedType
-            basePrice
-            maxGuests
-            hasBreakfast
-            refundable
-            hasWindow
-            area
-            floor
-            isOnSale
-            sortOrder
-            stock
-            images
+          score
+          starLevel
+          favoriteCount
+          minPrice
+          distanceText
+          images {
+            url
           }
-        }
-        minPrice
-        total
-        page {
-          total
-          pageNum
-          pageSize
+          roomType {
+          id
+          name
+          images       # 图片 (JSON字符串)
+          bedType      # 用于显示 "大床/双床"
+          hasBreakfast # 用于显示 "含早餐"
+          refundable   # 用于显示 "免费取消"
+          hasWindow    # 用于显示 "有窗"
+          isOnSale     # 排除下架房型
+          basePrice    # 备用
+         }
         }
       }
     }
@@ -91,10 +111,12 @@ export const SEARCH_HOTELS = gql`
  * 酒店详情 + 房型列表（按价格升序）
  */
 export const GET_HOTEL_DETAIL = gql`
-  query GetHotelDetail($id: ID!, $checkIn: String, $checkOut: String) {
+  query GetHotelDetail($id: String!, $checkIn: String, $checkOut: String) {
+    # 1. 必须保留 hotelDetail 根字段（与后端 schema 一致）
     hotelDetail(id: $id, checkIn: $checkIn, checkOut: $checkOut) {
       code
       message
+      # 2. 酒店核心信息全部在 data 内部，必须嵌套查询
       data {
         id
         name
@@ -103,6 +125,19 @@ export const GET_HOTEL_DETAIL = gql`
         favoriteCount
         images
         facilities
+        # 新增
+        starLevel
+        city
+        nameEn
+        brand
+        score
+        phone
+        longitude
+        latitude
+        openSince
+        district
+        commentCount
+
         nearbyPoi {
           id
           name
@@ -112,19 +147,19 @@ export const GET_HOTEL_DETAIL = gql`
           longitude
           distanceKm
           baseScore
-          city
         }
+        # 详情页依赖房型数据
         rooms {
           id
           title
-          coverImage
+          price
+          bedType
+          area
           hasBreakfast
           refundable
-          area
           hasWindow
-          price
-          stock
-          bedType
+          coverImage
+          maxGuests
         }
       }
     }

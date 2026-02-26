@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 
 import style from './index.module.css';
 import { Button, Image, Descriptions, Drawer, Skeleton, Space, Table, Tag } from 'antd';
-import { useHotelDetail } from '../../../../services/hotel';
-import { getCityName } from '../../../../constants/cities';
+import { useHotelDetail } from '../../../../../services/hotel';
+import { getCityName } from '../../../../../constants/cities';
 
 /**
 *酒店详细信息页面
@@ -17,14 +17,14 @@ const HtelDetail = (props: {
 }) => {
 
   const { hotel, loading } = useHotelDetail(props.open ? props.id : undefined);
-
+  console.log('hotel', hotel);
   return (
     <Drawer
       title="酒店详情"
       open={props.open}
       onClose={props.onClose}
       width={720}
-      destroyOnClose
+      destroyOnHidden
       footer={
         <div style={{ textAlign: 'right' }}>
           <Space>
@@ -48,12 +48,19 @@ const HtelDetail = (props: {
       ) : (
         <Descriptions bordered size="small" column={2}>
           <Descriptions.Item label="酒店ID" span={2}>
-            {hotel?.id}
+            {hotel?.hotelID}
           </Descriptions.Item>
-          <Descriptions.Item label="中文名">{hotel?.nameZh}</Descriptions.Item>
-          <Descriptions.Item label="英文名">{hotel?.nameEn || '-'}</Descriptions.Item>
-          <Descriptions.Item label="城市">{getCityName(hotel?.city)} {`${(hotel?.city)}`}</Descriptions.Item>
-          <Descriptions.Item label="星级">{hotel?.starLevel}</Descriptions.Item>
+          <Descriptions.Item label="中文名">
+            {hotel?.nameZh}
+          </Descriptions.Item>
+          <Descriptions.Item label="英文名">
+            {hotel?.nameEn || '-'}</Descriptions.Item>
+          <Descriptions.Item label="城市">
+            {getCityName(hotel?.city)} {`${(hotel?.city)}`}
+          </Descriptions.Item>
+          <Descriptions.Item label="星级">
+            {hotel?.starLevel}
+          </Descriptions.Item>
           <Descriptions.Item label="地址" span={2}>
             {hotel?.address}
           </Descriptions.Item>
@@ -61,8 +68,22 @@ const HtelDetail = (props: {
             {hotel?.latitude && hotel?.longitude ? `lat=${hotel.latitude}, lng=${hotel.longitude}` : '-'}
           </Descriptions.Item> */}
           <Descriptions.Item label="开业时间">{hotel?.openSince}</Descriptions.Item>
-          <Descriptions.Item label="状态">{hotel?.status}</Descriptions.Item>
+          <Descriptions.Item label="状态">
+            {(() => {
+              switch (hotel?.status) {
+                case 'DRAFT': return <Tag color="default">草稿</Tag>;
+                case 'REVIEWING': return <Tag color="processing">审核中</Tag>;
+                case 'PUBLISHED': return <Tag color="success">已发布</Tag>;
+                case 'REJECTED': return <Tag color="error">已驳回</Tag>;
+                case 'OFFLINE': return <Tag color="warning">已下线</Tag>;
+                default: return hotel?.status || '-';
+              }
+            })()}
+          </Descriptions.Item>
           <Descriptions.Item label="最低价">{hotel?.miniPrice ? `¥${hotel.miniPrice}` : '-'}</Descriptions.Item>
+          <Descriptions.Item label="优惠" >
+            {hotel?.discountInfo || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label="设施" span={2}>
             <Space wrap>
               {(hotel?.facilities || []).map((f: any) => (
@@ -72,9 +93,7 @@ const HtelDetail = (props: {
               ))}
             </Space>
           </Descriptions.Item>
-          <Descriptions.Item label="优惠" span={2}>
-            {hotel?.discountInfo || '-'}
-          </Descriptions.Item>
+
         </Descriptions>
       )}
 

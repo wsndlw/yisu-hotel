@@ -103,41 +103,88 @@ export class CalendarService {
    * @param checkOut 离店日期（YYYY-MM-DD）
    * @returns 是否可订（每晚库存 > 0）
    */
-  async checkAvailability(roomTypeId: string, checkIn: string, checkOut: string): Promise<boolean> {
+  // async checkAvailability(roomTypeId: string, checkIn: string, checkOut: string): Promise<boolean> {
+  //   const roomType = await this.roomTypeService.getRoomTypeById(roomTypeId);
+  //   if (!roomType) return false;
+
+  //   // 计算住宿天数（入住日到离店日前一天）
+  //   // 例如：2025-01-01 入住，2025-01-03 离店，住 2 晚（1月1日、1月2日）
+  //   const nights: string[] = [];
+  //   let d = new Date(checkIn + 'T00:00:00.000Z');
+  //   const endD = new Date(checkOut + 'T00:00:00.000Z');
+  //   while (d < endD) {
+  //     nights.push(d.toISOString().slice(0, 10));
+  //     d = new Date(d.getTime() + 24 * 3600 * 1000);
+  //   }
+
+  //   if (nights.length === 0) return false;
+
+  //   // 查询这些日期的日历库存
+  //   const stocks = await this.stockService.list(roomTypeId, nights[0], nights[nights.length - 1]);
+  //   const stockMap = new Map(stocks.map((s) => [s.date, s.stock]));
+
+  //   // 检查每一晚：优先用日历库存，否则用房型基础库存
+  //   for (const night of nights) {
+  //     if (stockMap.has(night)) {
+  //       const stock = stockMap.get(night)!;
+  //       if (stock <= 0) return false;
+  //       continue;
+  //     }
+
+  //     // 未设置日历库存，回退到基础库存；若基础库存为空则视为可订
+  //     if (roomType.stock == null) continue;
+  //     if (roomType.stock <= 0) return false;
+  //   }
+
+  //   return true;
+  // }
+
+  // CalendarService
+async checkAvailability(
+  roomTypeId: string,
+  checkIn: string,
+  checkOut: string,
+  baseStock?: number | null // 新增：可从外部直接传入基础库存
+): Promise<boolean> {
+  // 1. 优先使用传入的 baseStock，未传则查询数据库兜底
+  let defaultStock = baseStock;
+  if (defaultStock === undefined) {
     const roomType = await this.roomTypeService.getRoomTypeById(roomTypeId);
     if (!roomType) return false;
-
-    // 计算住宿天数（入住日到离店日前一天）
-    // 例如：2025-01-01 入住，2025-01-03 离店，住 2 晚（1月1日、1月2日）
-    const nights: string[] = [];
-    let d = new Date(checkIn + 'T00:00:00.000Z');
-    const endD = new Date(checkOut + 'T00:00:00.000Z');
-    while (d < endD) {
-      nights.push(d.toISOString().slice(0, 10));
-      d = new Date(d.getTime() + 24 * 3600 * 1000);
-    }
-
-    if (nights.length === 0) return false;
-
-    // 查询这些日期的日历库存
-    const stocks = await this.stockService.list(roomTypeId, nights[0], nights[nights.length - 1]);
-    const stockMap = new Map(stocks.map((s) => [s.date, s.stock]));
-
-    // 检查每一晚：优先用日历库存，否则用房型基础库存
-    for (const night of nights) {
-      if (stockMap.has(night)) {
-        const stock = stockMap.get(night)!;
-        if (stock <= 0) return false;
-        continue;
-      }
-
-      // 未设置日历库存，回退到基础库存；若基础库存为空则视为可订
-      if (roomType.stock == null) continue;
-      if (roomType.stock <= 0) return false;
-    }
-
-    return true;
+    defaultStock = roomType.stock;
   }
+
+  // 2. 修复时区/夏令时 Bug，使用纯 UTC 日期推算
+  const nights: string[] = [];
+  const d = new Date(`${checkIn}T00:00:00.000Z`);
+  const endD = new Date(`${checkOut}T00:00:00.000Z`);
+  while (d < endD) {
+    nights.push(d.toISOString().split('T')[0]);
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+
+  if (nights.length === 0) return false;
+
+  // 3. 查询这段时间的日历库存
+  const stocks = await this.stockService.list(roomTypeId, nights[0], nights[nights.length - 1]);
+  const stockMap = new Map(stocks.map((s) => [s.date, s.stock]));
+
+  // 4. 原汁原味的严谨业务逻辑校验
+  for (const night of nights) {
+    if (stockMap.has(night)) {
+      const stock = stockMap.get(night)!;
+      if (stock <= 0) return false;
+      continue;
+    }
+    if (defaultStock == null) continue;
+    if (defaultStock <= 0) return false;
+  }
+
+  return true;
+}
+
+
+
 
   /**
    * 计算房型在日期范围内的总价（考虑日历价格覆盖）
