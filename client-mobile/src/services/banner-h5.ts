@@ -11,7 +11,6 @@ type RawBanner = {
   endAt?: string | null;
 };
 
-// 新增这个类型：告诉 TS 接口返回的最外层结构是什么
 type BannersData = {
   bannersQuery: RawBanner[];
 };

@@ -16,14 +16,12 @@ export interface FacilityItem {
   category: 'BASIC' | 'ROOM' | 'DINING' | 'ENTERTAINMENT' | 'BUSINESS' | 'OTHER';
 }
 
-// ✅ 3. 定义接口返回的通用结构
 interface ApiResponse<T> {
   code: number;
   message?: string;
   data: T;
 }
 
-// ✅ 4. 定义 Query 的返回结构
 interface FacilitiesRes {
   getFacilitiesForH5: ApiResponse<FacilityItem[]>;
 }

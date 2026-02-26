@@ -29,8 +29,8 @@ const PriceStarFilterModal = ({ visible, onClose, onConfirm, initialPrice = '', 
     // 每次打开弹窗时，同步外部传入的初始值
     useEffect(() => {
         if (visible) {
-            setSelectedPrice(initialPrice);
-            setSelectedStar(initialStar);
+            setSelectedPrice(initialPrice || '');
+            setSelectedStar(initialStar || '');
         }
     }, [visible, initialPrice, initialStar]);
 

@@ -15,11 +15,11 @@ import { Carousel } from '@ant-design/react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as Location from 'expo-location'; // ✅ 引入定位库
+import * as Location from 'expo-location'; 
 
-// ✅ 1. 引入后端服务
+//  引入后端服务
 import { useHomeConfigV2 } from '../services/hotel-h5';
-// 引入弹窗组件
+//  引入弹窗组件
 import CitySelectorModal from '../components/CitySelectorModal';
 import DateSelectorModal from '../components/DateSelectorModal';
 
@@ -90,7 +90,7 @@ const getNights = (start: string, end: string) => {
 const SearchPage = () => {
     const navigation = useNavigation<any>();
 
-    // ✅ 获取后端数据
+    //  获取后端数据
     const { data: homeData, loading, error } = useHomeConfigV2();
 
 
@@ -152,7 +152,7 @@ const SearchPage = () => {
     // 快捷标签状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-    // ✅ [新增] 定位相关状态
+    //  定位相关状态
     const [isLocated, setIsLocated] = useState(false); // 是否已定位
     const [locationTip, setLocationTip] = useState(''); // 顶部气泡提示
     const [isLocating, setIsLocating] = useState(false); // 定位Loading状态
@@ -179,8 +179,8 @@ const SearchPage = () => {
             code: item.code,
             country: ''
         });
-        // ✅ 关键修改：手动选城市了，就要把“定位状态”关掉！
-        setIsLocated(false); 
+        // 
+        setIsLocated(false);
         setLocationTip(''); // 顺便把头顶的气泡也清空（如果有的话）
         setModalVisible(false);
     };
@@ -212,7 +212,7 @@ const SearchPage = () => {
         return `${selectedPrice} ${selectedStar}`.trim();
     };
 
-    // ✅ 解析价格字符串 (严格匹配 PRICES 数组的格式)
+    //  解析价格字符串
     const parsePrice = (priceStr: string) => {
         if (!priceStr) return { min: undefined, max: undefined };
 
@@ -237,19 +237,18 @@ const SearchPage = () => {
         return { min: undefined, max: undefined };
     };
 
-    // ✅ 解析星级 (确保匹配 STARS 数组的 label)
+    // 解析星级 
     const parseStar = (starStr: string) => {
         if (!starStr) return undefined;
         if (starStr.includes('2')) return 2;
         if (starStr.includes('3')) return 3;
         if (starStr.includes('4')) return 4;
         if (starStr.includes('5')) return 5;
-        // 如果有金钻/铂钻，先默认当做 5 星
         if (starStr.includes('钻')) return 5;
         return undefined;
     };
 
-    // ✅ [新增] 定位功能函数
+    //   定位功能函数
     const handleLocate = async () => {
         setIsLocating(true);
         try {
@@ -263,11 +262,11 @@ const SearchPage = () => {
             console.log("2. 权限通过，正在获取经纬度...");
             // ✅ 修改点：增加 accuracy 和 timeout，防止安卓模拟器卡死
             let location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced, 
+                accuracy: Location.Accuracy.Balanced,
             });
-            
+
             console.log("3. 获取到坐标:", location.coords);
-            
+
             console.log("4. 正在解析地址(逆地理编码)...");
             let addressResponse = await Location.reverseGeocodeAsync({
                 latitude: location.coords.latitude,
@@ -295,7 +294,7 @@ const SearchPage = () => {
             if (addressResponse && addressResponse.length > 0) {
                 const addr = addressResponse[0];
                 // 兼容不同系统的字段名
-                const cityName = addr.city || addr.region || addr.subregion || city.name; 
+                const cityName = addr.city || addr.region || addr.subregion || city.name;
                 const detailName = addr.name || addr.street || addr.district || '附近';
 
                 // ✅ 关键：只有这里执行了，UI 才会变
@@ -303,7 +302,7 @@ const SearchPage = () => {
                 setCity(prev => ({ ...prev, name: cityName }));
                 setIsLocated(true);
                 setLocationTip(`已定位到 ${cityName} · ${detailName}`);
-                
+
                 setTimeout(() => setLocationTip(''), 3000);
             } else {
                 alert("未解析到地址信息，请检查网络或模拟器位置设置");
@@ -336,7 +335,7 @@ const SearchPage = () => {
             }
         };
 
-        console.log("🚀 跳转列表页参数:", searchParams);
+        console.log("跳转列表页参数:", searchParams);
         navigation.navigate('HotelList', searchParams);
     };
 
@@ -369,7 +368,7 @@ const SearchPage = () => {
                 onSelect={handleDateSelect}
             />
 
-            {/* ✅ 价格/星级弹窗 (已修正位置和常量) */}
+            {/*  价格/星级弹窗 ( */}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -437,8 +436,8 @@ const SearchPage = () => {
                                         activeOpacity={0.9}
                                         onPress={() => banner.redirectHotelId && navigation.navigate('Detail', {
                                             id: banner.redirectHotelId,
-                                            checkIn: startDate,
-                                            checkOut: endDate
+                                            checkInDate: startDate,
+                                            checkOutDate: endDate
                                         })}
                                     >
                                         <Image source={{ uri: banner.imageUrl }} style={styles.image} resizeMode='cover' />
@@ -474,7 +473,7 @@ const SearchPage = () => {
                     <View style={styles.cardContent}>
                         {/* 城市与搜索栏 */}
                         <View style={styles.searchRow}>
-                            {/* ✅ [新增] 悬浮气泡提示 (绝对定位) */}
+                            {/*  悬浮气泡提示  */}
                             {locationTip ? (
                                 <View style={styles.bubbleContainer}>
                                     <View style={styles.bubble}>
@@ -509,7 +508,7 @@ const SearchPage = () => {
                                 />
                             </View>
 
-                            {/* ✅ [修改] 右侧按钮：点击触发定位 */}
+                            {/*  右侧按钮：点击触发定位 */}
                             <TouchableOpacity style={styles.mapIconBtn} onPress={handleLocate}>
                                 {isLocating ? (
                                     <ActivityIndicator size="small" color="#0086F6" />
@@ -550,15 +549,15 @@ const SearchPage = () => {
                                 {facilities.length > 0 && facilities.map((facility: any) => (
                                     <TouchableOpacity
                                         key={facility.id}
-                                        // ✅ 1. 点击存的是 ID
+                                        //  点击存的是 ID
                                         onPress={() => toggleTag(facility.id)}
-                                        // ✅ 2. 判断样式也要查 ID
+                                        //  判断样式也要查 ID
                                         style={[
                                             styles.tagItem,
                                             selectedTags.includes(facility.id) && styles.tagItemSelected
                                         ]}
                                     >
-                                        {/* ✅ 3. 文字样式判断也要查 ID */}
+                                        {/*  文字样式判断也要查 ID */}
                                         <Text style={[
                                             styles.tagText,
                                             selectedTags.includes(facility.id) && styles.tagTextSelected
@@ -577,37 +576,34 @@ const SearchPage = () => {
                     </View>
                 </View>
 
-                {/* ✅ 底部：本周特惠 (已替换原来的占位符) */}
+                {/*  底部：本周特惠 */}
                 <View style={styles.bottomSection}>
                     <Text style={styles.sectionTitle}>本周特惠</Text>
 
-                    {/* 1. 大图卡片 (改为 TouchableOpacity) */}
+                    {/*  大图卡片  */}
                     {lastBanner ? (
                         <TouchableOpacity
                             style={styles.specialMainCard}
                             activeOpacity={0.9}
                             onPress={() => {
-                                // 如果有酒店ID，就跳转到详情页
                                 if (lastBanner.redirectHotelId) {
                                     navigation.navigate('Detail', {
                                         id: lastBanner.redirectHotelId,
-                                        checkIn: startDate,
-                                        checkOut: endDate
+                                        checkInDate: startDate,
+                                        checkOutDate: endDate
                                     });
                                 }
                             }}
                         >
-                            {/* 图片源改为 lastBanner.imageUrl */}
                             <Image source={{ uri: lastBanner.imageUrl }} style={styles.specialMainImage} resizeMode="cover" />
 
-                            {/* 装饰性蒙层和文字保持不变 */}
                             <View style={styles.specialImageOverlay}>
                                 <View style={styles.specialTag}>
                                     <Text style={styles.specialTagText}>当季力荐</Text>
                                 </View>
                                 <View>
                                     <Text style={styles.specialOverlayText}>品质出行 · 甄选好店</Text>
-                                    {/* 增加一个小箭头提示可以点击 */}
+
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                         <Text style={{ color: '#fff', fontSize: 12 }}>立即查看</Text>
                                         <Ionicons name="arrow-forward" size={12} color="#fff" style={{ marginLeft: 2 }} />
@@ -616,13 +612,11 @@ const SearchPage = () => {
                             </View>
                         </TouchableOpacity>
                     ) : (
-                        // 兜底显示
                         <View style={[styles.specialMainCard, { backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }]}>
                             <Text style={{ color: '#999' }}>敬请期待更多特惠</Text>
                         </View>
                     )}
 
-                    {/* 2. 三个精美小框 */}
                     <View style={styles.threeBoxesContainer}>
                         {SPECIAL_BOXES.map((box, index) => (
                             <TouchableOpacity
@@ -642,7 +636,6 @@ const SearchPage = () => {
                     </View>
                 </View>
 
-                {/* 底部增加一点安全边距 */}
                 <View style={{ height: 40 }} />
             </ScrollView>
         </View>
@@ -675,7 +668,6 @@ const styles = StyleSheet.create({
     cityText: { fontSize: 20, fontWeight: 'bold', color: '#333' },
     inputWrapper: { flex: 1, height: 40, justifyContent: 'center' },
     searchInput: { fontSize: 16, color: '#333' },
-    // ✅ [新增] 气泡相关样式
     bubbleContainer: {
         position: 'absolute',
         top: -22.5, // 向上浮动
@@ -683,7 +675,7 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     bubble: {
-        backgroundColor: 'rgba(0,0,0,0.7)', // 半透明黑底
+        backgroundColor: 'rgba(0,0,0,0.7)', 
         paddingHorizontal: 10,
         paddingVertical: 6,
         borderRadius: 4,
@@ -703,7 +695,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 6,
         borderLeftColor: 'transparent',
         borderRightColor: 'transparent',
-        borderTopColor: 'rgba(0,0,0,0.7)', // 颜色要和 bubble 背景一致
+        borderTopColor: 'rgba(0,0,0,0.7)', 
         marginLeft: 10, // 调整小三角的位置
     },
     mapIconBtn: { alignItems: 'center', marginLeft: 10 },
@@ -747,7 +739,6 @@ const styles = StyleSheet.create({
     okBtn: { flex: 2, height: 44, borderRadius: 22, backgroundColor: '#0086F6', justifyContent: 'center', alignItems: 'center' },
     okBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 
-    // ✅ 新增：底部特惠区域样式
     bottomSection: {
         padding: 20,
         paddingTop: 10,
@@ -817,7 +808,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         overflow: 'hidden',
     },
-    // 小框的装饰性大图标（背景淡化）
+    // 小框的装饰性大图标
     boxDecorationIcon: {
         position: 'absolute',
         right: -15,
@@ -835,9 +826,6 @@ const styles = StyleSheet.create({
         color: '#666',
     },
 
-    // 特殊处理：第一个和最后一个框去掉外边距，保证对齐
-    // 注意：在 React Native 的 Flex 布局中，更好的做法是让父容器 paddingHorizontal，子元素设置固定的中间间距。
-    // 上面的 marginHorizontal: 5 和父容器 padding: 20 配合已经能达到不错的效果。
 });
 
 export default SearchPage;

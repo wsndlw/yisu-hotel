@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, Image, ScrollView, TouchableOpacity,
   StyleSheet, SafeAreaView, StatusBar, Dimensions, Animated,
-  Modal, ActivityIndicator, Alert
+  Modal, ActivityIndicator, 
 } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -16,8 +16,8 @@ import GuestSelectorModal from '../components/GuestSelectorModal';
 import RoomFilterModal, { FilterOptions } from '../components/RoomFilterModal';
 
 // 导入真实类型和Hooks
-import type { HotelDetail, Room, NearbyPoi } from '../types/hotel';
-import { useHotelDetail, usePoiList } from '../services/hotel-h5';
+import type {  Room } from '../types/hotel';
+import { useHotelDetail,  } from '../services/hotel-h5';
 
 // 路由类型定义（补充完整参数）
 type RootStackParamList = {
@@ -35,15 +35,15 @@ const cityCodeMap: Record<string, string> = {
 };
 
 const DetailPage = () => {
-  // 定义 ScrollView Ref（用于滚动定位）
+  // 定义 ScrollView Ref
   const scrollViewRef = useRef<ScrollViewType>(null);
 
-  // 基础导航和参数（增加默认值，避免undefined）
+  // 基础导航和参数（
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Detail'>>();
   const { id: hotelId, checkInDate: routeCheckIn, checkOutDate: routeCheckOut } = route.params || {};
 
-  // 收藏状态 + 动画
+  // 收藏状态  动画
   const [isFavorite, setIsFavorite] = useState(false);
   const heartScale = useRef(new Animated.Value(1)).current;
 
@@ -56,7 +56,7 @@ const DetailPage = () => {
   // 相册弹窗状态
   const [isAlbumModalVisible, setIsAlbumModalVisible] = useState(false);
 
-  // 日历相关状态（优先用路由参数，兜底默认值 + 统一格式为 YYYY-MM-DD）
+  // 日历相关状态
   const formatDate = (date: string) => {
     if (!date) return '';
     if (date.includes('-')) return date;
@@ -126,7 +126,7 @@ const DetailPage = () => {
     }
   };
 
-  // 切换收藏状态（带动画）
+  // 切换收藏状态
   const toggleFavorite = async () => {
     if (!hotelId) return;
 
@@ -340,7 +340,7 @@ const DetailPage = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent />
 
       {/* 顶部导航 */}
@@ -685,7 +685,7 @@ const DetailPage = () => {
         onClose={() => setIsFilterModalVisible(false)}
         onApply={applyRoomFilters}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

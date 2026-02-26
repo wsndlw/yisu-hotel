@@ -1,4 +1,3 @@
-// 入住人数选择弹窗
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

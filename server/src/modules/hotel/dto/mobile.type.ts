@@ -197,8 +197,8 @@ export class MobileHotelDetail {
   @Field(() => Number, { nullable: true })
   latitude?: number | null; // 纬度
 
-  @Field(() => String, { nullable: true })
-  openSince?: string | null; // 开业时间
+  @Field(() => String,{ nullable:true })
+  openSince?:string | null;
 
   @Field(() => String, { nullable: true })
   district?: string | null; // 区县

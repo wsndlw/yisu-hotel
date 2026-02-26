@@ -11,7 +11,7 @@ interface Props {
 }
 
 const ListHeader: React.FC<Props> = ({ city, startDate, endDate, onPressCapsule, onBack }) => {
-    // 简单的日期格式化：2026-02-12 -> 02-12
+    // 日期格式化
     const fmt = (s: string) => s ? s.slice(5) : '';
     // 计算晚数
     const nights = startDate && endDate ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) : 0;

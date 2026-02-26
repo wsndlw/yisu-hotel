@@ -99,7 +99,7 @@ export interface HotelDetail {
   district?: string | null;
   commentCount?: number | null; // 评价数
 }
-
+//
 export interface RoomType {
   id: string;
   name: string;

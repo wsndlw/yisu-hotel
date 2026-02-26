@@ -171,8 +171,6 @@ export class MobileHotelResolver {
     };
   }
 
-
-
   private normalizeDate(value: string | null | undefined): string | null {
     if (!value) return null;
     // 允许传入带时间的 ISO 或 'YYYY-MM-DD'，统一截断到日期
@@ -228,6 +226,7 @@ export class MobileHotelResolver {
       }
 
       rooms.push({
+
         id: room.id,
         title: room.name,
         coverImage,
@@ -268,7 +267,7 @@ export class MobileHotelResolver {
       openSince: hotel.openSince,
       district: hotel.district,
       commentCount: hotel.commentCount,
-    };
+    };//////
 
     return {
       code: CODE.SUCCESS,

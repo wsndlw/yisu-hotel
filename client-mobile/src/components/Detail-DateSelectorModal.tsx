@@ -9,7 +9,7 @@ interface Props {
     startDate: string;
     endDate: string;
     onSelect: (date: string) => void;
-    currentMonth?: Date;
+    currentMonth?: Date; 
     onMonthChange?: (date: Date) => void; 
 }
 
