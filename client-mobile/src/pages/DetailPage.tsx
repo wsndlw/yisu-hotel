@@ -2,15 +2,16 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, Image, ScrollView, TouchableOpacity,
   StyleSheet, SafeAreaView, StatusBar, Dimensions, Animated,
-  Modal
+  Modal, ActivityIndicator, Alert
 } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ScrollView as ScrollViewType } from 'react-native';
+import { RouteProp, NavigationProp } from '@react-navigation/native';
 
 // 导入自定义组件
-import DateSelectorModal from '../components/DateSelectorModal';
+import DateSelectorModal from '../components/Detail-DateSelectorModal';
 import GuestSelectorModal from '../components/GuestSelectorModal';
 import RoomFilterModal, { FilterOptions } from '../components/RoomFilterModal';
 
@@ -21,96 +22,104 @@ import { useHotelDetail, usePoiList } from '../services/hotel-h5';
 // 路由类型定义（补充完整参数）
 type RootStackParamList = {
   Search: undefined;
-  List: { checkInDate?: string; checkOutDate?: string; city?: string };
-  Detail: { hotelId: string; checkInDate?: string; checkOutDate?: string };
+  List: undefined;
+  Detail: { id: string; checkInDate?: string; checkOutDate?: string };
 };
 
 const cityCodeMap: Record<string, string> = {
-  '110100': '上海市',
-  '321300': '宿迁市',
-  // 补充其他城市编码
+  '110100': '北京市',
+  '120100': '天津市',
+  '310100': '上海市',
+  '320100': '南京市',
+  '500100': '重庆市',
 };
 
 const DetailPage = () => {
-  // 1. 定义 ScrollView Ref（用于滚动定位）
+  // 定义 ScrollView Ref（用于滚动定位）
   const scrollViewRef = useRef<ScrollViewType>(null);
 
-  // 2. 基础导航和参数（增加默认值，避免undefined）
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const { id, checkIn: routeCheckIn, checkOut: routeCheckOut } = route.params || {};
-
-  // 3. 核心状态（优先使用路由传递的日期）
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [guestCount, setGuestCount] = useState(2);
-  const [roomSectionY, setRoomSectionY] = useState(0);
-  const [currentScrollY, setCurrentScrollY] = useState(0);
-  // 新增：相册弹窗状态
-  const [isAlbumModalVisible, setIsAlbumModalVisible] = useState(false);
-
-  // 日历相关状态（优先用路由参数，兜底默认值 + 统一格式为 YYYY-MM-DD）
-  const formatDate = (date: string) => date?.replace(/\//g, '-') || '2026-02-19';
-  const [checkInDate, setCheckInDate] = useState(formatDate(routeCheckIn));
-  const [checkOutDate, setCheckOutDate] = useState(formatDate(routeCheckOut));
-  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
-
-  // 入住人数弹窗状态
-  const [isGuestModalVisible, setIsGuestModalVisible] = useState(false);
+  // 基础导航和参数（增加默认值，避免undefined）
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'Detail'>>();
+  const { id: hotelId, checkInDate: routeCheckIn, checkOutDate: routeCheckOut } = route.params || {};
 
   // 收藏状态 + 动画
   const [isFavorite, setIsFavorite] = useState(false);
   const heartScale = useRef(new Animated.Value(1)).current;
 
+  // 顶部酒店图片展示
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 相册状态
+  const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0);
+
+  // 相册弹窗状态
+  const [isAlbumModalVisible, setIsAlbumModalVisible] = useState(false);
+
+  // 日历相关状态（优先用路由参数，兜底默认值 + 统一格式为 YYYY-MM-DD）
+  const formatDate = (date: string) => {
+    if (!date) return '';
+    if (date.includes('-')) return date;
+    return date.replace(/\//g, '-');
+  };
+  const [checkInDate, setCheckInDate] = useState(formatDate(routeCheckIn || ''));
+  const [checkOutDate, setCheckOutDate] = useState(formatDate(routeCheckOut || ''));
+  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
+  // 记录当前展示的月份，用于日期选择器的初始化
+  const [currentViewMonth, setCurrentViewMonth] = useState(() => {
+    // 如果有已选择的日期，则使用该日期所在的月份
+    if (checkInDate) {
+      return new Date(checkInDate);
+    }
+    return new Date();
+  });
+
+  // 入住人数
+  const [guestCount, setGuestCount] = useState(1);
+
+  // 入住人数弹窗状态
+  const [isGuestModalVisible, setIsGuestModalVisible] = useState(false);
+
   // 筛选相关状态
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
+  // 保存筛选后房型的最低价格
+  const [minPrice, setMinPrice] = useState<number>(0);
 
-  //相册状态
-  const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0);
+  // 房型列表位置记录
+  const [roomSectionY, setRoomSectionY] = useState(0);
+  const [currentScrollY, setCurrentScrollY] = useState(0);
 
-  // 调用 React Query Hooks 获取数据库数据（适配三层返回结构）
+  // 调用 React Query Hooks 获取数据库数据
   const {
-    data: hotel,  // 这里的 hotel 已经是 result.data（即 HotelDetail 类型）
+    data: hotelData,
     loading: hotelLoading,
     error: hotelError,
     refetch: refetchHotel
   } = useHotelDetail(
-    id || '', // 空值保护
-    checkInDate,
-    checkOutDate
+    hotelId || '',
+    checkInDate || '',
+    checkOutDate || ''
   );
 
-  // 获取附近POI列表（从酒店数据取城市，兜底上海）
-  const { data: poiList } = usePoiList({
-    city: hotel?.city || route.params?.city || '上海',
-    limit: 10,
-  });
-
-  // 初始化筛选后的房型列表（适配三层结构 + 空值判断）
+  // 初始化的房型列表
   useEffect(() => {
-    if (hotel?.rooms && Array.isArray(hotel.rooms)) {
-      setFilteredRooms([...hotel.rooms]); // 深拷贝避免原数据污染
+    if (hotelData?.rooms && Array.isArray(hotelData.rooms)) {
+      setFilteredRooms([...hotelData.rooms]);
     } else {
-      setFilteredRooms([]); // 无数据时置空
+      setFilteredRooms([]);
     }
-    // 仅当hotelId有效时加载收藏状态
-    if (id) {
+    if (hotelId) {
       loadFavoriteStatus();
     }
-  }, [hotel, id]);
+  }, [hotelData, hotelId]);
 
-  useEffect(() => {
-    if (hotelError) {
-      console.log("❌ 完整错误信息:", JSON.stringify(hotelError, null, 2));
-    }
-  }, [hotelError]);
-
-  // 从本地存储读取收藏状态（增加错误捕获）
+  // 从本地存储读取收藏状态
   const loadFavoriteStatus = async () => {
     try {
       const existing = await AsyncStorage.getItem('favoriteHotels');
       const favorites = existing ? JSON.parse(existing) : {};
-      setIsFavorite(!!favorites[id]); // 强制布尔值
+      setIsFavorite(!!favorites[hotelId]);
     } catch (e) {
       console.error('加载收藏状态失败:', e);
       setIsFavorite(false);
@@ -119,9 +128,8 @@ const DetailPage = () => {
 
   // 切换收藏状态（带动画）
   const toggleFavorite = async () => {
-    if (!id) return; // 无hotelId时不执行
+    if (!hotelId) return;
 
-    // 心形点击动画
     Animated.sequence([
       Animated.timing(heartScale, {
         toValue: 1.2,
@@ -135,45 +143,88 @@ const DetailPage = () => {
       }),
     ]).start();
 
-    // 更新收藏状态
     const newState = !isFavorite;
     setIsFavorite(newState);
 
-    // 保存到本地存储
     try {
       const existing = await AsyncStorage.getItem('favoriteHotels');
       const favorites = existing ? JSON.parse(existing) : {};
-      favorites[id] = newState;
+      favorites[hotelId] = newState;
       await AsyncStorage.setItem('favoriteHotels', JSON.stringify(favorites));
     } catch (e) {
       console.error('保存收藏状态失败:', e);
     }
   };
 
-  // 处理日历选择（统一格式为 YYYY-MM-DD）
-  const handleDateSelect = (date: string) => {
-    const formattedDate = date.replace(/\//g, '-');
+  // 渲染星级
+  const renderStars = () => {
+    const starCount = hotelData?.starLevel ?? 5;
+    const validStarCount = Math.max(0, Math.min(5, starCount));
+
+    return (
+      <View style={styles.starsRow}>
+        {Array.from({ length: validStarCount }).map((_, i) => (
+          <FontAwesome key={i} name="star" size={14} color="#ffc107" />
+        ))}
+      </View>
+    );
+  };
+
+  // 渲染开业时间
+  const renderOpenSince = () => {
+    if (!hotelData?.openSince) return null;
+
+    const date = new Date(hotelData?.openSince);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    return (
+      <View style={styles.openSinceBadge}>
+        <Text style={styles.openSinceText}>{year}年{month}月开业</Text>
+      </View>
+    );
+  };
+
+  // 处理日历选择
+  const handleDateSelect = (dateStr: string) => {
+    // 更新当前展示的月份为选择的日期所在的月份
+    setCurrentViewMonth(new Date(dateStr));
+
     if (!checkInDate || (checkInDate && checkOutDate)) {
-      setCheckInDate(formattedDate);
+      setCheckInDate(dateStr);
       setCheckOutDate('');
-    } else {
-      setCheckOutDate(formattedDate);
+    } else if (checkInDate && !checkOutDate) {
+      if (dateStr > checkInDate) {
+        setCheckOutDate(dateStr);
+        setIsDateModalVisible(false);
+      } else {
+        setCheckInDate(dateStr);
+        // setCheckOutDate(checkInDate);
+      }
     }
   };
 
-  // 适配 Room 类型的筛选逻辑（增加空值保护）
+  // 手动刷新数据
+  // const handleRefresh = () => {
+  //   refetchHotel();
+  // };
+
+  // 适配 Room 类型的筛选逻辑
   const applyRoomFilters = (filters: FilterOptions) => {
-    if (!hotel?.rooms || !Array.isArray(hotel.rooms)) {
+    if (!hotelData?.rooms || !Array.isArray(hotelData.rooms)) {
       setFilteredRooms([]);
       return;
     }
 
-    let filtered = [...hotel.rooms];
+    let filtered = hotelData.rooms.filter(room => {
+      const maxGuests = Number(room.maxGuests) || 0;
+      return maxGuests >= guestCount;
+    });
 
     // 1. 按价格区间筛选
     if (filters.priceRanges && filters.priceRanges.length > 0) {
       filtered = filtered.filter(room => {
-        const price = Number(room.price) || 0; // 价格转数字，兜底0
+        const price = Number(room.price) || 0;
         return filters.priceRanges.some(range => {
           if (range === '¥200以下') return price < 200;
           if (range === '¥200-¥350') return price >= 200 && price < 350;
@@ -188,105 +239,101 @@ const DetailPage = () => {
       });
     }
 
-    // 2. 按早餐筛选
-    if (filters.breakfast && filters.breakfast.length > 0) {
+    // 2. 早餐
+    if (filters.breakfast) {
       filtered = filtered.filter(room => {
-        return filters.breakfast.some(bf => {
-          if (bf === '含早餐' || bf === '双份早餐' || bf === '单份早餐') {
-            return !!room.hasBreakfast; // 强制布尔值
-          }
-          return false;
-        });
+        return !!room.hasBreakfast;
       });
     }
 
-    // 3. 按服务筛选（免费取消）
-    if (filters.services && filters.services.length > 0) {
+    // 3. 按面积筛选
+    if (filters.area) {
       filtered = filtered.filter(room => {
-        return filters.services.some(service => {
-          if (service === '免费取消') return !!room.refundable;
-          if (service === '立即确认') return true;
-          return false;
-        });
+        const area = Number(room.area) || 0;
+        if (filters.area === '≥25㎡') return area >= 25;
+        if (filters.area === '≥30㎡') return area >= 30;
+        return true;
       });
     }
 
-    // 4. 按面积筛选
-    if (filters.area && filters.area.length > 0) {
+    // 4. 按服务筛选
+    if (filters.services === '免费取消') {
       filtered = filtered.filter(room => {
-        const area = Number(room.area) || 0; // 面积转数字，兜底0
-        return filters.area.some(areaRange => {
-          if (areaRange === '≥25㎡') return area >= 25;
-          if (areaRange === '≥30㎡') return area >= 30;
-          return false;
-        });
+        return room.refundable === true;
       });
     }
 
+    // 5. 按有无窗筛选
+    if (filters.window === '有窗') {
+      filtered = filtered.filter(room => {
+        return room.hasWindow === true;
+      });
+    }
     setFilteredRooms(filtered);
   };
 
-  // 渲染星级（固定5星，后端无star字段时兜底）
-  const renderStars = () => {
-    // 使用可选链，hotel 不存在时直接返回 undefined，再兜底 5
-    const starCount = hotel?.starLevel ?? 5;
-    const validStarCount = Math.max(0, Math.min(5, starCount));
+  // 在入住人数有变化后更新房型列表
+  useEffect(() => {
+    if (!hotelData?.rooms || !Array.isArray(hotelData.rooms)) {
+      setFilteredRooms([]);
+      return;
+    }
 
-    return (
-      <View style={styles.starsRow}>
-        {Array.from({ length: validStarCount }).map((_, i) => (
-          <FontAwesome key={i} name="star" size={14} color="#ffc107" />
-        ))}
-      </View>
-    );
-  };
+    const filteredByGuests = hotelData.rooms.filter(room => {
+      const maxGuests = Number(room.maxGuests) || 0;
+      return maxGuests >= guestCount;
+    });
 
-  /* // 渲染开业时间（精确到月份）
-  const renderOpenSince = () => {
-    if (!hotel.openSince) return null;
+    setFilteredRooms(filteredByGuests);
+  }, [guestCount, hotelData?.rooms]);
 
-    const date = new Date(hotel.openSince);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // 月份从0开始，要+1
+  // 监听 filteredRooms 变化，计算最低价
+  useEffect(() => {
+    if (!filteredRooms || filteredRooms.length === 0) {
+      setMinPrice(0);
+      return;
+    }
 
-    return (
-      <View style={styles.openSinceBadge}>
-        <Text style={styles.openSinceText}>{year}年{month}月开业</Text>
-      </View>
-    );
-  }; */
+    const prices = filteredRooms.map(room => Number(room.price) || 0);
+    const lowestPrice = Math.min(...prices);
+    setMinPrice(lowestPrice);
+  }, [filteredRooms]);
 
   // 加载中状态
   if (hotelLoading) {
     return (
       <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1890ff" />
         <Text style={styles.loadingText}>加载中...</Text>
       </View>
     );
   }
 
-  // 错误状态（适配业务错误 + 网络错误）
+  // 错误状态
   if (hotelError) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>加载失败：{hotelError.message || '网络异常'}</Text>
-        <TouchableOpacity onPress={() => refetchHotel()} style={{ marginTop: 16 }}>
-          <Text style={{ color: '#1890ff', fontSize: 16 }}>重新加载</Text>
+        <Text style={styles.errorText}>加载失败：{hotelError?.message || '网络异常'}</Text>
+        <TouchableOpacity
+          onPress={() => refetchHotel()}
+          style={{ marginTop: 16, backgroundColor: '#1890ff', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}
+        >
+          <Text style={{ color: '#fff', fontSize: 16 }}>重新加载</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 8 }}>
-          <Text style={{ color: '#666', fontSize: 14 }}>返回列表页</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#666', fontSize: 14 }}>返回上一页</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // 数据不存在/无hotelId
-  if (!id || !hotel) {
+  // 数据不存在
+  if (checkInDate && checkOutDate && !hotelData) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>{!id ? '缺少酒店ID' : '未找到该酒店信息'}</Text>
+        <Text style={styles.loadingText}>未找到该酒店信息</Text>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
-          <Text style={{ color: '#1890ff', fontSize: 16 }}>返回列表页</Text>
+          <Text style={{ color: '#1890ff', fontSize: 16 }}>返回上一页</Text>
         </TouchableOpacity>
       </View>
     );
@@ -301,8 +348,7 @@ const DetailPage = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{hotel.name || '未知酒店'}</Text>
-        {/* 带动画的收藏心形按钮 */}
+        <Text style={styles.headerTitle} numberOfLines={1}>{hotelData?.name || '未知酒店'}</Text>
         <TouchableOpacity style={styles.headerRightBtn} onPress={toggleFavorite}>
           <Animated.View style={{ transform: [{ scale: heartScale }] }}>
             <Ionicons
@@ -324,19 +370,28 @@ const DetailPage = () => {
         }}
         scrollEventThrottle={16}
       >
-        {/* 大图 Banner 轮播（空值保护） */}
+        {/* 顶部 Banner 轮播 */}
         <View>
           <ScrollView
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const index = Math.floor(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+              const maxIndex = (hotelData?.images?.length || 1) - 1;
+              const validIndex = Math.max(0, Math.min(index, maxIndex));
+              setCurrentImageIndex(validIndex);
+            }}
+            scrollEventThrottle={16}
             onMomentumScrollEnd={(e) => {
               const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
-              setCurrentImageIndex(index);
+              const maxIndex = (hotelData?.images?.length || 1) - 1;
+              const validIndex = Math.max(0, Math.min(index, maxIndex));
+              setCurrentImageIndex(validIndex);
             }}
           >
-            {(hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) ? (
-              hotel.images.map((img, index) => (
+            {(hotelData?.images && Array.isArray(hotelData.images) && hotelData.images.length > 0) ? (
+              hotelData.images.map((img, index) => (
                 <Image key={index} source={{ uri: img || 'https://placeholder.pics/svg/375x220/EEEEEE/666666/暂无图片' }} style={styles.bannerImage} />
               ))
             ) : (
@@ -345,10 +400,9 @@ const DetailPage = () => {
           </ScrollView>
           <View style={styles.imageIndicator}>
             <Text style={styles.imageIndicatorText}>
-              {currentImageIndex + 1} / {hotel.images?.length || 1}
+              {currentImageIndex + 1} / {hotelData?.images?.length || 1}
             </Text>
           </View>
-          {/* 修改：删除精选、位置，相册改为可点击 */}
           <View style={styles.imageTabs}>
             <Text style={[styles.imageTab, styles.imageTabActive]}>封面</Text>
             <TouchableOpacity onPress={() => setIsAlbumModalVisible(true)} style={styles.albumTab}>
@@ -357,33 +411,88 @@ const DetailPage = () => {
           </View>
         </View>
 
-        {/* 酒店基础信息区（仅使用后端返回的字段） */}
+        {/* 相册弹窗 */}
+        <Modal
+          visible={isAlbumModalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setIsAlbumModalVisible(false)}
+        >
+          <View style={styles.albumModalContainer}>
+            <TouchableOpacity
+              style={styles.closeAlbumBtn}
+              onPress={() => setIsAlbumModalVisible(false)}
+            >
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+
+            <View style={styles.albumIndicator}>
+              <Text style={styles.albumIndicatorText}>
+                {currentAlbumIndex + 1} / {hotelData?.images?.length || 1}
+              </Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              style={styles.albumScroll}
+              onScroll={(e) => {
+                const index = Math.floor(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+                const maxIndex = (hotelData?.images?.length || 1) - 1;
+                const validIndex = Math.max(0, Math.min(index, maxIndex));
+                setCurrentAlbumIndex(validIndex);
+              }}
+              scrollEventThrottle={16}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+                const maxIndex = (hotelData?.images?.length || 1) - 1;
+                const validIndex = Math.max(0, Math.min(index, maxIndex));
+                setCurrentAlbumIndex(validIndex);
+              }}
+            >
+              {(hotelData?.images && Array.isArray(hotelData.images) && hotelData.images.length > 0) ? (
+                hotelData.images.map((img, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: img || 'https://placeholder.pics/svg/375x220/EEEEEE/666666/暂无图片' }}
+                    style={styles.albumImage}
+                    resizeMode="contain"
+                  />
+                ))
+              ) : (
+                <Image source={{ uri: 'https://placeholder.pics/svg/375x220/EEEEEE/666666/暂无图片' }} style={styles.albumImage} resizeMode="contain" />
+              )}
+            </ScrollView>
+          </View>
+        </Modal>
+
+        {/* 酒店基础信息区 */}
         <View style={styles.infoCard}>
-          <Text style={styles.hotelName}>{hotel.name || '未知酒店'}</Text>
+          <Text style={styles.hotelName}>{hotelData?.name || '未知酒店'}</Text>
           {renderStars()}
+          {renderOpenSince()}
           <View style={styles.rankRow}>
             <Ionicons name="trophy" size={16} color="#fa8c16" />
-            <Text style={styles.rankText}>{'上海奢华酒店榜 No.1'}</Text> {/* 后端无rank字段，先固定 */}
+            <Text style={styles.rankText}>{'上海奢华酒店榜 No.1'}</Text>
           </View>
 
-          {/* 评分以及评价 */}
           <View style={styles.scoreRow}>
             <View style={styles.scoreBadge}>
-              <Text style={styles.scoreNumber}>{hotel.score ?? 4.9}</Text>
-              <Text style={styles.scoreLabel}>{(hotel.score ?? 4.9) >= 4.8 ? '超棒' : '良好'}</Text>
+              <Text style={styles.scoreNumber}>{hotelData?.score ?? 4.9}</Text>
+              <Text style={styles.scoreLabel}>{(hotelData?.score ?? 4.9) >= 4.8 ? '超棒' : '良好'}</Text>
             </View>
             <View style={styles.scoreInfo}>
-              <Text style={styles.commentCount}>{hotel.commentCount ?? hotel.favoriteCount ?? 0}条评价</Text>
-              <Text style={styles.commentSummary}>"{hotel.name || '体验超棒'}"</Text>
+              <Text style={styles.commentCount}>{hotelData?.commentCount ?? hotelData?.favoriteCount ?? 0}条评价</Text>
+              <Text style={styles.commentSummary}>"{hotelData?.name || '体验超棒'}"</Text>
             </View>
           </View>
 
-          {/* // 地址渲染 */}
           <View style={styles.addressRow}>
             <Ionicons name="location-outline" size={20} color="#666" />
             <View style={styles.addressInfo}>
-              <Text style={styles.addressText}>{hotel.address || '暂无地址'}</Text>
-              <Text style={styles.cityText}>{cityCodeMap[hotel.city || ''] || '未知城市'}</Text>
+              <Text style={styles.addressText}>{hotelData?.address || '暂无地址'}</Text>
+              <Text style={styles.cityText}>{cityCodeMap[hotelData?.city || ''] || '未知城市'}</Text>
               <TouchableOpacity style={styles.mapBtn}>
                 <Text style={styles.mapBtnText}>地图</Text>
                 <Ionicons name="chevron-forward" size={14} color="#1890ff" />
@@ -391,10 +500,9 @@ const DetailPage = () => {
             </View>
           </View>
 
-          {/* 标签渲染 */}
           <View style={styles.tagsRow}>
-            {(hotel.facilities && Array.isArray(hotel.facilities) && hotel.facilities.length > 0
-              ? hotel.facilities
+            {(hotelData?.facilities && Array.isArray(hotelData.facilities) && hotelData.facilities.length > 0
+              ? hotelData.facilities
               : ['高端酒店', '免费停车', '游泳池']
             ).map((tag, i) => (
               <View key={i} style={[styles.tag, {
@@ -415,12 +523,16 @@ const DetailPage = () => {
         >
           <View style={styles.dateBlock}>
             <Text style={styles.dateLabel}>入住</Text>
-            <Text style={styles.dateValue}>{checkInDate.replace(/-/g, '/')}</Text> {/* 显示为 YYYY/MM/DD 更友好 */}
+            <Text style={styles.dateValue}>
+              {checkInDate ? checkInDate.replace(/-/g, '/') : '选择日期'}
+            </Text>
           </View>
           <Ionicons name="swap-horizontal" size={20} color="#1890ff" />
           <View style={styles.dateBlock}>
             <Text style={styles.dateLabel}>离店</Text>
-            <Text style={styles.dateValue}>{checkOutDate.replace(/-/g, '/')}</Text>
+            <Text style={styles.dateValue}>
+              {checkOutDate ? checkOutDate.replace(/-/g, '/') : '选择日期'}
+            </Text>
           </View>
           <View style={styles.guestBlock}>
             <Text style={styles.guestLabel}>入住人数</Text>
@@ -434,17 +546,13 @@ const DetailPage = () => {
           </View>
         </TouchableOpacity>
 
-        <View style={styles.tipBar}>
-          <Ionicons name="alert-circle" size={16} color="#fa8c16" />
-          <Text style={styles.tipText}>当前已过0点，如需今天凌晨6点前入住，请选择"今天凌晨"</Text>
-        </View>
-
+        {/* 筛选栏 */}
         <View style={styles.filterBar}>
           <Text style={styles.filterTag}>含早餐</Text>
-          <Text style={styles.filterTag}>立即确认</Text>
+          <Text style={styles.filterTag}>可订</Text>
+          <Text style={styles.filterTag}>免费取消</Text>
           <Text style={styles.filterTag}>大床房</Text>
           <Text style={styles.filterTag}>双床房</Text>
-          <Text style={styles.filterTag}>免费取消</Text>
           <TouchableOpacity
             style={styles.filterMore}
             onPress={() => setIsFilterModalVisible(true)}
@@ -454,21 +562,7 @@ const DetailPage = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 附近景点/交通（适配后端nearbyPoi字段） */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>附近热门景点与交通</Text>
-          {((hotel.nearbyPoi && Array.isArray(hotel.nearbyPoi)) ? hotel.nearbyPoi : (poiList || [])).map((item, i) => (
-            <View key={i} style={styles.nearbyItem}>
-              <Ionicons name="navigate-circle-outline" size={20} color="#1890ff" />
-              <View style={styles.nearbyInfo}>
-                <Text style={styles.nearbyName}>{item.name || '未知地点'}</Text>
-                <Text style={styles.nearbyDesc}>{item.distanceKm ? `${item.distanceKm}公里` : '暂无距离'}，约15分钟</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {/* 房型价格列表（适配 Room 类型） */}
+        {/* 房型价格列表 */}
         <View
           style={styles.roomSection}
           onLayout={(event) => {
@@ -481,7 +575,6 @@ const DetailPage = () => {
             <Text style={styles.roomCount}>共 {filteredRooms.length} 个房型</Text>
           </View>
 
-          {/* 渲染筛选后的房型列表（空状态提示） */}
           {filteredRooms.length > 0 ? (
             filteredRooms.map((room) => (
               <View key={room.id || `room-${Math.random()}`} style={styles.roomCard}>
@@ -494,7 +587,7 @@ const DetailPage = () => {
                   <Text style={styles.roomDesc}>
                     {room.bedType || '未知床型'} ·
                     {room.area ? `${room.area}㎡` : '暂无面积'} ·
-                    最多{guestCount}人
+                    最多{room.maxGuests}人
                   </Text>
                   <View style={styles.roomTags}>
                     {room.hasBreakfast && <Text style={styles.roomTag}>含早餐</Text>}
@@ -538,15 +631,21 @@ const DetailPage = () => {
         </View>
       </ScrollView>
 
-      {/* 底部预订栏（价格计算保护） */}
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomPriceInfo}>
-          <Text style={styles.bottomPrice}>¥{Math.min(...(hotel.rooms?.map(r => Number(r.price) || 0) || [0]))}</Text>
-          <Text style={styles.bottomPriceUnit}>起</Text>
-        </View>
-
-        {/* 控制查看房型按钮显示/隐藏 */}
-        {currentScrollY < roomSectionY && (
+      {/* 底部最低价格+查看房型按钮 */}
+      {currentScrollY < roomSectionY - 400 && (
+        <View style={styles.bottomBar}>
+          <View style={styles.bottomPriceInfo}>
+            {filteredRooms.length === 0 ? (
+              <Text style={styles.noRoomText}>暂无房型</Text>
+            ) : (
+              <>
+                <Text style={styles.bottomPrice}>
+                  ¥{Math.min(...filteredRooms.map(r => Number(r.price) || 0))}
+                </Text>
+                <Text style={styles.bottomPriceUnit}>起</Text>
+              </>
+            )}
+          </View>
           <TouchableOpacity
             style={styles.bottomBookBtn}
             onPress={() => {
@@ -558,70 +657,21 @@ const DetailPage = () => {
           >
             <Text style={styles.bottomBookText}>查看房型</Text>
           </TouchableOpacity>
-        )}
-      </View>
-
-      {/* 新增：相册弹窗 */}
-      <Modal
-        visible={isAlbumModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsAlbumModalVisible(false)}
-      >
-        <View style={styles.albumModalContainer}>
-          {/* 关闭按钮 */}
-          <TouchableOpacity
-            style={styles.closeAlbumBtn}
-            onPress={() => setIsAlbumModalVisible(false)}
-          >
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-
-          {/* 页码指示器 */}
-          <View style={styles.albumIndicator}>
-            <Text style={styles.albumIndicatorText}>
-              {currentAlbumIndex + 1} / {hotel.images?.length || 1}
-            </Text>
-          </View>
-
-          {/* 相册图片轮播 */}
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            style={styles.albumScroll}
-            onMomentumScrollEnd={(e) => {
-              const index = Math.round(
-                e.nativeEvent.contentOffset.x / Dimensions.get('window').width
-              );
-              setCurrentAlbumIndex(index);
-            }}
-          >
-            {(hotel.images && Array.isArray(hotel.images) && hotel.images.length > 0) ? (
-              hotel.images.map((img, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: img || '...' }}
-                  style={styles.albumImage}
-                  resizeMode="contain"
-                />
-              ))
-            ) : (
-              <Image source={{ uri: '...' }} style={styles.albumImage} resizeMode="contain" />
-            )}
-          </ScrollView>
         </View>
-      </Modal>
+      )}
 
-      {/* 原有弹窗组件 */}
+      {/* 日历弹窗组件 */}
       <DateSelectorModal
         visible={isDateModalVisible}
         onClose={() => setIsDateModalVisible(false)}
         startDate={checkInDate}
         endDate={checkOutDate}
         onSelect={handleDateSelect}
+        currentMonth={currentViewMonth} // 传递当前查看月份
+        onMonthChange={setCurrentViewMonth} // 当用户切换月份时更新
       />
 
+      {/* 入住人数弹窗组件 */}
       <GuestSelectorModal
         visible={isGuestModalVisible}
         onClose={() => setIsGuestModalVisible(false)}
@@ -629,7 +679,7 @@ const DetailPage = () => {
         onSelect={setGuestCount}
       />
 
-      {/* 筛选弹窗 */}
+      {/* 筛选弹窗组件 */}
       <RoomFilterModal
         visible={isFilterModalVisible}
         onClose={() => setIsFilterModalVisible(false)}
@@ -654,6 +704,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    marginTop: 16,
   },
   errorText: {
     fontSize: 16,
@@ -729,7 +780,6 @@ const styles = StyleSheet.create({
     color: '#1890ff',
     fontWeight: '600',
   },
-  // 新增：相册标签样式
   albumTab: {
     justifyContent: 'center',
   },
@@ -1129,7 +1179,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
   },
-  // 新增：相册弹窗样式
   albumModalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.9)',
@@ -1174,6 +1223,24 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 4,
   },
+  openSinceBadge: {
+    backgroundColor: '#f6ffed',
+    borderWidth: 1,
+    borderColor: '#b7eb8f',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  openSinceText: {
+    fontSize: 12,
+    color: '#52c41a',
+  },
+  noRoomText: {
+    fontSize: 14,
+    color: '#999',
+  }
 });
 
 export default DetailPage;

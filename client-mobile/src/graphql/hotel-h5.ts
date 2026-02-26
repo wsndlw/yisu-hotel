@@ -134,7 +134,7 @@ export const GET_HOTEL_DETAIL = gql`
         phone
         longitude
         latitude
-        province
+        openSince
         district
         commentCount
 
@@ -159,6 +159,7 @@ export const GET_HOTEL_DETAIL = gql`
           refundable
           hasWindow
           coverImage
+          maxGuests
         }
       }
     }
