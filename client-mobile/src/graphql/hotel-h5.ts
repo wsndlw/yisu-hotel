@@ -85,6 +85,8 @@ export const SEARCH_HOTELS = gql`
           score
           starLevel
           favoriteCount
+          longitude
+          latitude
           minPrice
           distanceText
           images {
