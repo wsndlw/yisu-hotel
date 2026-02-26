@@ -594,6 +594,7 @@ type MobileHotelDetail {
   name: String!
   nameEn: String
   nearbyPoi: [NearbyPoiItem!]
+  openSince: String
   phone: String
   province: String
   rooms: [MobileRoom!]!
@@ -658,6 +659,7 @@ type MobileRoom {
   hasBreakfast: Boolean
   hasWindow: Boolean
   id: ID!
+  maxGuests: Float
   price: Float!
   refundable: Boolean
   stock: Float

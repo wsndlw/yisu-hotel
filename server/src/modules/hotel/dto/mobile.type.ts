@@ -139,6 +139,11 @@ export class MobileRoom {
 
   @Field(() => Boolean, { nullable: true })
   hasWindow?: boolean | null;
+
+  @Field(() => Number, { nullable: true })
+  maxGuests?: number | null;
+
+  //加两个
 }
 
 @ObjectType({ description: '酒店详情（移动端）' })
@@ -193,6 +198,9 @@ export class MobileHotelDetail {
 
   @Field(() => Number, { nullable: true })
   latitude?: number | null; // 纬度
+
+  @Field(() => String,{ nullable:true })
+  openSince?:string | null;
 
   @Field(() => String, { nullable: true })
   province?: string | null; // 省份

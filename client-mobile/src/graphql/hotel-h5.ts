@@ -86,6 +86,8 @@ export const SEARCH_HOTELS = gql`
           starLevel
           favoriteCount
           minPrice
+          latitude
+          longitude
           distanceText
           images {
             url
@@ -134,6 +136,7 @@ export const GET_HOTEL_DETAIL = gql`
         phone
         longitude
         latitude
+        openSince
         province
         district
         commentCount
@@ -159,6 +162,7 @@ export const GET_HOTEL_DETAIL = gql`
           refundable
           hasWindow
           coverImage
+          maxGuests
         }
       }
     }

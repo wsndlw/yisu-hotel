@@ -180,7 +180,7 @@ const SearchPage = () => {
             country: ''
         });
         // ✅ 关键修改：手动选城市了，就要把“定位状态”关掉！
-        setIsLocated(false); 
+        setIsLocated(false);
         setLocationTip(''); // 顺便把头顶的气泡也清空（如果有的话）
         setModalVisible(false);
     };
@@ -263,11 +263,11 @@ const SearchPage = () => {
             console.log("2. 权限通过，正在获取经纬度...");
             // ✅ 修改点：增加 accuracy 和 timeout，防止安卓模拟器卡死
             let location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced, 
+                accuracy: Location.Accuracy.Balanced,
             });
-            
+
             console.log("3. 获取到坐标:", location.coords);
-            
+
             console.log("4. 正在解析地址(逆地理编码)...");
             let addressResponse = await Location.reverseGeocodeAsync({
                 latitude: location.coords.latitude,
@@ -295,7 +295,7 @@ const SearchPage = () => {
             if (addressResponse && addressResponse.length > 0) {
                 const addr = addressResponse[0];
                 // 兼容不同系统的字段名
-                const cityName = addr.city || addr.region || addr.subregion || city.name; 
+                const cityName = addr.city || addr.region || addr.subregion || city.name;
                 const detailName = addr.name || addr.street || addr.district || '附近';
 
                 // ✅ 关键：只有这里执行了，UI 才会变
@@ -303,7 +303,7 @@ const SearchPage = () => {
                 setCity(prev => ({ ...prev, name: cityName }));
                 setIsLocated(true);
                 setLocationTip(`已定位到 ${cityName} · ${detailName}`);
-                
+
                 setTimeout(() => setLocationTip(''), 3000);
             } else {
                 alert("未解析到地址信息，请检查网络或模拟器位置设置");
@@ -437,8 +437,8 @@ const SearchPage = () => {
                                         activeOpacity={0.9}
                                         onPress={() => banner.redirectHotelId && navigation.navigate('Detail', {
                                             id: banner.redirectHotelId,
-                                            checkIn: startDate,
-                                            checkOut: endDate
+                                            checkInDate: startDate,
+                                            checkOutDate: endDate
                                         })}
                                     >
                                         <Image source={{ uri: banner.imageUrl }} style={styles.image} resizeMode='cover' />
@@ -591,8 +591,8 @@ const SearchPage = () => {
                                 if (lastBanner.redirectHotelId) {
                                     navigation.navigate('Detail', {
                                         id: lastBanner.redirectHotelId,
-                                        checkIn: startDate,
-                                        checkOut: endDate
+                                        checkInDate: startDate,
+                                        checkOutDate: endDate
                                     });
                                 }
                             }}

@@ -4,15 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 
 // 定义筛选条件的类型
 export interface FilterOptions {
-  priceRanges: string[];
-  breakfast: string[];
-  area: string[];
-  services: string[];
-  invoice: string[];
+  priceRanges: string[];        // 价格：多选
+  breakfast: string | undefined;// 早餐：单选
+  area: string | undefined;     // 面积：单选
+  services: string | undefined; // 服务：单选
+  bedType: string[];            // （未启用）
+  people: string | undefined;   // 入住人数：单选
+  window: string | undefined;   // 有无窗：单选
+  /* invoice: string[];
   vip: string[];
   promotion: string[];
-  payment: string[];
-  people: string[];
+  payment: string[]; */
 }
 
 interface RoomFilterModalProps {
@@ -25,24 +27,40 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
   // 初始筛选条件
   const [filters, setFilters] = useState<FilterOptions>({
     priceRanges: [],
-    breakfast: [],
-    area: [],
-    services: [],
-    invoice: [],
+    breakfast: undefined,
+    area: undefined,
+    services: undefined,
+    bedType: [],
+    people: undefined,
+    window: undefined,
+    /* invoice: [],
     vip: [],
     promotion: [],
-    payment: [],
-    people: [],
+    payment: [], */
   });
 
-  // 切换选项选中状态
-  const toggleOption = (category: keyof FilterOptions, option: string) => {
+  // 1. 多选切换（用于价格区间）
+  const toggleMultiOption = (category: keyof FilterOptions, option: string) => {
+    // 只处理数组类型的字段（价格）
+    if (Array.isArray(filters[category])) {
+      setFilters(prev => {
+        const currentOptions = prev[category] as string[];
+        const newOptions = currentOptions.includes(option)
+          ? currentOptions.filter(item => item !== option)
+          : [...currentOptions, option];
+        return { ...prev, [category]: newOptions };
+      });
+    }
+  };
+
+  // 2. 单选切换（用于早餐、面积、服务、有无窗，互斥）
+  const toggleSingleOption = (category: keyof FilterOptions, option: string) => {
     setFilters(prev => {
-      const currentOptions = prev[category];
-      const newOptions = currentOptions.includes(option)
-        ? currentOptions.filter(item => item !== option)
-        : [...currentOptions, option];
-      return { ...prev, [category]: newOptions };
+      // 点击已选中的选项则取消选中（置为 undefined），否则选中当前选项
+      return { 
+        ...prev, 
+        [category]: prev[category] === option ? undefined : option 
+      };
     });
   };
 
@@ -50,14 +68,16 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
   const handleClear = () => {
     setFilters({
       priceRanges: [],
-      breakfast: [],
-      area: [],
-      services: [],
-      invoice: [],
+      breakfast: undefined,
+      area: undefined,
+      services: undefined,
+      bedType: [],
+      people: undefined,
+      window: undefined,
+      /* invoice: [],
       vip: [],
       promotion: [],
-      payment: [],
-      people: [],
+      payment: [], */
     });
   };
 
@@ -68,7 +88,12 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
   };
 
   // 渲染选项组
-  const renderOptionGroup = (title: string, category: keyof FilterOptions, options: string[]) => (
+  const renderOptionGroup = (
+    title: string, 
+    category: keyof FilterOptions, 
+    options: string[],
+    type: 'single' | 'multi' = 'multi' // 默认多选
+  ) => (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.optionsContainer}>
@@ -77,13 +102,20 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
             key={option}
             style={[
               styles.option,
-              filters[category].includes(option) && styles.optionActive
+              // 单选判断：值等于当前选项；多选判断：数组包含当前选项
+              (type === 'single' ? filters[category] === option : (filters[category] as string[]).includes(option)) 
+              && styles.optionActive
             ]}
-            onPress={() => toggleOption(category, option)}
+            onPress={() => {
+              type === 'single' 
+                ? toggleSingleOption(category, option) 
+                : toggleMultiOption(category, option);
+            }}
           >
             <Text style={[
               styles.optionText,
-              filters[category].includes(option) && styles.optionTextActive
+              (type === 'single' ? filters[category] === option : (filters[category] as string[]).includes(option))
+              && styles.optionTextActive
             ]}>
               {option}
             </Text>
@@ -113,35 +145,47 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
 
           {renderOptionGroup('早餐', 'breakfast', [
             '含早餐', '单份早餐', '双份早餐'
-          ])}
+          ], 'single')}
 
           {renderOptionGroup('房间面积', 'area', [
             '≥25㎡', '≥30㎡'
-          ])}
+          ], 'single')}
+
+          {/* {renderOptionGroup('床型', 'bedType', [
+            '大床', '双床'
+          ], 'single')} */}
+
+          {/* {renderOptionGroup('入住人数', 'people', [
+            '2人', '3人', '4人', '5人', '6人'
+          ], 'single')} */}
 
           {renderOptionGroup('携程服务', 'services', [
-            '立即确认', '免费取消', '可订', '不看钟点房'
-          ])}
+            '免费取消'
+          ], 'single')}
 
-          {renderOptionGroup('发票', 'invoice', [
+          {renderOptionGroup('有无窗', 'window', [
+            '有窗'
+          ], 'single')}
+
+          {/* {renderOptionGroup('发票', 'invoice', [
             '携程开票', '酒店开票'
-          ])}
+          ])} */}
 
-          {renderOptionGroup('贵宾专享', 'vip', [
+          {/* {renderOptionGroup('贵宾专享', 'vip', [
             '全部权益', '延迟退房'
-          ])}
+          ])} */}
 
-          {renderOptionGroup('优惠促销', 'promotion', [
+          {/* {renderOptionGroup('优惠促销', 'promotion', [
             '全部优惠促销'
-          ])}
+          ])} */}
 
-          {renderOptionGroup('支付方式', 'payment', [
+          {/* {renderOptionGroup('支付方式', 'payment', [
             '在线付款', '到店付款'
-          ])}
+          ])} */}
 
-          {renderOptionGroup('适用人群', 'people', [
+          {/* {renderOptionGroup('适用人群', 'people', [
             '香港客人适用', '澳门客人适用', '台湾客人适用', '外宾适用'
-          ])}
+          ])} */}
         </ScrollView>
 
         <View style={styles.footer}>

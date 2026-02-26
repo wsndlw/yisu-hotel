@@ -66,6 +66,19 @@ const renderStars = (count: number) => {
     return stars;
 };
 
+// ✅ [新增] 计算距离工具函数 (Haversine 公式)
+const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    if (!lat1 || !lng1 || !lat2 || !lng2) return null;
+    const radLat1 = (lat1 * Math.PI) / 180.0;
+    const radLat2 = (lat2 * Math.PI) / 180.0;
+    const a = radLat1 - radLat2;
+    const b = (lng1 * Math.PI) / 180.0 - (lng2 * Math.PI) / 180.0;
+    const s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+        Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+    return (s * 6378.137); // 返回公里数
+};
+
+
 const ListPage = ({ navigation, route }: any) => {
     const {
         cityCode = '320100', checkIn = '2026-02-23', checkOut = '2026-02-24', keyword = '',
@@ -93,6 +106,9 @@ const ListPage = ({ navigation, route }: any) => {
     const [page, setPage] = useState(1);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+
+    // ✅ [新增] 存储当前选中的 POI 坐标信息
+    const [currentPoi, setCurrentPoi] = useState<{ latitude: number; longitude: number; name: string } | null>(null);
 
     // ✅ 获取城市列表数据 (修复弹窗为空的问题)
     const { data: configData } = useHomeConfigV2();
@@ -140,7 +156,41 @@ const ListPage = ({ navigation, route }: any) => {
         }
     });
 
-    const hotelList = useMemo(() => data?.searchHotels?.data?.items || [], [data]);
+    // ✅ [修改] 核心逻辑：数据处理 pipeline
+    // 1. 如果选中了 currentPoi，计算距离
+    // 2. 如果选中了 currentPoi，按距离排序
+    const hotelList = useMemo(() => {
+        let items = data?.searchHotels?.data?.items || [];
+        
+        // 深拷贝一下防止修改只读对象
+        let processedItems = [...items];
+
+        if (currentPoi) {
+            // 1. 计算距离并添加到对象中
+            processedItems = processedItems.map(item => {
+                const dist = getDistance(
+                    currentPoi.latitude, 
+                    currentPoi.longitude, 
+                    Number(item.latitude), 
+                    Number(item.longitude)
+                );
+                return {
+                    ...item,
+                    calcDistance: dist // 将计算结果暂存
+                };
+            });
+
+            // 2. 按距离从近到远排序
+            processedItems.sort((a, b) => {
+                const distA = a.calcDistance || 999999;
+                const distB = b.calcDistance || 999999;
+                return distA - distB;
+            });
+        }
+
+        return processedItems;
+    }, [data, currentPoi]);
+
 
     // === 事件处理 ===
     const handleSearch = () => {
@@ -150,6 +200,9 @@ const ListPage = ({ navigation, route }: any) => {
 
     const handleLoadMore = () => {
         if (loading || !hasMore) return;
+        // 如果正在按距离排序，前端分页会比较麻烦，这里暂时维持原有逻辑
+        // 真实业务中，建议把 sortValue 设置为 'DISTANCE' 传给后端，让后端排好序再分页
+        
         console.log("📥 触发加载更多: Page", page + 1);
 
         fetchMore({
@@ -285,10 +338,10 @@ const ListPage = ({ navigation, route }: any) => {
             <TouchableOpacity
                 style={styles.card}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Detail', { 
+                onPress={() => navigation.navigate('Detail', {
                     id: item.id,
-                    checkIn: currentCheckIn, // 这里填你 state 里存的入住日期变量
-                    checkOut: currentCheckOut   // 这里填你 state 里存的离店日期变量 
+                    checkInDate: currentCheckIn, // 这里填你 state 里存的入住日期变量
+                    checkOutDate: currentCheckOut   // 这里填你 state 里存的离店日期变量 
                 })}
             >
                 <View style={styles.imageWrapper}>
@@ -302,12 +355,29 @@ const ListPage = ({ navigation, route }: any) => {
                     </View>
                     <View style={styles.scoreRow}>
                         <View style={styles.scoreBadge}><Text style={styles.scoreText}>{item.score || '4.8'}</Text></View>
-                        <Text style={styles.scoreDesc}>超棒</Text>
+                        <Text style={[
+                            styles.scoreDesc,
+                            // 如果分数小于4，文字颜色改为淡蓝色 (#5CA2F8)，否则保持原来的颜色
+                            (Number(item.score) || 0) < 4 && { color: '#5CA2F8' }
+                        ]}>
+                            {/* 文案逻辑：小于4显示“一般”，否则显示“超棒” */}
+                            {(Number(item.score) || 0) < 4 ? '一般' : '超棒'}
+                        </Text>
                         <Text style={styles.commentText}>
                             {formatCount(item.favoriteCount || 2300)} 收藏 · {formatCount(Math.floor((item.favoriteCount || 2300) / 2))} 条点评
                         </Text>
                     </View>
-                    <Text style={styles.locationText} numberOfLines={1}>{item.distanceText || '市中心'} · {item.address}</Text>
+
+                    {/* ✅ [修改] 距离展示逻辑 */}
+                    {/* 如果有 calcDistance (即选中了poi)，显示“距XXX 3.5km” */}
+                    {/* 如果没有，显示原有的 “市中心 · 地址” */}
+                    <Text style={[styles.locationText, item.calcDistance && {color: '#0086F6', fontWeight: '500'}]} numberOfLines={1}>
+                        {item.calcDistance 
+                           ? `距${currentPoi?.name || '您选的地点'} ${item.calcDistance.toFixed(1)} km`
+                           : `${item.distanceText || '市中心'} · ${item.address}`
+                        }
+                    </Text>
+
                     <View style={styles.tagRow}>
                         {dynamicTags.map((tag, i) => (
                             <View key={i} style={[styles.tagContainer, { backgroundColor: tag.bg }]}>
@@ -322,7 +392,7 @@ const ListPage = ({ navigation, route }: any) => {
                         </View>
                         <View style={styles.priceContainer}>
                             <Text style={styles.currency}>¥</Text>
-                            <Text style={styles.price}>{item.minPrice || '---'}</Text>
+                            <Text style={styles.price}>{item.minPrice ? Math.floor(Number(item.minPrice)) : '---'}</Text>
                             <Text style={styles.qi}>起</Text>
                         </View>
                     </View>
@@ -498,12 +568,17 @@ const ListPage = ({ navigation, route }: any) => {
                 onClose={() => setActiveModal('none')}
                 onSelect={(poi) => {
                     if (poi) {
-                        // 选中了某个地点
+                        // 选中了某个地点，保存信息
                         setSelectedLocationName(poi.name);
+                        setCurrentPoi({
+                            name: poi.name,
+                            latitude: poi.latitude,
+                            longitude: poi.longitude
+                        });
                     } else {
-                        // 选中了“不限”
+                        // 选中了“不限”，清空位置
                         setSelectedLocationName('位置距离');
-                        // setSearchKeyword(''); // 清空搜索
+                        setCurrentPoi(null);
                     }
                 }}
             />
@@ -513,8 +588,6 @@ const ListPage = ({ navigation, route }: any) => {
                 onClose={() => setActiveModal('none')}
                 onConfirm={handlePriceStarConfirm}
             />
-
-
 
             <Modal visible={activeModal === 'filter'} animationType="slide" transparent>
                 <View style={styles.modalOverlayBottom}>
