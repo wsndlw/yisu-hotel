@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, ActivityIn
 import { Ionicons } from '@expo/vector-icons';
 import { usePoiList } from '../services/hotel-h5';
 
-// ✅ 修改 1：只保留“热门”分类
 const CATEGORIES = [
     { key: 'ALL', label: '热门' },
 ];
@@ -16,7 +15,6 @@ interface Props {
 }
 
 const LocationFilterModal = ({ visible, cityCode, onClose, onSelect }: Props) => {
-    // 🔍 加这行日志，看看打印出来是什么
     console.log("📍 Modal接收到的城市:", cityCode)
     const [activeCategory, setActiveCategory] = useState('ALL');
     const [selectedPoiId, setSelectedPoiId] = useState<string>('');
@@ -25,10 +23,9 @@ const LocationFilterModal = ({ visible, cityCode, onClose, onSelect }: Props) =>
 
     const displayList = useMemo(() => {
         if (!poiList || poiList.length === 0) return [];
-        return poiList; // 因为只剩下热门，直接返回全部
+        return poiList; 
     }, [poiList]);
 
-    // ✅ 修改 2：修复点击“不限”时的报错
     const handleSelect = (poi: any) => {
         if (poi) {
             setSelectedPoiId(poi.id); // 只有 poi 存在才读 id

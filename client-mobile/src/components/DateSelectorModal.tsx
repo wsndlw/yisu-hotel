@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CustomCalendar from './CustomCalendar'; // ✅ 引入你之前写的组件
+import CustomCalendar from './CustomCalendar'; 
 
 interface Props {
     visible: boolean;

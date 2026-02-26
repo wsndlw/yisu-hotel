@@ -8,9 +8,7 @@ import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
 import { SEARCH_HOTELS, } from '../graphql/hotel-h5';
 import {
-    GET_FACILITIES_FOR_H5,
     FACILITY_CATEGORIES,
-    groupFacilitiesByCategory
 } from '../graphql/facility-h5';
 
 import { useHomeConfigV2 } from '../services/hotel-h5';
@@ -22,7 +20,7 @@ import CitySelectorModal from '../components/CitySelectorModal';
 import PriceStarFilterModal from '../components/PriceStarFilterModal';
 import LocationFilterModal from '../components/LocationFilterModal';
 
-// ✅ 1. 修正排序选项 (必须严格匹配后端 Enum)
+// 修正排序选项
 // 后端仅支持: DEFAULT, DISTANCE_ASC, PRICE_ASC, SCORE_DESC
 const SORT_OPTIONS = [
     { label: '欢迎度排序', value: 'DEFAULT' },
@@ -31,7 +29,6 @@ const SORT_OPTIONS = [
     { label: '距离优先', value: 'DISTANCE_ASC' },
 ];
 
-// 1. 在 ListPage 组件外定义一个映射（或者放在组件内也行）
 const BED_TYPE_MAP: Record<string, string> = {
     'KING': '大床',
     'TWIN': '双床',
@@ -66,7 +63,7 @@ const renderStars = (count: number) => {
     return stars;
 };
 
-// ✅ [新增] 计算距离工具函数 (Haversine 公式)
+//  计算距离工具函数
 const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
     if (!lat1 || !lng1 || !lat2 || !lng2) return null;
     const radLat1 = (lat1 * Math.PI) / 180.0;
@@ -87,7 +84,7 @@ const ListPage = ({ navigation, route }: any) => {
 
     const [keyWordInput, setKeyWordInput] = useState(keyword);
     const [searchKeyword, setSearchKeyword] = useState(keyword);
-    // ✅ 默认排序改为大写 DEFAULT
+    //  默认排序改为大写 DEFAULT
     const [sortValue, setSortValue] = useState('DEFAULT');
 
     const [currentCity, setCurrentCity] = useState({ code: cityCode, name: displayInfo.cityName || '南京' });
@@ -100,17 +97,17 @@ const ListPage = ({ navigation, route }: any) => {
     const [currentStar, setStar] = useState(starRating);
 
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>(tags || []);
-    // 弹窗控制状态增加 'location'
+
     const [activeModal, setActiveModal] = useState<'none' | 'sort' | 'filter' | 'city' | 'date' | 'priceStar' | 'location'>('none');
 
     const [page, setPage] = useState(1);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
-    // ✅ [新增] 存储当前选中的 POI 坐标信息
+    //  存储当前选中的 POI 坐标信息
     const [currentPoi, setCurrentPoi] = useState<{ latitude: number; longitude: number; name: string } | null>(null);
 
-    // ✅ 获取城市列表数据 (修复弹窗为空的问题)
+    //  获取城市列表数据
     const { data: configData } = useHomeConfigV2();
 
     // facilities: 扁平数组，用于顶部快捷栏
@@ -121,8 +118,6 @@ const ListPage = ({ navigation, route }: any) => {
     const cityList = useMemo(() => configData?.cities || [], [configData]);
 
     // === GraphQL 查询 ===
-
-
     const { data, loading, error, refetch, fetchMore } = useQuery(SEARCH_HOTELS, {
         fetchPolicy: 'cache-and-network',
         variables: {
@@ -134,20 +129,15 @@ const ListPage = ({ navigation, route }: any) => {
                 priceMin: currentPriceMin,
                 priceMax: currentPriceMax,
                 starRating: currentStar,
-
-                // ✅ 修正 2: 字段名改为 facilityIds (Schema 要求)
                 facilityIds: selectedFacilities,
-
                 sort: sortValue,
-
-                // ✅ 修正 3: 分页必须包裹在 pagination 对象里 (Schema 要求)
                 pagination: {
                     page: 1,
                     pageSize: 5
                 }
             }
         },
-        onError: (err) => console.log('❌ 搜索报错:', JSON.stringify(err)), // 方便调试
+        onError: (err) => console.log('搜索报错:', JSON.stringify(err)), 
         onCompleted: (res) => {
             const total = res.searchHotels?.data?.total || 0;
             const items = res.searchHotels?.data?.items || [];
@@ -156,22 +146,21 @@ const ListPage = ({ navigation, route }: any) => {
         }
     });
 
-    // ✅ [修改] 核心逻辑：数据处理 pipeline
+    //  核心逻辑：数据处理 pipeline
     // 1. 如果选中了 currentPoi，计算距离
     // 2. 如果选中了 currentPoi，按距离排序
     const hotelList = useMemo(() => {
         let items = data?.searchHotels?.data?.items || [];
-        
-        // 深拷贝一下防止修改只读对象
+
         let processedItems = [...items];
 
         if (currentPoi) {
             // 1. 计算距离并添加到对象中
             processedItems = processedItems.map(item => {
                 const dist = getDistance(
-                    currentPoi.latitude, 
-                    currentPoi.longitude, 
-                    Number(item.latitude), 
+                    currentPoi.latitude,
+                    currentPoi.longitude,
+                    Number(item.latitude),
                     Number(item.longitude)
                 );
                 return {
@@ -200,10 +189,7 @@ const ListPage = ({ navigation, route }: any) => {
 
     const handleLoadMore = () => {
         if (loading || !hasMore) return;
-        // 如果正在按距离排序，前端分页会比较麻烦，这里暂时维持原有逻辑
-        // 真实业务中，建议把 sortValue 设置为 'DISTANCE' 传给后端，让后端排好序再分页
-        
-        console.log("📥 触发加载更多: Page", page + 1);
+        console.log("触发加载更多: Page", page + 1);
 
         fetchMore({
             variables: {
@@ -215,10 +201,8 @@ const ListPage = ({ navigation, route }: any) => {
                     priceMin: currentPriceMin,
                     priceMax: currentPriceMax,
                     starRating: currentStar,
-                    facilityIds: selectedFacilities, // ✅ 记得这里也要改
+                    facilityIds: selectedFacilities, 
                     sort: sortValue,
-
-                    // ✅ 分页结构保持嵌套
                     pagination: {
                         page: page + 1,
                         pageSize: 10
@@ -254,9 +238,9 @@ const ListPage = ({ navigation, route }: any) => {
         setIsRefreshing(false);
     };
 
-    // ✅ 4. 修复日期选择逻辑：支持选两个日期
+    //  修复日期选择逻辑：支持选两个日期
     const handleDateSelect = (d: string) => {
-        // 如果还没有开始日期，或者已经选好了开始和结束（重新开始选）
+        // 如果还没有开始日期，或者已经选好了开始和结束
         if (!currentCheckIn || (currentCheckIn && currentCheckOut)) {
             setCheckIn(d);
             setCheckOut(''); // 清空结束日期，等待第二次点击
@@ -297,7 +281,7 @@ const ListPage = ({ navigation, route }: any) => {
         setPage(1);
     };
 
-    // ✅ 统一的设施切换函数 (快捷栏和筛选弹窗都用它)
+    //  统一的设施切换函数
     const toggleFacility = (id: string) => {
         setPage(1);
         const newSet = new Set(selectedFacilities);
@@ -309,7 +293,7 @@ const ListPage = ({ navigation, route }: any) => {
     const renderItem = ({ item }: any) => {
         const coverImage = (item.images && item.images.length > 0) ? item.images[0].url : '';
         const dynamicTags = [];
-        // 1. 获取第一个房型的信息（通常列表页展示最低价房型的属性）
+        // 1. 获取第一个房型的信息
         const firstRoom = (item.roomType && item.roomType.length > 0) ? item.roomType[0] : null;
 
         // 2. 真实床型标签
@@ -319,17 +303,17 @@ const ListPage = ({ navigation, route }: any) => {
             dynamicTags.push({ text: bedText, color: '#333', bg: '#F5F5F5' });
         }
 
-        // 3. 窗户标签 (根据你提供的数据，还有一个 hasWindow 字段)
+        // 3. 窗户标签 
         if (firstRoom && firstRoom.hasWindow) {
             dynamicTags.push({ text: '有窗', color: '#333', bg: '#F5F5F5' });
         }
 
-        // 4. 免费取消 (保持原有逻辑)
+        // 4. 免费取消 
         if (item.roomType?.some((r: any) => r.refundable)) {
             dynamicTags.push({ text: '免费取消', color: '#0086F6', bg: '#F0F8FF' });
         }
 
-        // 5. 含早餐 (保持原有逻辑)
+        // 5. 含早餐
         if (item.roomType?.some((r: any) => r.hasBreakfast)) {
             dynamicTags.push({ text: '含早餐', color: '#FF9500', bg: '#FFF7E6' }); // 换个颜色区分一下
         }
@@ -340,8 +324,8 @@ const ListPage = ({ navigation, route }: any) => {
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('Detail', {
                     id: item.id,
-                    checkInDate: currentCheckIn, // 这里填你 state 里存的入住日期变量
-                    checkOutDate: currentCheckOut   // 这里填你 state 里存的离店日期变量 
+                    checkIn: currentCheckIn, //  state 里存的入住日期变量
+                    checkOut: currentCheckOut   //  state 里存的离店日期变量 
                 })}
             >
                 <View style={styles.imageWrapper}>
@@ -357,7 +341,7 @@ const ListPage = ({ navigation, route }: any) => {
                         <View style={styles.scoreBadge}><Text style={styles.scoreText}>{item.score || '4.8'}</Text></View>
                         <Text style={[
                             styles.scoreDesc,
-                            // 如果分数小于4，文字颜色改为淡蓝色 (#5CA2F8)，否则保持原来的颜色
+
                             (Number(item.score) || 0) < 4 && { color: '#5CA2F8' }
                         ]}>
                             {/* 文案逻辑：小于4显示“一般”，否则显示“超棒” */}
@@ -368,13 +352,11 @@ const ListPage = ({ navigation, route }: any) => {
                         </Text>
                     </View>
 
-                    {/* ✅ [修改] 距离展示逻辑 */}
-                    {/* 如果有 calcDistance (即选中了poi)，显示“距XXX 3.5km” */}
-                    {/* 如果没有，显示原有的 “市中心 · 地址” */}
-                    <Text style={[styles.locationText, item.calcDistance && {color: '#0086F6', fontWeight: '500'}]} numberOfLines={1}>
-                        {item.calcDistance 
-                           ? `距${currentPoi?.name || '您选的地点'} ${item.calcDistance.toFixed(1)} km`
-                           : `${item.distanceText || '市中心'} · ${item.address}`
+                    {/* 距离展示逻辑 */}
+                    <Text style={[styles.locationText, item.calcDistance && { color: '#0086F6', fontWeight: '500' }]} numberOfLines={1}>
+                        {item.calcDistance
+                            ? `距${currentPoi?.name || '您选的地点'} ${item.calcDistance.toFixed(1)} km`
+                            : `${item.distanceText || '市中心'} · ${item.address}`
                         }
                     </Text>
 
@@ -386,7 +368,6 @@ const ListPage = ({ navigation, route }: any) => {
                         ))}
                     </View>
                     <View style={styles.bottomRow}>
-                        {/* 新增：钻石贵宾价标签 */}
                         <View style={styles.vipTag}>
                             <Text style={styles.vipText}>钻石贵宾价</Text>
                         </View>
@@ -452,7 +433,7 @@ const ListPage = ({ navigation, route }: any) => {
                     <Ionicons name="caret-down" size={10} color={sortValue !== 'DEFAULT' ? '#0086F6' : '#666'} />
                 </TouchableOpacity>
 
-                {/* ✅ 修改：位置距离按钮 */}
+
                 <TouchableOpacity
                     style={styles.filterItem}
                     onPress={() => setActiveModal('location')} // 打开新弹窗
@@ -481,13 +462,13 @@ const ListPage = ({ navigation, route }: any) => {
                 </TouchableOpacity>
             </View>
 
-            {/* ✅ 3. 第二栏：快捷标签 (直接使用设施列表) */}
+            {/* 快捷标签 */}
             <View style={{ height: 44, backgroundColor: '#fff', borderBottomWidth: 0.5, borderColor: '#eee' }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickTagsContainer}>
                     {facLoading ? (
                         <Text style={{ color: '#999', fontSize: 12, padding: 10 }}>加载设施...</Text>
                     ) : (
-                        // 直接遍历所有设施，不做分类，实现“右滑更多”
+                        // 遍历所有设施
                         facilities.map((fac: any) => {
                             const isSelected = selectedFacilities.includes(fac.id);
                             return (
@@ -536,7 +517,7 @@ const ListPage = ({ navigation, route }: any) => {
                 data={cityList}
             />
 
-            {/* ✅ 日期选择器：现在 onSelect 的逻辑允许选两个日期了 */}
+            {/* 日期选择器 */}
             <DateSelectorModal
                 visible={activeModal === 'date'}
                 startDate={currentCheckIn} endDate={currentCheckOut}
@@ -561,7 +542,7 @@ const ListPage = ({ navigation, route }: any) => {
                 </TouchableOpacity>
             </Modal>
 
-            {/* ✅ 挂载位置筛选弹窗 */}
+            {/*  挂载位置筛选弹窗 */}
             <LocationFilterModal
                 visible={activeModal === 'location'}
                 cityCode={currentCity.code} // 传入当前城市
@@ -576,7 +557,6 @@ const ListPage = ({ navigation, route }: any) => {
                             longitude: poi.longitude
                         });
                     } else {
-                        // 选中了“不限”，清空位置
                         setSelectedLocationName('位置距离');
                         setCurrentPoi(null);
                     }
@@ -637,7 +617,6 @@ const ListPage = ({ navigation, route }: any) => {
     );
 };
 
-// 🎨 样式 (保持最新版)
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f7fa' },
 
@@ -693,31 +672,24 @@ const styles = StyleSheet.create({
     tagContainer: { paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4, marginRight: 4, marginBottom: 4 },
     tagText: { fontSize: 10 },
 
-    bottomRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',     // 底部对齐
-        justifyContent: 'flex-end', // 靠右对齐
-        marginTop: 8
+    bottomRow: {flexDirection: 'row',alignItems: 'flex-end',justifyContent: 'flex-end',marginTop: 8
     },
-
-    // ✅ 新增：VIP 标签容器样式（带边框）
     vipTag: {
-        borderWidth: 0.5,           // 细边框
-        borderColor: '#0086F6',     // 蓝色边框 (与主题色一致，也可以换成金色 #FF9500)
-        borderRadius: 2,            // 小圆角
-        paddingHorizontal: 4,       // 水平内边距
-        paddingVertical: 1,         // 垂直内边距
-        marginRight: 8,             // 与右侧价格拉开距离
-        marginBottom: 4,            //稍微往上抬一点，与价格数字底部视觉对齐
-        backgroundColor: '#F0F8FF'  // 可选：极淡的蓝色背景，增加质感
+        borderWidth: 0.5,           
+        borderColor: '#0086F6',     
+        borderRadius: 2,            
+        paddingHorizontal: 4,       
+        paddingVertical: 1,         
+        marginRight: 8,             
+        marginBottom: 4,            
+        backgroundColor: '#F0F8FF'  
     },
-
-    // ✅ 新增：VIP 文字样式
     vipText: {
-        fontSize: 10,               // 小字号
-        color: '#0086F6',           // 蓝色文字
+        fontSize: 10,               
+        color: '#0086F6',          
         fontWeight: '500'
     },
+    
     priceContainer: { flexDirection: 'row', alignItems: 'flex-end' },
     currency: { color: '#0086F6', fontSize: 12, marginBottom: 3, fontWeight: 'bold' },
     price: { color: '#0086F6', fontSize: 20, fontWeight: 'bold', lineHeight: 22 },

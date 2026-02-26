@@ -12,7 +12,6 @@ import {
   SearchHotelInput,
   HotelDetail,
   HotelConnection,
-  PoiListInput,
   PoiItem,
   HotelMinPriceCalendarInput,
   HotelMinPriceCalendar
@@ -22,7 +21,6 @@ function buildBizError(result: any) {
   return result && result.code !== 200 ? new Error(result.message || '请求失败') : undefined;
 }
 
-// ✅ 2. 定义通用 API 响应结构 (包含 code, message, data)
 // 定义各个接口的 Response 结构
 type ApiResponse<T> = {
   code: number;
@@ -52,8 +50,7 @@ type HotelDetailRes = {
 };
 
 type PoiListRes = {
-  poiList: PoiItem[]; // 注意：根据你的 GraphQL，这里好像没有包装 code/message/data，直接返回数组？
-                      // 如果实际返回有 code/message，请改为 ApiResponse<PoiItem[]>
+  poiList: PoiItem[];
 };
 
 type CalendarRes = {
@@ -119,7 +116,7 @@ export function useHomeConfigV2() {
  * - search({ pageNum: 1, pageSize: 10, ... })
  */
 export function useHotelSearch() {
-  // ✅ 3. 泛型使用了 SearchHotelsRes
+  // 泛型使用了 SearchHotelsRes
   const [run, { data, loading, error, refetch }] = useLazyQuery<SearchHotelsRes>(SEARCH_HOTELS, {
     fetchPolicy: 'network-only',
   });
@@ -127,7 +124,7 @@ export function useHotelSearch() {
   const result = data?.searchHotels;
   const bizError = buildBizError(result);
   
-  // ✅ 4. 数据解包：HotelConnection 里已经包含了 items 和 page 信息
+  // 数据解包：HotelConnection 里已经包含了 items 和 page 信息
   const connection = result?.code === 200 ? result.data : undefined;
 
   return {

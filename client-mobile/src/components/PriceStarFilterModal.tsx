@@ -29,7 +29,6 @@ const PriceStarFilterModal = ({ visible, onClose, onConfirm, initialPrice = '', 
     // 每次打开弹窗时，同步外部传入的初始值
     useEffect(() => {
         if (visible) {
-            // ✅ 加双保险：如果是 null/undefined 就转成空字符串
             setSelectedPrice(initialPrice || '');
             setSelectedStar(initialStar || '');
         }

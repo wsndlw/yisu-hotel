@@ -9,8 +9,8 @@ interface Props {
     startDate: string;
     endDate: string;
     onSelect: (date: string) => void;
-    currentMonth?: Date; // 新增：当前查看的月份
-    onMonthChange?: (date: Date) => void; // 新增：月份变化回调
+    currentMonth?: Date; 
+    onMonthChange?: (date: Date) => void; 
 }
 
 const DateSelectorModal: React.FC<Props> = ({ 
@@ -50,7 +50,7 @@ const DateSelectorModal: React.FC<Props> = ({
     // 处理日期选择
     const handleDateSelect = (date: string) => {
         onSelect(date);
-        // 注意：不在这个组件内关闭弹窗，让父组件根据是否选择了离店日期来决定是否关闭
+        
     };
 
     // 处理月份变化

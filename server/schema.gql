@@ -594,7 +594,6 @@ type MobileHotelDetail {
   nearbyPoi: [NearbyPoiItem!]
   openSince: String
   phone: String
-  province: String
   rooms: [MobileRoom!]!
   score: Float
   starLevel: Float

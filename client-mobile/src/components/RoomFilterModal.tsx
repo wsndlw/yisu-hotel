@@ -39,7 +39,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
     payment: [], */
   });
 
-  // 1. 多选切换（用于价格区间）
+  // 1. 多选切换
   const toggleMultiOption = (category: keyof FilterOptions, option: string) => {
     // 只处理数组类型的字段（价格）
     if (Array.isArray(filters[category])) {
@@ -53,10 +53,10 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
     }
   };
 
-  // 2. 单选切换（用于早餐、面积、服务、有无窗，互斥）
+  // 2. 单选切换（
   const toggleSingleOption = (category: keyof FilterOptions, option: string) => {
     setFilters(prev => {
-      // 点击已选中的选项则取消选中（置为 undefined），否则选中当前选项
+      // 点击已选中的选项则取消选中
       return { 
         ...prev, 
         [category]: prev[category] === option ? undefined : option 
@@ -102,7 +102,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
             key={option}
             style={[
               styles.option,
-              // 单选判断：值等于当前选项；多选判断：数组包含当前选项
+              // 单选判断
               (type === 'single' ? filters[category] === option : (filters[category] as string[]).includes(option)) 
               && styles.optionActive
             ]}
