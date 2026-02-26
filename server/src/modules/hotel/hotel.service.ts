@@ -161,94 +161,6 @@ export class HotelService {
   }
 
 
-  // async listHotels(input: {
-  //   city?: string;
-  //   keyword?: string;
-  //   merchantKeyword?: string;
-  //   starLevel?: number;
-  //   tagIds?: string[];
-  //   facilityIds?: string[];
-  //   status?: HotelStatus;
-  //   page: number;
-  //   pageSize: number;
-  // }): Promise<HotelListResult> {
-  //   const page = Math.max(1, input.page || 1);
-  //   const pageSize = Math.min(50, Math.max(1, input.pageSize || 10));
-
-  //   const hasJoinFilter = (input.tagIds && input.tagIds.length > 0) || (input.facilityIds && input.facilityIds.length > 0);
-
-  //   if (hasJoinFilter || input.merchantKeyword || input.keyword) {
-  //     const qb = this.hotelRepo
-  //       .createQueryBuilder('hotel')
-  //       .leftJoinAndSelect('hotel.tags', 'tag')
-  //       .leftJoinAndSelect('hotel.facilities', 'facility')
-  //       .leftJoinAndSelect('hotel.merchant', 'merchant')
-  //       .orderBy('hotel.updatedAt', 'DESC')
-  //       .skip((page - 1) * pageSize)
-  //       .take(pageSize);
-
-  //     if (input.city) qb.andWhere('hotel.city = :city', { city: input.city });
-  //     if (typeof input.starLevel === 'number') qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
-  //     if (input.status) {
-  //       qb.andWhere('hotel.status = :status', { status: input.status });
-  //     } else {
-  //       qb.andWhere('hotel.status != :draft', { draft: HotelStatus.DRAFT });
-  //     }
-
-  //     const keyword = input.keyword?.trim();
-  //     if (keyword) {
-  //       qb.andWhere(
-  //         '(hotel.nameZh LIKE :kw OR hotel.nameEn LIKE :kw OR hotel.address LIKE :kw)',
-  //         { kw: `%${keyword}%` },
-  //       );
-  //     }
-
-  //     const mkw = input.merchantKeyword?.trim();
-  //     if (mkw) {
-  //       qb.andWhere('merchant.username LIKE :mkw', { mkw: `%${mkw}%` });
-  //     }
-
-  //     if (input.tagIds && input.tagIds.length > 0) {
-  //       qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
-  //     }
-
-  //     if (input.facilityIds && input.facilityIds.length > 0) {
-  //       qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
-  //     }
-
-  //     const [list, total] = await qb.getManyAndCount();
-  //     return { list, total, page, pageSize };
-  //   }
-
-  //   const baseWhere: FindOptionsWhere<HotelEntity> = {};
-  //   if (input.city) baseWhere.city = input.city;
-  //   if (typeof input.starLevel === 'number') baseWhere.starLevel = input.starLevel;
-  //   if (input.status) {
-  //     baseWhere.status = input.status;
-  //   } else {
-  //     baseWhere.status = In([HotelStatus.REVIEWING, HotelStatus.REJECTED, HotelStatus.PUBLISHED, HotelStatus.OFFLINE]);
-  //   }
-
-  //   const keyword = input.keyword?.trim();
-  //   const keywordWheres: FindOptionsWhere<HotelEntity>[] = keyword
-  //     ? [
-  //       { ...baseWhere, nameZh: Like(`%${keyword}%`) },
-  //       { ...baseWhere, nameEn: Like(`%${keyword}%`) },
-  //       { ...baseWhere, address: Like(`%${keyword}%`) },
-  //     ]
-  //     : [{ ...baseWhere }];
-
-  //   const [list, total] = await this.hotelRepo.findAndCount({
-  //     where: keywordWheres,
-  //     skip: (page - 1) * pageSize,
-  //     take: pageSize,
-  //     order: { updatedAt: 'DESC' },
-  //     relations: ['tags', 'facilities', 'merchant'],
-  //   });
-
-  //   return { list, total, page, pageSize };
-  // }
-
   async myHotels(
     user: UserEntity,
     status?: HotelStatus,
@@ -314,7 +226,7 @@ export class HotelService {
     return validFacilities;
   }
 
-  // Merchant operations
+  // 商户操作
   private generateHotelNo(): string {
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);
@@ -329,9 +241,8 @@ export class HotelService {
   async createHotel(merchant: UserEntity, input: any): Promise<HotelEntity> {
     this.assertMerchant(merchant);
 
-    // ===============================
-    // 【严格校验】根据提交类型进行分组校验
-    // ===============================
+
+    //根据提交类型进行分组校验
     const inputInstance = plainToInstance(HotelUpsertInput, input);
     const validateGroup = input.isSubmit ? ['SUBMIT'] : ['DRAFT'];
     await validateOrReject(inputInstance, { groups: validateGroup, forbidUnknownValues: false });
@@ -387,9 +298,7 @@ export class HotelService {
       throw new BadRequestException('当前状态不可编辑');
     }
 
-    // ===============================
-    // 【严格校验】根据提交类型进行分组校验
-    // ===============================
+    // 根据提交类型进行分组校验
     const inputInstance = plainToInstance(HotelUpsertInput, input);
     const validateGroup = input.isSubmit ? ['SUBMIT'] : ['DRAFT'];
     await validateOrReject(inputInstance, { groups: validateGroup, forbidUnknownValues: false });
@@ -452,7 +361,7 @@ export class HotelService {
       throw new BadRequestException('仅草稿/未通过状态可删除');
     }
 
-        if (hotel.status === HotelStatus.DRAFT && hotel.hasEverPublished) {
+    if (hotel.status === HotelStatus.DRAFT && hotel.hasEverPublished) {
       throw new BadRequestException('已发布过的酒店草稿不允许删除');
     }
 
@@ -547,9 +456,8 @@ export class HotelService {
     return updatedHotel;
   }
 
-  // moved to RoomTypeService
 
-  // Admin operations
+  // 管理员操作
   async approveHotel(admin: UserEntity, hotelId: string) {
     this.assertAdmin(admin);
     const hotel = await this.hotelRepo.findOne({ where: { id: hotelId } });
@@ -595,7 +503,7 @@ export class HotelService {
     }
 
     hotel.status = HotelStatus.PUBLISHED;
-        hotel.hasEverPublished = true;
+    hotel.hasEverPublished = true;
     await this.auditService.addRecord({
       hotelId: hotel.id,
       action: HotelAuditAction.PUBLISH,
@@ -640,159 +548,6 @@ export class HotelService {
     return this.getHotelById(hotelId);
   }
 
-  /**
-   * 【移动端专用】获取酒店列表 - 支持多维度筛选和距离计算
-   */
-  // async listHotelsForH5(input: any): Promise<any> {
-  //   const page = Math.max(1, input.page || 1);
-  //   const pageSize = Math.min(50, Math.max(1, input.pageSize || 10));
-
-  //   const qb = this.hotelRepo
-  //     .createQueryBuilder('hotel')
-  //     .leftJoinAndSelect('hotel.tags', 'tag')
-  //     .leftJoinAndSelect('hotel.facilities', 'facility')
-  //     .leftJoinAndSelect('hotel.roomTypes', 'roomType')
-  //     .leftJoinAndSelect('hotel.images', 'image')
-  //     .where('hotel.status = :status', { status: HotelStatus.PUBLISHED });
-
-  //   const hasGeo = input.latitude != null && input.longitude != null;
-  //   if (hasGeo) {
-  //     qb.addSelect(
-  //       'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude))',
-  //       'distance',
-  //     ).setParameters({ lng: input.longitude, lat: input.latitude });
-  //   }
-
-  //   // 城市筛选
-  //   if (input.city) {
-  //     qb.andWhere('hotel.city = :city', { city: input.city });
-  //   }
-
-  //   // 关键词搜索
-  //   if (input.keyword) {
-  //     qb.andWhere('(hotel.nameZh LIKE :kw OR hotel.nameEn LIKE :kw OR hotel.address LIKE :kw)', {
-  //       kw: `%${input.keyword}%`,
-  //     });
-  //   }
-
-  //   // 星级筛选
-  //   if (typeof input.starLevel === 'number') {
-  //     qb.andWhere('hotel.starLevel = :starLevel', { starLevel: input.starLevel });
-  //   }
-
-  //   // 价格区间筛选
-  //   if (typeof input.minPrice === 'number') {
-  //     qb.andWhere('hotel.miniPrice >= :minPrice', { minPrice: input.minPrice });
-  //   }
-  //   if (typeof input.maxPrice === 'number') {
-  //     qb.andWhere('hotel.miniPrice <= :maxPrice', { maxPrice: input.maxPrice });
-  //   }
-
-  //   // 标签筛选
-  //   if (input.tagIds && input.tagIds.length > 0) {
-  //     qb.andWhere('tag.id IN (:...tagIds)', { tagIds: input.tagIds });
-  //   }
-
-  //   // 设施筛选
-  //   if (input.facilityIds && input.facilityIds.length > 0) {
-  //     qb.andWhere('facility.id IN (:...facilityIds)', { facilityIds: input.facilityIds });
-  //   }
-
-  //   if (input.bedType) {
-  //     qb.andWhere('roomType.bedType = :bedType', { bedType: input.bedType });
-  //   }
-
-  //   if (typeof input.guestCount === 'number') {
-  //     qb.andWhere('roomType.maxGuests >= :guestCount', { guestCount: input.guestCount });
-  //   }
-
-  //   // 排序
-  //   const sortBy = input.sortBy || 'updatedAt';
-  //   if (sortBy === 'price') {
-  //     qb.orderBy('hotel.miniPrice', 'ASC');
-  //   } else if (sortBy === 'starLevel') {
-  //     qb.orderBy('hotel.starLevel', 'DESC');
-  //   } else if (sortBy === 'distance' && hasGeo) {
-  //     qb.orderBy('distance', 'ASC');
-  //   } else {
-  //     qb.orderBy('hotel.updatedAt', 'DESC');
-  //   }
-
-  //   qb.skip((page - 1) * pageSize).take(pageSize);
-
-  //   if (hasGeo && typeof input.distanceMax === 'number') {
-  //     qb.andWhere(
-  //       'ST_Distance_Sphere(POINT(:lng, :lat), POINT(hotel.longitude, hotel.latitude)) <= :maxDistance',
-  //       { maxDistance: input.distanceMax * 1000 },
-  //     );
-  //   }
-
-  //   const { entities, raw } = await qb.getRawAndEntities();
-  //   const total = await qb.getCount();
-
-  //   const listWithDistance = entities.map((hotel) => {
-  //     let distance: number | null = null;
-  //     let distanceText: string | null = null;
-
-  //     if (
-  //       input.latitude &&
-  //       input.longitude &&
-  //       hotel.latitude != null &&
-  //       hotel.longitude != null
-  //     ) {
-  //       // 【优先使用数据库计算的距离】
-  //       // 数据库返回的 distance 单位是米
-  //       // 注意：getRawAndEntities 会把 raw 结果放在 raw 数组中，需要匹配 id
-  //       const rawData = raw.find((r) => r.hotel_id === hotel.id);
-  //       if (rawData && rawData.distance) {
-  //         distance = Math.round(Number(rawData.distance));
-  //       } else {
-  //         // 降级方案：如果数据库没返回，再使用 JS 计算
-  //         const distKm = this.calculateDistance(
-  //           input.latitude,
-  //           input.longitude,
-  //           hotel.latitude,
-  //           hotel.longitude,
-  //         );
-  //         distance = Math.round(distKm * 1000);
-  //       }
-
-  //       /*
-  //       // 旧的 JS 计算逻辑
-  //       const distKm = this.calculateDistance(
-  //         input.latitude,
-  //         input.longitude,
-  //         hotel.latitude,
-  //         hotel.longitude,
-  //       );
-  //       distance = Math.round(distKm * 1000);
-  //       */
-
-  //       // 生成文案
-  //       if (distance !== null && distance < 1000) {
-  //         // 小于1000米：精确到10米（如 358 -> 360）
-  //         const tens = Math.round(distance / 10) * 10;
-  //         distanceText = `${tens}m`;
-  //       } else if (distance !== null) {
-  //         // 大于1000米：保留1位小数（如 1.2km）
-  //         distanceText = `${(distance / 1000).toFixed(1)}km`;
-  //       }
-  //     }
-
-  //     if (hotel.roomTypes) {
-  //       hotel.roomTypes = hotel.roomTypes
-  //         .slice()
-  //         .sort((a, b) => Number(a.basePrice) - Number(b.basePrice));
-  //     }
-  //     if (hotel.images) {
-  //       hotel.images = hotel.images.slice().sort((a, b) => a.sortOrder - b.sortOrder);
-  //     }
-
-  //     return { ...hotel, distance, distanceText };
-  //   });
-
-  //   return { list: listWithDistance, total, page, pageSize };
-  // }
 
   async listHotelsForH5(input: any): Promise<any> {
     const page = Math.max(1, Number(input.page) || 1);

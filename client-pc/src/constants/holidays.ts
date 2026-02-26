@@ -164,13 +164,3 @@ export const HOLIDAYS_2026: Holiday[] = [
 
 /** 全部节假日（2025+2026） */
 export const ALL_HOLIDAYS = [...HOLIDAYS_2025, ...HOLIDAYS_2026];
-
-/** 按名称查找节假日 */
-export function getHolidayByName(name: string): Holiday | undefined {
-  return ALL_HOLIDAYS.find((h) => h.name === name);
-}
-
-/** 获取所有节假日名称列表 */
-export function getHolidayNames(): string[] {
-  return Array.from(new Set(ALL_HOLIDAYS.map((h) => h.name)));
-}

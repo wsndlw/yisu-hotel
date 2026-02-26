@@ -4,7 +4,6 @@ import { UserOutlined, LockOutlined, HomeOutlined, MailOutlined } from '@ant-des
 import styles from './index.module.css';
 import { useEmailLogin, useLogin, useSendEmailCode } from '../../services/auth';
 import { useUserStore } from '../../store/user';
-import { AUTH_TOKEN } from '../../constants/constants';
 import { useState, useEffect } from 'react';
 
 export default function Login() {
@@ -26,7 +25,6 @@ export default function Login() {
 
   const onPasswordLogin = async (values: any) => {
     await loginHandler(values.username, values.password, (data: any) => {
-      localStorage.setItem(AUTH_TOKEN, data.accessToken);
       const role = data.user?.role;
       if (role) setToken(data.accessToken, role);
       nav(role === 'ADMIN' ? '/admin/dashboard' : '/merchant/monitor');
@@ -35,8 +33,15 @@ export default function Login() {
 
   const onEmailLogin = async (values: any) => {
     await emailLoginHandler(values.email, values.code, (data: any) => {
-      localStorage.setItem(AUTH_TOKEN, data);
-      nav('/merchant/monitor');
+      const role = data.user?.role;
+      if (role) {
+        setToken(data.accessToken, role);
+        nav(role === 'ADMIN' ? '/admin/dashboard' : '/merchant/monitor');
+      } else {
+        // 如果没有角色信息，默认商家
+        setToken(data.accessToken, 'MERCHANT');
+        nav('/merchant/monitor');
+      }
     });
   };
 
@@ -46,7 +51,7 @@ export default function Login() {
       const success = await sendEmailCode(values.email);
       if (success) setCountdown(60);
     } catch (error) {
-      // 校验失败，Form 会自动显示错误信息
+      console.log('error', error);
     }
   };
 

@@ -34,7 +34,7 @@ export const useLogin = (): [loginHandler: Function, loading: boolean] => {
 
 /**
  * 用户注册（旧）
- */ 
+ */
 // export const useRegister = (): [registerHandler: Function, loading: boolean] => {
 //   const [register, { loading }] = useMutation(REGISTER);
 
@@ -80,7 +80,7 @@ export const useLogin = (): [loginHandler: Function, loading: boolean] => {
  */
 export const useMe = (skip = false) => {
   const { data, loading, refetch } = useQuery(ME, {
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'network-only',
     skip,
   });
 
@@ -122,10 +122,10 @@ export const useSendEmailCode = (): [sendHandler: (email: string) => Promise<boo
 /**
  * 邮箱验证码登录
  */
-export const useEmailLogin = (): [loginHandler: (email: string, code: string, callback?: (token: string) => void) => Promise<boolean>, loading: boolean] => {
+export const useEmailLogin = (): [loginHandler: (email: string, code: string, callback?: (data: any) => void) => Promise<boolean>, loading: boolean] => {
   const [login, { loading }] = useMutation(EMAIL_LOGIN);
 
-  const loginHandler = async (email: string, code: string, callback?: (token: string) => void): Promise<boolean> => {
+  const loginHandler = async (email: string, code: string, callback?: (data: any) => void): Promise<boolean> => {
     try {
       const res = await login({ variables: { email, code } });
       const result = res.data?.emailLogin;

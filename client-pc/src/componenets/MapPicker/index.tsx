@@ -237,12 +237,8 @@ export default function MapPicker(props: {
 
   return (
     <div>
-      <div className={styles.tip}>进入页面会自动定位，也可以点击地图选点。</div>
-      {!ak ? (
-        <div className={styles.warn}>未配置百度地图 AK（VITE_BAIDU_MAP_AK），地图瓦片会加载失败。</div>
-      ) : (
-        <div className={styles.akInfo}>已读取 AK（长度：{ak.length}）</div>
-      )}
+      <div className={styles.tip}>进入页面会自动定位，也可以点击地图或搜索选点。</div>
+
 
       <div className={styles.searchWrapper} ref={wrapperRef}>
         <div className={styles.searchRow}>

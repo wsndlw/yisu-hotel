@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import type { PropsWithChildren } from 'react';
-import { AUTH_TOKEN } from '../../constants/constants';
+import { useUserStore } from '../../store/user';
 
 export default function GuestGuard({ children }: PropsWithChildren) {
-  const token = localStorage.getItem(AUTH_TOKEN) || sessionStorage.getItem(AUTH_TOKEN);
+  const token = useUserStore((state) => state.token);
 
   if (token) {
     // 已经有 Token，直接跳到根路径

@@ -4,7 +4,6 @@ import { UserOutlined, LockOutlined, HomeOutlined, MailOutlined } from '@ant-des
 import styles from './index.module.css';
 import { useEmailRegister, useSendEmailCode } from '../../services/auth';
 import { useUserStore } from '../../store/user';
-import { AUTH_TOKEN } from '../../constants/constants';
 import { useState } from 'react';
 
 export default function Register() {
@@ -22,7 +21,6 @@ export default function Register() {
       values.password,
       values.role,
       (data: any) => {
-        localStorage.setItem(AUTH_TOKEN, data);
         const role = values.role;
         if (role) {
           setToken(data, role);
@@ -103,12 +101,15 @@ export default function Register() {
             name="password"
             rules={[
               { required: true, message: '请输入密码' },
-              { min: 6, message: '密码至少6位' },
+              {
+                pattern: /^(?![0-9]+$)(?![a-z]+$)[a-z0-9]{6,}$/,
+                message: '有且只能包含小写字母和数字，长度大于 6',
+              }
             ]}
           >
             <Input.Password
               prefix={<LockOutlined className={styles.inputIcon} />}
-              placeholder="密码（至少6位）"
+              placeholder="有且只能包含小写字母和数字，长度大于 6"
             />
           </Form.Item>
           <Form.Item

@@ -126,7 +126,7 @@ export class AuthService {
     } else {
       // 用户不存在时，创建临时用户记录用于存储验证码
       try {
-       const tempPassword = 'pending_verification';
+        const tempPassword = 'pending_verification';
         const newUser = await this.users.repo.save(
           this.users.repo.create({
             username: email, // 临时用户使用邮箱作为用户名
@@ -171,7 +171,7 @@ export class AuthService {
   }
 
   // ===== 邮箱验证码功能：邮箱登录 =====
-  async emailLogin(email: string, code: string): Promise<Result> {
+  async emailLogin(email: string, code: string): Promise<any> { // 临时 any，实际应该是 { accessToken, user } | Result
     const user = await this.users.findByEmail(email);
     if (!user) {
       return { code: CODE.EMAIL_NOT_FOUND, message: '邮箱尚未注册' };
@@ -219,8 +219,8 @@ export class AuthService {
       });
     }
 
-    const token = await this.jwt.signAsync({ sub: user.id, role: user.role });
-    return { code: CODE.SUCCESS, message: '登录成功', data: token };
+    const accessToken = await this.jwt.signAsync({ sub: user.id, role: user.role });
+    return { accessToken, user };
   }
 
   // ===== 邮箱验证码功能：邮箱注册（支持用户选择角色） =====

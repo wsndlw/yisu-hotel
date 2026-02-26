@@ -3,15 +3,14 @@
  * 【统一路由守卫】RouteGuard 
  * ========================================
  * 职责：
- * 1. 拦截未登录（踢去 /login）
- * 2. 拦截越权访问（踢回各自的首页）
+ * 1. 拦截未登录
+ * 2. 拦截越权访问
  * 3. 处理根路径 / 的自动分流
  */
 import { Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import type { PropsWithChildren } from 'react';
 import { ME } from '../../graphql/auth';
-import { AUTH_TOKEN } from '../../constants/constants';
 import { useUserStore } from '../../store/user';
 
 export type AppRole = 'ADMIN' | 'MERCHANT';
@@ -23,8 +22,7 @@ interface RouteGuardProps {
 
 export default function RouteGuard({ roles, isRoot, children }: PropsWithChildren<RouteGuardProps>) {
   const location = useLocation();
-  const token = localStorage.getItem(AUTH_TOKEN) || sessionStorage.getItem(AUTH_TOKEN);
-  const { role, setToken } = useUserStore();
+  const { role, setToken, token, logout } = useUserStore();
 
   // 1. 发起唯一一次用户信息请求
   const { loading } = useQuery(ME, {
@@ -35,13 +33,11 @@ export default function RouteGuard({ roles, isRoot, children }: PropsWithChildre
       if (fetchedRole && token) setToken(token, fetchedRole);
     },
     onError: () => {
-      localStorage.removeItem(AUTH_TOKEN);
-      sessionStorage.removeItem(AUTH_TOKEN);
+      logout();
       window.location.href = '/login';
     }
   });
 
-  // ========== 开始大闸的判定逻辑 ==========
 
   // 拦截 1：没 Token，直接踢回登录页
   if (!token) {

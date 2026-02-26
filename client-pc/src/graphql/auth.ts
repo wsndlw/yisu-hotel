@@ -66,7 +66,14 @@ export const EMAIL_LOGIN = gql`
     emailLogin(email: $email, code: $code) {
       code
       message
-      data
+      data {
+        accessToken
+        user {
+          id
+          username
+          role
+        }
+      }
     }
   }
 `;

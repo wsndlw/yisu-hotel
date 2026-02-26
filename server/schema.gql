@@ -709,7 +709,7 @@ type Mutation {
   deleteRoomType(roomTypeId: ID!): Result!
 
   """邮箱验证码登录"""
-  emailLogin(code: String!, email: String!): Result!
+  emailLogin(code: String!, email: String!): AuthResult!
 
   """邮箱验证码注册"""
   emailRegister(code: String!, email: String!, password: String!, role: String!): Result!

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 
 import style from './index.module.css';
-import { App, Button, Card, Form, Input, Modal, Select, Space, Switch, Table } from 'antd';
+import { App, Button, Card, Form, Input, message, Modal, Select, Space, Switch, Table } from 'antd';
 import { useAllFacilities, useUpsertFacility, useSetFacilityEnabled, useDeleteFacility, useHardDeleteFacility } from '../../../services/facility';
 import BatchAddModal from './components/BatchAddModal';
 import { getColumns } from './constants';
@@ -72,12 +72,16 @@ const Facilities = ({ }) => {
     enabled: boolean,
     category: string,
   ) => {
+    let successCount = 0;
     for (const name of names) {
-      // 批量新增时，id 传 null
-      const saved = await upsertFacility(null, name, 'FACILITY', category, enabled);
+      const saved = await upsertFacility(null, name, 'FACILITY', category, enabled, undefined, true);
       if (saved) {
-        await setFacilityEnabled(saved.id, enabled);
+        successCount++;
+        await setFacilityEnabled(saved.id, enabled, undefined, true);
       }
+    }
+    if (successCount > 0) {
+      message.success(`成功添加 ${successCount} 个设施`);
     }
     refetch();
   };

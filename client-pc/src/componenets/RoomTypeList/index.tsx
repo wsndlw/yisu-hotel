@@ -5,7 +5,7 @@ import React from 'react';
 import { Table, Space, type TableProps } from 'antd';
 import styles from './index.module.css';
 
-export interface RoomTypeListItem {
+interface RoomTypeListItem {
   id: string;
   name: string;
   bedType?: string | null;
@@ -113,13 +113,13 @@ export default function RoomTypeList({
             <Space>
               <a
                 onClick={() => !disabled && onOps?.(record)}
-              // className={disabled ? styles.linkDisabled : styles.link}
+                className={disabled ? styles.linkDisabled : styles.link}
               >
                 运营调整
               </a>
               <a
                 onClick={() => !disabled && onCalendar?.(record)}
-              // className={disabled ? styles.linkDisabled : styles.link}
+                className={disabled ? styles.linkDisabled : styles.link}
               >
                 日历管理
               </a>
@@ -131,14 +131,13 @@ export default function RoomTypeList({
           <Space className={styles.actions}>
             <a
               onClick={() => !disabled && onEdit?.(record)}
-            // className={disabled ? styles.linkDisabled : styles.link}
+            className={disabled ? styles.linkDisabled : styles.link}
             >
               编辑
             </a>
             <a
               onClick={() => !disabled && onDelete?.(record.id)}
-              // className={disabled ? styles.linkDisabled : styles.link}
-              className={styles.dangerLink}
+              className={disabled ? styles.linkDisabled : styles.dangerLink}
             >
               删除
             </a>
