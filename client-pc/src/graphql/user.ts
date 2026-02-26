@@ -7,6 +7,7 @@ export const UPDATE_ME = gql`
       message
       data {
         id
+        email
         username
         role
         avatarUrl

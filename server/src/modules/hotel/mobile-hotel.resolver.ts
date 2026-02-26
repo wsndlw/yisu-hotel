@@ -5,8 +5,6 @@ import { FacilityService } from '../facility/facility.service';
 import { RoomTypeService } from '../roomType/roomType.service';
 import { CalendarService } from '../calendar/calendar.service';
 import { PoiService } from '../poi/poi.service';
-import { NearbyPoiItem } from '../poi/dto/poi.type';
-import { FacilityType } from '../facility/models/facility.entity';
 import { SearchHotelInput, MobileHotelSort } from './dto/mobile.input';
 import {
   MobileHomeConfigResult,
@@ -62,117 +60,7 @@ export class MobileHotelResolver {
     };
   }
 
-  // @Query(() => HotelConnectionResult, { description: '移动端搜索酒店列表' })
-  // async searchHotels(
-  //   @Args('input', { description: '支持城市、日期、设施等' }) input: SearchHotelInput,
-  // ): Promise<HotelConnectionResult> {
-  //   const page = input.pagination?.page ?? 1;
-  //   const pageSize = input.pagination?.pageSize ?? 10;
-  //   // 处理 POI 筛选逻辑
-  //   let searchLat = input.latitude;
-  //   let searchLng = input.longitude;
-
-  //   if (input.poiId) {
-  //     const poi = await this.poiService.getPoiById(input.poiId);
-  //     if (poi && poi.latitude && poi.longitude) {
-  //       searchLat = poi.latitude;
-  //       searchLng = poi.longitude;
-  //     }
-  //   }
-
-  //   const hasGeo = searchLat != null && searchLng != null;
-  //   const sortBy =
-  //     input.sort === MobileHotelSort.PRICE_ASC
-  //       ? 'price'
-  //       : input.sort === MobileHotelSort.SCORE_DESC
-  //         ? 'starLevel'
-  //         : input.sort === MobileHotelSort.DISTANCE_ASC
-  //           ? 'distance'
-  //           : hasGeo
-  //             ? 'distance'
-  //             : 'updatedAt';
-
-  //   const result = await this.hotelService.listHotelsForH5({
-  //     city: input.cityCode,
-  //     keyword: input.keyword,
-  //     minPrice: input.priceMin,
-  //     maxPrice: input.priceMax,
-  //     starLevel: input.starRating,
-  //     facilityIds: input.facilityIds,
-  //     bedType: input.bedType,
-  //     guestCount: input.guestCount,
-  //     latitude: searchLat,
-  //     longitude: searchLng,
-  //     distanceMax: input.distanceMax,
-  //     page,
-  //     pageSize,
-  //     sortBy,
-  //   });
-
-  //   const rawItems = Array.isArray(result)
-  //     ? result
-  //     : result.items || result.list || [];
-
-  //   let items = rawItems.map((hotel: any) => ({
-  //     id: hotel.id,
-  //     hotelNo: hotel.hotelID || null,
-  //     name: hotel.nameZh,
-  //     coverImage: hotel.images?.[0]?.url || null,
-  //     score: typeof hotel.score === 'number' ? hotel.score : null,
-  //     minPrice: hotel.miniPrice ?? null,
-  //     distance: hotel.distance ?? null,
-  //     distanceText: hotel.distanceText ?? null,
-  //     address: hotel.address ?? null,
-  //     favoriteCount: hotel.favoriteCount ?? 0,
-  //     latitude: hotel.latitude ?? null,
-  //     longitude: hotel.longitude ?? null,
-  //     roomType: Array.isArray(hotel.roomTypes) ? hotel.roomTypes ?? null : null,
-  //   }));
-  //   console.log('items', items);
-
-  //   if (input.checkIn && input.checkOut) {
-  //     const checkIn = this.normalizeDate(input.checkIn);
-  //     const checkOut = this.normalizeDate(input.checkOut);
-  //     const nights = checkIn && checkOut ? this.calculateNights(checkIn, checkOut) : 0;
-
-  //     if (!checkIn || !checkOut || nights <= 0) {
-  //       // 无效日期范围时不做库存过滤
-  //     } else {
-  //       const availableItems: typeof items = [];
-  //       for (const hotel of items) {
-  //         const roomTypes = await this.roomTypeService.listByHotelId(hotel.id);
-  //         if (roomTypes.length === 0) continue;
-  //         let hasAvailable = false;
-  //         let minPrice = Infinity;
-  //         for (const room of roomTypes) {
-  //           const available = await this.calendarService.checkAvailability(room.id, checkIn, checkOut);
-  //           if (available) {
-  //             hasAvailable = true;
-  //             const totalPrice = await this.calendarService.getDateRangePrice(room.id, checkIn, checkOut);
-  //             const avgPrice = totalPrice / nights;
-  //             if (avgPrice < minPrice) minPrice = avgPrice;
-  //           }
-  //         }
-  //         if (hasAvailable) {
-  //           availableItems.push({
-  //             ...hotel,
-  //             minPrice: minPrice === Infinity ? hotel.minPrice : minPrice,
-  //           });
-  //         }
-  //       }
-  //       items = availableItems;
-  //     }
-  //   }
-  //   return {
-  //     code: CODE.SUCCESS,
-  //     message: getMsg(CODE.SUCCESS),
-  //     data: {
-  //       items,
-  //       total: items.length,
-  //     },
-  //   };
-  // }
-
+  
 
   @Query(() => HotelConnectionResult, { description: '移动端搜索酒店列表' })
   async searchHotels(
@@ -227,7 +115,6 @@ export class MobileHotelResolver {
     const rawItems = result.list || [];
 
     // 组装最终数据并恢复动态价格计算
-  // 组装最终数据并恢复动态价格计算
     const items = await Promise.all(rawItems.map(async (hotel: any) => {
       let finalMinPrice = hotel.miniPrice ?? null;
 
@@ -330,7 +217,7 @@ export class MobileHotelResolver {
           const nights = this.calculateNights(checkIn, checkOut);
           price = nights > 0 ? totalPrice / nights : Number(room.basePrice);
         }else {
-          // 日历表里查不到，按基础价格和基础库存卖！
+          // 日历表里查不到，使用基础价格和基础库存
           available = true; 
           price = Number(room.basePrice);
           // stock 保持原样，不置为 0
@@ -351,7 +238,6 @@ export class MobileHotelResolver {
         area: room.area ?? null,
         hasWindow: room.hasWindow ?? null,
         maxGuests: room.maxGuests ?? null,
-        //
       });
     }
 
@@ -361,29 +247,24 @@ export class MobileHotelResolver {
     // ================= 3. 组装返回数据 =================
     const detail: MobileHotelDetail = {
       id: hotel.id,
-      name: hotel.nameZh, 
-      nameEn: hotel.nameEn, 
+      name: hotel.nameZh,
+      nameEn: hotel.nameEn,
       address: hotel.address,
       description: hotel.description,
       favoriteCount: hotel.favoriteCount,
       images: (hotel.images || []).map((img: any) => img.url),
       facilities: (hotel.facilities || []).map((f: any) => f.name),
-      
-      // 🔴 修复的两个关键点：使用局部变量 rooms 和 nearbyPoi
-      rooms: rooms, 
-      nearbyPoi: nearbyPoi || [], 
-
-      // 新增字段
+      rooms: rooms, // 使用计算后的 rooms 数组
+      nearbyPoi: hotel.nearbyPoi || [],
+      //新增
       starLevel: hotel.starLevel ?? null,
       city: hotel.city,
       brand: hotel.brand,
-      score: hotel.score ? Number(hotel.score) : null,
+      score: hotel.score ? Number(hotel.score) : null, // decimal转number
       phone: hotel.phone,
       longitude: hotel.longitude,
       latitude: hotel.latitude,
-      province: hotel.province,
-      openSince:hotel.openSince,
-
+      openSince: hotel.openSince,
       district: hotel.district,
       commentCount: hotel.commentCount,
     };//////

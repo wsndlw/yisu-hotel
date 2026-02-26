@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
 import dayjs from 'dayjs';
-import styles from './index.module.css';
+import styles  from './index.module.css';
 import { Card, Space, Button, Table, Modal, Select, DatePicker, InputNumber, Switch, Form, App } from 'antd';
 import OSSImageUpload from '../../../componenets/OSSImageUpload';
 import { useQuery } from '@apollo/client';

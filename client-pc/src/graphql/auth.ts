@@ -42,11 +42,48 @@ export const ME = gql`
       data {
         id
         username
+        email
         role
         avatarUrl
         preferredTagIds
         preferredFacilityIds
       }
+    }
+  }
+`;
+
+export const SEND_EMAIL_CODE = gql`
+  mutation SendEmailCode($email: String!) {
+    sendEmailCode(email: $email) {
+      code
+      message
+    }
+  }
+`;
+
+export const EMAIL_LOGIN = gql`
+  mutation EmailLogin($email: String!, $code: String!) {
+    emailLogin(email: $email, code: $code) {
+      code
+      message
+      data {
+        accessToken
+        user {
+          id
+          username
+          role
+        }
+      }
+    }
+  }
+`;
+
+export const EMAIL_REGISTER = gql`
+  mutation EmailRegister($email: String!, $code: String!, $password: String!, $role: String!) {
+    emailRegister(email: $email, code: $code, password: $password, role: $role) {
+      code
+      message
+      data
     }
   }
 `;

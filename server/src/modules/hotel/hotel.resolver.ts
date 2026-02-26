@@ -1,4 +1,4 @@
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, ID, Mutation, Query, Resolver, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 
 import { HotelService } from './hotel.service';
@@ -55,15 +55,21 @@ export class HotelResolver {
   @Query(() => HotelResults, { description: '我的酒店列表（商户返回自己的酒店；管理员返回全量酒店）' })
   async myHotels(
     @CurrentUser() user: UserEntity,
-    @Args('status', { type: () => HotelStatus, nullable: true, description: '按状态筛选（可选）' })
-    status?: HotelStatus,
+    @Args('status', { type: () => HotelStatus, nullable: true, description: '按状态筛选（可选）' }) status?: HotelStatus,
+    @Args('page', { type: () => Int, nullable: true, defaultValue: 1 }) page?: number,
+    @Args('pageSize', { type: () => Int, nullable: true, defaultValue: 10 }) pageSize?: number,
   ): Promise<HotelResults> {
     try {
-      const data = await this.hotelService.myHotels(user, status);
+      const result = await this.hotelService.myHotels(user, status, page, pageSize);
       return {
         code: CODE.SUCCESS,
         message: getMsg(CODE.SUCCESS),
-        data,
+        data: result.list,
+        page: {
+          total: result.total,
+          pageNum: result.page,
+          pageSize: result.pageSize,
+        },
       };
     } catch (error) {
       throw error;

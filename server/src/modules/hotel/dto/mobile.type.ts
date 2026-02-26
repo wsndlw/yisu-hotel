@@ -142,8 +142,6 @@ export class MobileRoom {
 
   @Field(() => Number, { nullable: true })
   maxGuests?: number | null;
-
-  //加两个
 }
 
 @ObjectType({ description: '酒店详情（移动端）' })
@@ -201,9 +199,6 @@ export class MobileHotelDetail {
 
   @Field(() => String,{ nullable:true })
   openSince?:string | null;
-
-  @Field(() => String, { nullable: true })
-  province?: string | null; // 省份
 
   @Field(() => String, { nullable: true })
   district?: string | null; // 区县

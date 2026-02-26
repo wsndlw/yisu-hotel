@@ -68,7 +68,18 @@ const HtelDetail = (props: {
             {hotel?.latitude && hotel?.longitude ? `lat=${hotel.latitude}, lng=${hotel.longitude}` : '-'}
           </Descriptions.Item> */}
           <Descriptions.Item label="开业时间">{hotel?.openSince}</Descriptions.Item>
-          <Descriptions.Item label="状态">{hotel?.status}</Descriptions.Item>
+          <Descriptions.Item label="状态">
+            {(() => {
+              switch (hotel?.status) {
+                case 'DRAFT': return <Tag color="default">草稿</Tag>;
+                case 'REVIEWING': return <Tag color="processing">审核中</Tag>;
+                case 'PUBLISHED': return <Tag color="success">已发布</Tag>;
+                case 'REJECTED': return <Tag color="error">已驳回</Tag>;
+                case 'OFFLINE': return <Tag color="warning">已下线</Tag>;
+                default: return hotel?.status || '-';
+              }
+            })()}
+          </Descriptions.Item>
           <Descriptions.Item label="最低价">{hotel?.miniPrice ? `¥${hotel.miniPrice}` : '-'}</Descriptions.Item>
           <Descriptions.Item label="优惠" >
             {hotel?.discountInfo || '-'}

@@ -153,4 +153,9 @@ export class HotelEntity {
   @Field(() => Date, { description: '更新时间' })
   @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
+
+   @Field(() => Boolean, { description: '是否曾发布过(用于区分草稿类型)' })
+  @Index()
+  @Column({ type: 'tinyint', width: 1, default: 0, comment: '是否曾发布过(0=未发布,1=已发布过)' })
+  hasEverPublished: boolean;
 }

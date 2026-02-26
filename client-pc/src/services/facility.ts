@@ -62,12 +62,14 @@ export const useUpsertFacility = (): [upsertHandler: Function, loading: boolean]
   const upsertHandler = async (
     id: string | null,
     name: string,
+    type: string,
     category?: string,
+    enabled?: boolean,
     callback?: () => void,
     silent?: boolean,
   ) => {
     try {
-      const res = await upsert({ variables: { id: id || undefined, name, category } });
+      const res = await upsert({ variables: { id: id || undefined, name, type, category, enabled } });
       const result = res.data?.upsertFacility;
       if (result?.code === 200) {
         if (!silent) {
@@ -98,12 +100,15 @@ export const useSetFacilityEnabled = (): [setHandler: Function, loading: boolean
     id: string,
     enabled: boolean,
     callback?: () => void,
+    silent?: boolean,
   ) => {
     try {
       const res = await setEnabled({ variables: { id, enabled } });
       const result = res.data?.setFacilityEnabled;
       if (result?.code === 200) {
-        message.success(result.message || (enabled ? '设施已启用' : '设施已禁用'));
+        if (!silent) {
+          message.success(result.message || (enabled ? '设施已启用' : '设施已禁用'));
+        }
         callback?.();
         return result.data;
       }

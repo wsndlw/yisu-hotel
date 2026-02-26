@@ -61,7 +61,7 @@ export interface Room {
   refundable?: boolean | null;
   area?: number | null;
   hasWindow?: boolean | null;
-  maxGuests?:number | null;
+  maxGuests?: number | null;
 }
 
 export interface NearbyPoi {
@@ -95,8 +95,7 @@ export interface HotelDetail {
   phone?: string | null;
   longitude?: number | null;
   latitude?: number | null;
-  openSince?:string | null;
-  province?: string | null;
+  openSince?: string | null; // 开业时间
   district?: string | null;
   commentCount?: number | null; // 评价数
 }

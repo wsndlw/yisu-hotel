@@ -14,11 +14,16 @@ export const HOTELS = gql`
         miniPrice
         favoriteCount
         status
+        hasEverPublished
         rejectReason
         updatedAt
         merchant {
           id
           username
+        }
+        facilities {
+          id
+          name
         }
       }
       page {
@@ -31,8 +36,8 @@ export const HOTELS = gql`
 `;
 
 export const MY_HOTELS = gql`
-  query MyHotels($status: HotelStatus) {
-    myHotels(status: $status) {
+  query MyHotels($status: HotelStatus, $page: Int, $pageSize: Int) {
+    myHotels(status: $status, page: $page, pageSize: $pageSize) {
       code
       message
       data {
@@ -43,8 +48,14 @@ export const MY_HOTELS = gql`
         miniPrice
         favoriteCount
         status
+        hasEverPublished
         rejectReason
         updatedAt
+      }
+      page {
+        total
+        pageNum
+        pageSize
       }
     }
   }
@@ -73,6 +84,7 @@ export const HOTEL = gql`
         nearby
         discountInfo
         status
+        hasEverPublished
         roomTypes {
           id
           name

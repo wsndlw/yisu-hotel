@@ -4,7 +4,6 @@ import styles from './index.module.css';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Avatar, Space } from 'antd';
 import { HomeOutlined, LogoutOutlined } from '@ant-design/icons';
-import { AUTH_TOKEN } from '../../constants/constants';
 import { useMe } from '../../services/auth';
 import { useUserStore } from '../../store/user';
 import { routes } from '../../routes/menus';
@@ -19,7 +18,7 @@ const menuItemRender = (item: MenuDataItem, dom: React.ReactNode) => (
 
 export default function Layout() {
   const nav = useNavigate();
-  const token = localStorage.getItem(AUTH_TOKEN) || sessionStorage.getItem(AUTH_TOKEN);
+  const token = useUserStore((state) => state.token);
   const { data } = useMe(!token);
   const role = data?.role as 'ADMIN' | 'MERCHANT' | undefined;
   const logoutStore = useUserStore((state) => state.logout);

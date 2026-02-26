@@ -13,7 +13,8 @@ import { useNavigate } from 'react-router-dom';
 const Monitor = ({ }) => {
   const navigate = useNavigate();
 
-  const { list, loading } = useMyHotels();
+  // 获取全量酒店用于统计（假设不超过1000家）
+  const { list, loading } = useMyHotels(undefined, 1, 1000);
   const hotels = (list || []) as any[];
   const [selectedHotelId, setSelectedHotelId] = useState<string>('ALL');
 

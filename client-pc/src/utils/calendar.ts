@@ -41,46 +41,47 @@ export function compressRanges(
   start: Dayjs,
   end: Dayjs,
 ): Array<{ startDate: string; endDate: string; value: number }> {
-  const days = expandDates(start, end);
   const result: Array<{ startDate: string; endDate: string; value: number }> = [];
+
+  // 获取所有需要设置的日期，并按日期排序
+  const dateKeys = Object.keys(values).sort();
+  if (dateKeys.length === 0) return [];
 
   let curStart: Dayjs | null = null;
   let curEnd: Dayjs | null = null;
   let curValue: number | null = null;
 
-  for (const d of days) {
-    const key = fmt(d);
-    const v = values[key];
-    if (v === undefined) {
-      // gap: close segment
-      if (curStart && curEnd && curValue !== null) {
-        result.push({ startDate: fmt(curStart), endDate: fmt(curEnd), value: curValue });
-      }
-      curStart = null;
-      curEnd = null;
-      curValue = null;
-      continue;
-    }
+  for (const dateStr of dateKeys) {
+    const d = dayjs(dateStr);
+    // 只处理在范围内的日期
+    if (!inRange(d, start, end)) continue;
 
-    if (curValue === null) {
+    const v = values[dateStr];
+
+    if (curStart === null) {
       curStart = d;
       curEnd = d;
       curValue = v;
       continue;
     }
 
-    const prevDay = (curEnd as Dayjs).add(1, 'day');
-    if (d.isSame(prevDay, 'day') && v === curValue) {
+    // 检查是否连续且值相同
+    // 当前日期 d 必须是 curEnd 的下一天
+    const nextDay = (curEnd as Dayjs).add(1, 'day');
+    if (d.isSame(nextDay, 'day') && v === curValue) {
       curEnd = d;
     } else {
-      // close and start new
-      result.push({ startDate: fmt(curStart as Dayjs), endDate: fmt(curEnd as Dayjs), value: curValue });
+      // 不连续或值不同，结束当前段，开始新段
+      if (curStart && curEnd && curValue !== null) {
+        result.push({ startDate: fmt(curStart), endDate: fmt(curEnd), value: curValue });
+      }
       curStart = d;
       curEnd = d;
       curValue = v;
     }
   }
 
+  // 处理最后一段
   if (curStart && curEnd && curValue !== null) {
     result.push({ startDate: fmt(curStart), endDate: fmt(curEnd), value: curValue });
   }

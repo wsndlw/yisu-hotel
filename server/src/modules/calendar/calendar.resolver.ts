@@ -71,7 +71,7 @@ export class CalendarResolver {
     @Args('input') input: HotelCalendarRangeQueryInput,
   ): Promise<HotelCalendar> {
     await this.hotelService.assertMerchantHotel(input.hotelId, user);
-    const hotel = await this.hotelService.getHotelDetail(input.hotelId);
+    const hotel = await this.hotelService.getHotelById(input.hotelId);  
     const roomTypes = hotel.roomTypes || [];
 
     const roomTypeCalendars = await Promise.all(

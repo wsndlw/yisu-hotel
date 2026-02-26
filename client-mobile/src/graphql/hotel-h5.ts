@@ -86,8 +86,6 @@ export const SEARCH_HOTELS = gql`
           starLevel
           favoriteCount
           minPrice
-          latitude
-          longitude
           distanceText
           images {
             url
@@ -137,7 +135,6 @@ export const GET_HOTEL_DETAIL = gql`
         longitude
         latitude
         openSince
-        province
         district
         commentCount
 

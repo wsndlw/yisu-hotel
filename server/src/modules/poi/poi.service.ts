@@ -11,24 +11,6 @@ export class PoiService {
     @InjectRepository(HotelPoiEntity) private readonly hotelPoiRepo: Repository<HotelPoiEntity>,
   ) {}
 
-  async upsertPoi(input: Partial<PoiEntity>) {
-    const exists = await this.poiRepo.findOne({
-      where: { name: input.name, city: input.city, type: input.type },
-    });
-    if (exists) {
-      Object.assign(exists, input);
-      return this.poiRepo.save(exists);
-    }
-    const created = this.poiRepo.create(input);
-    return this.poiRepo.save(created);
-  }
-
-  async linkHotelPoi(hotelId: string, poiId: string) {
-    const exists = await this.hotelPoiRepo.findOne({ where: { hotelId, poiId } });
-    if (exists) return exists;
-    return this.hotelPoiRepo.save(this.hotelPoiRepo.create({ hotelId, poiId }));
-  }
-
   async listHotelPoiIds(hotelId: string) {
     const list = await this.hotelPoiRepo.find({ where: { hotelId } });
     return list.map((i) => i.poiId);

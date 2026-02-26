@@ -1,25 +1,56 @@
 import { Button, Card, Form, Input, Radio, Typography } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserOutlined, LockOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, HomeOutlined, MailOutlined } from '@ant-design/icons';
 import styles from './index.module.css';
-import { useRegister } from '../../services/auth';
+import { useEmailRegister, useSendEmailCode } from '../../services/auth';
 import { useUserStore } from '../../store/user';
-import { AUTH_TOKEN } from '../../constants/constants';
+import { useState } from 'react';
 
 export default function Register() {
   const nav = useNavigate();
-  const [registerHandler, loading] = useRegister();
+  const [emailRegisterHandler, loading] = useEmailRegister();
   const setToken = useUserStore((state) => state.setToken);
+  const [sendEmailCode, sendingEmail] = useSendEmailCode();
+  const [countdown, setCountdown] = useState(0);
+  const [form] = Form.useForm();
 
   const onFinish = async (values: any) => {
-    await registerHandler(values.username, values.password, values.role, (data: any) => {
-      localStorage.setItem(AUTH_TOKEN, data.accessToken);
-      const role = data.user?.role;
-      if (role) {
-        setToken(data.accessToken, role);
+    await emailRegisterHandler(
+      values.email,
+      values.emailCode,
+      values.password,
+      values.role,
+      (data: any) => {
+        const role = values.role;
+        if (role) {
+          setToken(data, role);
+        }
+        nav(role === 'ADMIN' ? '/admin/dashboard' : '/merchant/monitor');
       }
-      nav(role === 'ADMIN' ? '/admin/hotels' : '/merchant/monitor');
-    });
+    );
+  };
+
+  // ===== 邮箱验证码功能：发送验证码 =====
+  const handleSendCode = async () => {
+    try {
+      const email = form.getFieldValue('email');
+      await form.validateFields(['email']);
+      const success = await sendEmailCode(email);
+      if (success) {
+        setCountdown(60);
+        const timer = setInterval(() => {
+          setCountdown((prev: number) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    } catch (error) {
+      // 验证失败
+    }
   };
 
   return (
@@ -35,26 +66,70 @@ export default function Register() {
           <Typography.Text type="secondary">注册账号，开始管理您的酒店</Typography.Text>
         </div>
 
-        <Form layout="vertical" onFinish={onFinish} initialValues={{ role: 'MERCHANT' }} size="large">
+        <Form layout="vertical" onFinish={onFinish} form={form} initialValues={{ role: 'MERCHANT' }} size="large">
           <Form.Item
-            name="username"
-            rules={[{ required: true, message: '请输入用户名' }]}
+            name="email"
+            rules={[
+              { required: true, message: '请输入邮箱地址' },
+              { type: 'email', message: '请输入有效的邮箱地址' },
+            ]}
           >
             <Input
-              prefix={<UserOutlined className={styles.inputIcon} />}
-              placeholder="用户名"
+              prefix={<MailOutlined className={styles.inputIcon} />}
+              placeholder="邮箱地址"
+            />
+          </Form.Item>
+          <Form.Item
+            name="emailCode"
+            rules={[{ required: true, message: '请输入验证码' }]}
+          >
+            <Input
+              placeholder="邮箱验证码"
+              suffix={
+                <Button
+                  type="link"
+                  onClick={handleSendCode}
+                  disabled={countdown > 0 || sendingEmail}
+                  style={{ padding: 0 }}
+                >
+                  {countdown > 0 ? `${countdown}秒后重发` : '发送验证码'}
+                </Button>
+              }
             />
           </Form.Item>
           <Form.Item
             name="password"
             rules={[
               { required: true, message: '请输入密码' },
-              { min: 6, message: '密码至少6位' },
+              {
+                pattern: /^(?![0-9]+$)(?![a-z]+$)[a-z0-9]{6,}$/,
+                message: '有且只能包含小写字母和数字，长度大于 6',
+              }
             ]}
           >
             <Input.Password
               prefix={<LockOutlined className={styles.inputIcon} />}
-              placeholder="密码（至少6位）"
+              placeholder="有且只能包含小写字母和数字，长度大于 6"
+            />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: '请确认密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className={styles.inputIcon} />}
+              placeholder="确认密码"
             />
           </Form.Item>
           <Form.Item

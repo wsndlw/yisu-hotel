@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import styles from './index.module.css';
 import { App, Button, Card, Form, Input, Modal, Select, Space, Table, Tabs } from 'antd';
+import { debounce } from 'lodash';
 import HotelDetail from './components/HotelDetail';
 import RejectModal from './components/RejectModal';
 import { getColumns, STAR_OPTIONS, TAB_ITEMS } from './constants';
 import { useApproveHotel, useHotels, useOfflineHotel, usePublishHotel, useRejectHotel, useRestoreHotel } from '../../../services/hotel';
+import CitySelect from '../../../componenets/CitySelector';
 
 /**
 *酒店列表页，管理员审核
@@ -14,6 +16,8 @@ const HotelList = ({ }) => {
 
 
   const [status, setStatus] = useState<string>('REVIEWING');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [form] = Form.useForm();
 
   const [viewId, setViewId] = useState<string | undefined>();
@@ -24,12 +28,13 @@ const HotelList = ({ }) => {
 
   const values = form.getFieldsValue();
   const queryInput = {
-    page: 1,
-    pageSize: 20,
+    page,
+    pageSize,
     status: status === 'ALL' ? undefined : status,
     keyword: values.keyword || undefined,
     merchantKeyword: values.merchantKeyword || undefined,
     starLevel: values.starLevel === 'ALL' ? undefined : values.starLevel,
+    city: values.city || undefined,
   };
 
   const { list, total, loading, refetch } = useHotels(queryInput.page, queryInput.pageSize, {
@@ -37,6 +42,7 @@ const HotelList = ({ }) => {
     keyword: queryInput.keyword,
     merchantKeyword: queryInput.merchantKeyword,
     starLevel: queryInput.starLevel,
+    city: queryInput.city,
   });
 
   const [approveHandler] = useApproveHotel();
@@ -44,6 +50,22 @@ const HotelList = ({ }) => {
   const [rejectHandler] = useRejectHotel();
   const [offlineHandler] = useOfflineHotel();
   const [restoreHandler] = useRestoreHotel();
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((values: any) => {
+        refetch({
+          page: 1,
+          pageSize,
+          status: status === 'ALL' ? undefined : status,
+          keyword: values.keyword || undefined,
+          merchantKeyword: values.merchantKeyword || undefined,
+          starLevel: values.starLevel === 'ALL' ? undefined : values.starLevel,
+          city: values.city || undefined,
+        });
+      }, 400),
+    [refetch, pageSize, status],
+  );
 
   const onApprove = async (id: string) => {
     await approveHandler(id, async () => {
@@ -110,55 +132,55 @@ const HotelList = ({ }) => {
         activeKey={status}
         onChange={(v) => {
           setStatus(v);
+          setPage(1);
           refetch({
-            page: queryInput.page,
-            pageSize: queryInput.pageSize,
+            page: 1,
+            pageSize,
             status: v === 'ALL' ? undefined : v,
             keyword: queryInput.keyword,
             merchantKeyword: queryInput.merchantKeyword,
             starLevel: queryInput.starLevel,
+            city: queryInput.city
           });
         }}
         items={TAB_ITEMS}
-        style={{ marginBottom: 12 }}
+        className={styles.tabs}
       />
 
       <Form
         form={form}
         layout="inline"
-        style={{ marginBottom: 12 }}
-        onValuesChange={() => {
-          const values = form.getFieldsValue();
-          refetch({
-            page: queryInput.page,
-            pageSize: queryInput.pageSize,
-            status: queryInput.status,
-            keyword: values.keyword || undefined,
-            merchantKeyword: values.merchantKeyword || undefined,
-            starLevel: values.starLevel === 'ALL' ? undefined : values.starLevel,
-          });
+        className={styles.searchForm}
+        onValuesChange={(_, values) => {
+          setPage(1);
+          debouncedSearch(values);
         }}
       >
         <Form.Item name="keyword" label="酒店名称" tooltip="支持模糊搜索">
-          <Input allowClear placeholder="输入酒店名称" style={{ width: 220 }} />
+          <Input allowClear placeholder="输入酒店名称" className={styles.searchInput} />
         </Form.Item>
         <Form.Item name="merchantKeyword" label="商户名称" tooltip="匹配商户用户名">
-          <Input allowClear placeholder="输入商户用户名" style={{ width: 220 }} />
+          <Input allowClear placeholder="输入商户用户名" className={styles.searchInput} />
         </Form.Item>
         <Form.Item name="starLevel" label="星级" initialValue="ALL">
-          <Select style={{ width: 140 }} options={STAR_OPTIONS as any} />
+          <Select className={styles.searchSelect} options={STAR_OPTIONS as any} />
+        </Form.Item>
+        <Form.Item name="city" label="城市">
+          <CitySelect placeholder="全部城市" className={styles.searchInput} />
         </Form.Item>
         <Form.Item>
           <Button
             onClick={() => {
               form.resetFields();
+              setPage(1);
               refetch({
-                page: queryInput.page,
-                pageSize: queryInput.pageSize,
+                page: 1,
+                pageSize,
                 status: queryInput.status,
                 keyword: undefined,
                 merchantKeyword: undefined,
                 starLevel: undefined,
+                city: undefined,
               });
             }}
           >
@@ -173,6 +195,17 @@ const HotelList = ({ }) => {
         dataSource={list}
         columns={getColumns({ onView, onRestore, onOffline, onReject, onApprove })}
         scroll={{ x: 1200 }}
+        pagination={{
+          current: page,
+          pageSize: pageSize,
+          total: total,
+          showTotal: (total) => `共 ${total} 条`,
+          showSizeChanger: true,
+          onChange: (p, ps) => {
+            setPage(p);
+            setPageSize(ps);
+          },
+        }}
       />
 
       <HotelDetail

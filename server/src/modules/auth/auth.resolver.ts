@@ -50,12 +50,29 @@ export class AuthResolver {
   }
 
   // ===== 邮箱验证码功能：邮箱验证码登录 =====
-  @Mutation(() => Result, { description: '邮箱验证码登录' })
+  @Mutation(() => AuthResult, { description: '邮箱验证码登录' })
   async emailLogin(
     @Args('email') email: string,
     @Args('code') code: string,
-  ): Promise<Result> {
-    return this.auth.emailLogin(email, code);
+  ): Promise<AuthResult> {
+    try {
+      const data = await this.auth.emailLogin(email, code);
+      if ('code' in data && (data as any).code !== 200) {
+        const res = data as any;
+        return {
+           code: res.code,
+           message: res.message,
+        } as any;
+      }
+
+      return {
+        code: CODE.SUCCESS,
+        message: getMsg(CODE.SUCCESS, '登录成功'),
+        data: data as any, // { accessToken, user }
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   // ===== 邮箱验证码功能：邮箱验证码注册 =====

@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { Image, Space, Switch } from 'antd';
+import styles from './index.module.css';
 
 interface IColums {
   hotelNameMap: Map<string, string>,
@@ -65,7 +66,16 @@ export const getColumns = ({ hotelNameMap, onToggle, openEdit, onDelete }: IColu
     title: '状态',
     dataIndex: 'enabled',
     width: 120,
-    render: (v: boolean, row: any) => <Switch size={'default'} checked={!!v} onChange={(checked) => onToggle(row, checked)} />,
+    render: (v: boolean, row: any) => (
+      <Switch
+        size={'default'}
+        checked={!!v}
+        onChange={(checked, e) => {
+          e.stopPropagation();
+          onToggle(row, checked);
+        }}
+      />
+    ),
   },
   {
     title: '操作',
