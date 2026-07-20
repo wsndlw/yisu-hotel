@@ -102,22 +102,101 @@ const PriceStarFilterModal = ({ visible, onClose, onConfirm, initialPrice = '', 
 };
 
 const styles = StyleSheet.create({
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, height: '60%' },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
-    modalTitle: { fontSize: 18, fontWeight: 'bold' },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#333' },
-    gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    gridItem: { width: '30%', backgroundColor: '#f5f7fa', paddingVertical: 10, borderRadius: 6, marginBottom: 10, alignItems: 'center', justifyContent: 'center' },
-    gridItemSelected: { backgroundColor: '#e6f7ff', borderColor: '#0086F6', borderWidth: 1 },
-    gridText: { fontSize: 13, color: '#333', textAlign: 'center' },
-    gridSubText: { fontSize: 11, color: '#999', marginTop: 2 },
-    gridTextSelected: { color: '#0086F6', fontWeight: 'bold' },
-    filterFooter: { flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: '#eee' },
-    resetBtn: { flex: 1, marginRight: 10, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#ddd' },
-    resetBtnText: { color: '#333', fontSize: 16 },
-    okBtn: { flex: 2, height: 44, borderRadius: 22, backgroundColor: '#0086F6', justifyContent: 'center', alignItems: 'center' },
-    okBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end'
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        height: '60%'
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee'
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#333'
+    },
+    gridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between'
+    },
+    gridItem: {
+        width: '30%',
+        backgroundColor: '#f5f7fa',
+        paddingVertical: 10,
+        borderRadius: 6,
+        marginBottom: 10,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    gridItemSelected: {
+        backgroundColor: '#e6f7ff',
+        borderColor: '#0086F6',
+        borderWidth: 1
+    },
+    gridText: {
+        fontSize: 13,
+        color: '#333',
+        textAlign: 'center'
+    },
+    gridSubText: {
+        fontSize: 11,
+        color: '#999',
+        marginTop: 2
+    },
+    gridTextSelected: {
+        color: '#0086F6',
+        fontWeight: 'bold'
+    },
+    filterFooter: {
+        flexDirection: 'row',
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#eee'
+    },
+    resetBtn: {
+        flex: 1,
+        marginRight: 10,
+        height: 44,
+        borderRadius: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd'
+    },
+    resetBtnText: {
+        color: '#333',
+        fontSize: 16
+    },
+    okBtn: {
+        flex: 2,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#0086F6',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    okBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold'
+    },
 });
 
 export default PriceStarFilterModal;

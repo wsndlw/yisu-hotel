@@ -1,4 +1,3 @@
-
  export const categoryLabels: Record<string, string> = {
     BASIC: '基础设施',
     ROOM: '客房设施',

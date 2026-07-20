@@ -15,7 +15,7 @@ interface Props {
 }
 
 const LocationFilterModal = ({ visible, cityCode, onClose, onSelect }: Props) => {
-    console.log("📍 Modal接收到的城市:", cityCode)
+    console.log("Modal接收到的城市:", cityCode)
     const [activeCategory, setActiveCategory] = useState('ALL');
     const [selectedPoiId, setSelectedPoiId] = useState<string>('');
 
@@ -32,7 +32,6 @@ const LocationFilterModal = ({ visible, cityCode, onClose, onSelect }: Props) =>
         } else {
             setSelectedPoiId(''); // poi 是 null (不限)，ID 置空
         }
-        
         setTimeout(() => {
             onSelect(poi);
             onClose();
