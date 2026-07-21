@@ -9,11 +9,15 @@ import {
 } from 'typeorm';
 
 export enum UserRole {
+  /** 消费者（C 端 App 用户） */
+  CUSTOMER = 'CUSTOMER',
+  /** 商户 */
   MERCHANT = 'MERCHANT',
+  /** 管理员 */
   ADMIN = 'ADMIN',
 }
 
-registerEnumType(UserRole, { name: 'UserRole', description: '用户角色' });
+registerEnumType(UserRole, { name: 'UserRole', description: '用户角色（消费者/商户/管理员）' });
 
 @ObjectType('User', { description: '系统用户' })
 @Entity('users')
@@ -30,8 +34,8 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 255, comment: '密码哈希（不对外暴露）' })
   passwordHash: string;
 
-  @Field(() => UserRole, { description: '用户角色（商户/管理员）' })
-  @Column({ type: 'simple-enum', enum: UserRole, default: UserRole.MERCHANT, comment: '用户角色' })
+  @Field(() => UserRole, { description: '用户角色（消费者/商户/管理员）' })
+  @Column({ type: 'simple-enum', enum: UserRole, default: UserRole.CUSTOMER, comment: '用户角色' })
   role: UserRole;
 
   @Field(() => String, { nullable: true, description: '头像URL（可选）' })

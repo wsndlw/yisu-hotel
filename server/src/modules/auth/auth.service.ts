@@ -32,15 +32,17 @@ export class AuthService {
   }
 
   // ===== 原有注册逻辑（用户名+密码，bcrypt加密） =====
-  async register(input: { username: string; password: string; role: UserRole }) {
+  // role 可选：不传则默认为 CUSTOMER（C 端）；PC 商户/管理员注册时显式传入 MERCHANT / ADMIN
+  async register(input: { username: string; password: string; role?: UserRole }) {
     const exists = await this.users.findByUsername(input.username);
     if (exists) throw new BadRequestException('Username already exists');
 
+    const role = input.role ?? UserRole.CUSTOMER;
     const passwordHash = await bcrypt.hash(input.password, 10);
     const user = await this.users.createUser({
       username: input.username,
       passwordHash,
-      role: input.role,
+      role,
     });
 
     const accessToken = await this.jwt.signAsync({ sub: user.id, role: user.role });
@@ -132,7 +134,7 @@ export class AuthService {
             username: email, // 临时用户使用邮箱作为用户名
             email,
             passwordHash: tempPassword,
-            role: UserRole.MERCHANT, // 临时设置默认角色，注册时会更新
+            role: UserRole.CUSTOMER, // 临时用户默认消费者；正式注册时可覆盖为 MERCHANT/ADMIN
             emailVerifyCode: code,
             emailVerifyCodeExpiry: expiry,
             emailVerifyFailCount: 0,
@@ -223,8 +225,8 @@ export class AuthService {
     return { accessToken, user };
   }
 
-  // ===== 邮箱验证码功能：邮箱注册（支持用户选择角色） =====
-  async emailRegister(email: string, code: string, password: string, role: string): Promise<Result> {
+  // ===== 邮箱验证码功能：邮箱注册（role 可选，默认 CUSTOMER） =====
+  async emailRegister(email: string, code: string, password: string, role?: string): Promise<Result> {
     const user = await this.users.findByEmail(email);
     if (!user) {
       return { code: CODE.EMAIL_NOT_FOUND, message: '请先发送验证码' };
@@ -272,8 +274,13 @@ export class AuthService {
       return { code: 400, message: '密码至少6位' };
     }
 
-    // 角色校验：用户选择的角色
-    const validRole = role === 'ADMIN' ? UserRole.ADMIN : UserRole.MERCHANT;
+    // 角色校验：不传或非法值 → CUSTOMER；显式 ADMIN / MERCHANT 保留后台路径
+    const validRole =
+      role === 'ADMIN'
+        ? UserRole.ADMIN
+        : role === 'MERCHANT'
+          ? UserRole.MERCHANT
+          : UserRole.CUSTOMER;
 
     // 验证成功，完成注册（将邮箱设为用户名）
     await this.users.repo.update(user.id, {

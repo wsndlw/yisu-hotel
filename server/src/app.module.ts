@@ -15,6 +15,7 @@ import { HotelImageModule } from './modules/hotelImage/hotelImage.module';
 import { HotelModule } from './modules/hotel/hotel.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { PoiModule } from './modules/poi/poi.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PoiModule } from './modules/poi/poi.module';
     CalendarModule,
     PoiModule,
     AuditModule,
+    OrderModule,
   ],
 })
 export class AppModule {}

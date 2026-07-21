@@ -11,7 +11,9 @@ import { Result } from '../../common/dto/result.type';
 export class AuthResolver {
   constructor(private readonly auth: AuthService) {}
 
-  @Mutation(() => AuthResult, { description: '注册账号（可选择商户/管理员角色）' })
+  @Mutation(() => AuthResult, {
+    description: '注册账号。不传 role 默认为消费者 CUSTOMER；商户/管理员需显式传入 MERCHANT 或 ADMIN',
+  })
   async register(
     @Args('input', { description: '注册信息' }) input: RegisterInput,
   ): Promise<AuthResult> {
@@ -76,12 +78,14 @@ export class AuthResolver {
   }
 
   // ===== 邮箱验证码功能：邮箱验证码注册 =====
-  @Mutation(() => Result, { description: '邮箱验证码注册' })
+  @Mutation(() => Result, {
+    description: '邮箱验证码注册。role 可选，默认 CUSTOMER；商户/管理员传 MERCHANT 或 ADMIN',
+  })
   async emailRegister(
     @Args('email') email: string,
     @Args('code') code: string,
     @Args('password') password: string,
-    @Args('role') role: string,
+    @Args('role', { type: () => String, nullable: true }) role?: string,
   ): Promise<Result> {
     return this.auth.emailRegister(email, code, password, role);
   }

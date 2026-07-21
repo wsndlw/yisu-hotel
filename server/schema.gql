@@ -176,6 +176,17 @@ input CalendarStockBatchSetInput {
   stock: Int!
 }
 
+"""创建酒店订单参数"""
+input CreateOrderInput {
+  checkIn: String!
+  checkOut: String!
+  guestCount: Int!
+  guestName: String!
+  guestPhone: String!
+  hotelId: ID!
+  roomTypeId: ID!
+}
+
 """每日新增酒店数"""
 type DailyNewHotel {
   """新增酒店数"""
@@ -676,6 +687,9 @@ type Mutation {
   """批量设置房型日历库存（商户）"""
   batchSetRoomTypeStock(input: CalendarStockBatchSetInput!): Result!
 
+  """取消本人订单并回补库存"""
+  cancelOrder(id: ID!): Order!
+
   """清空房型日历价格覆盖（商户）"""
   clearRoomTypePrice(input: CalendarClearRangeInput!): Result!
 
@@ -687,6 +701,9 @@ type Mutation {
     """酒店信息（包含标签ID/设施ID等）"""
     input: HotelUpsertInput!
   ): HotelResult!
+
+  """创建酒店订单并扣减库存"""
+  createOrder(input: CreateOrderInput!): Order!
 
   """删除 Banner（管理员）"""
   deleteBanner(
@@ -712,8 +729,8 @@ type Mutation {
   """邮箱验证码登录"""
   emailLogin(code: String!, email: String!): AuthResult!
 
-  """邮箱验证码注册"""
-  emailRegister(code: String!, email: String!, password: String!, role: String!): Result!
+  """邮箱验证码注册。role 可选，默认 CUSTOMER；商户/管理员传 MERCHANT 或 ADMIN"""
+  emailRegister(code: String!, email: String!, password: String!, role: String): Result!
 
   """彻底删除设施（管理员）。若设施被酒店引用，则不允许删除"""
   hardDeleteFacility(
@@ -739,7 +756,7 @@ type Mutation {
     id: ID!
   ): HotelResult!
 
-  """注册账号（可选择商户/管理员角色）"""
+  """注册账号。不传 role 默认为消费者 CUSTOMER；商户/管理员需显式传入 MERCHANT 或 ADMIN"""
   register(
     """注册信息"""
     input: RegisterInput!
@@ -923,6 +940,47 @@ type OssType {
   x_oss_signature_version: String!
 }
 
+"""酒店订单"""
+type Order {
+  checkIn: String!
+  checkOut: String!
+  createdAt: DateTime!
+  guestCount: Int!
+  guestName: String!
+  guestPhone: String!
+  hotelId: ID!
+  hotelName: String!
+  id: ID!
+  roomTypeId: ID!
+  roomTypeName: String!
+  status: OrderStatus!
+  totalAmount: Float!
+  updatedAt: DateTime!
+  userId: ID!
+}
+
+"""我的订单分页结果"""
+type OrderConnection {
+  items: [Order!]!
+  page: Int!
+  pageSize: Int!
+  total: Int!
+}
+
+"""订单分页参数"""
+input OrderPaginationInput {
+  page: Int! = 1
+  pageSize: Int! = 10
+}
+
+"""订单状态"""
+enum OrderStatus {
+  CANCELLED
+  COMPLETED
+  PAID
+  PENDING
+}
+
 type Page {
   """当前页码"""
   pageNum: Int
@@ -1050,8 +1108,14 @@ type Query {
     status: HotelStatus
   ): HotelResults!
 
+  """查询当前用户的订单列表"""
+  myOrders(pagination: OrderPaginationInput): OrderConnection!
+
   """查询酒店附近 POI（按距离排序）"""
   nearbyPoi(input: NearbyPoiQueryInput!): [NearbyPoiItem!]!
+
+  """查询本人订单详情"""
+  order(id: ID!): Order!
 
   """移动端 POI 列表（按城市/类型/关键词）"""
   poiList(input: PoiListQueryInput!): [PoiEntity!]!
@@ -1074,8 +1138,8 @@ input RegisterInput {
   """密码（至少6位）"""
   password: String!
 
-  """角色（商户/管理员）"""
-  role: UserRole!
+  """角色；不传则默认为消费者 CUSTOMER。商户/管理员后台注册时显式传入 MERCHANT 或 ADMIN"""
+  role: UserRole
 
   """用户名"""
   username: String!
@@ -1303,7 +1367,7 @@ type User {
   """商户常用标签ID（用于新建酒店默认值）"""
   preferredTagIds: [String!]
 
-  """用户角色（商户/管理员）"""
+  """用户角色（消费者/商户/管理员）"""
   role: UserRole!
 
   """更新时间"""
@@ -1322,5 +1386,6 @@ type UserResult {
 """用户角色"""
 enum UserRole {
   ADMIN
+  CUSTOMER
   MERCHANT
 }

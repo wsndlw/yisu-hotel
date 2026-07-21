@@ -12,9 +12,13 @@ export class RegisterInput {
   @MinLength(6)
   password: string;
 
-  @Field(() => UserRole, { description: '角色（商户/管理员）' })
-  @IsIn([UserRole.MERCHANT, UserRole.ADMIN])
-  role: UserRole;
+  @Field(() => UserRole, {
+    nullable: true,
+    description: '角色；不传则默认为消费者 CUSTOMER。商户/管理员后台注册时显式传入 MERCHANT 或 ADMIN',
+  })
+  @IsOptional()
+  @IsIn([UserRole.CUSTOMER, UserRole.MERCHANT, UserRole.ADMIN])
+  role?: UserRole;
 
     @Field(() => String, { nullable: true, description: '邮箱地址（邮箱注册时必填）' })
   @IsOptional()
