@@ -46,11 +46,11 @@ export class OrderPaginationInput {
   @Field(() => Int, { defaultValue: 1 })
   @IsInt()
   @Min(1)
-  page: number;
+  page = 1;
 
   @Field(() => Int, { defaultValue: 10 })
   @IsInt()
   @Min(1)
   @Max(100)
-  pageSize: number;
+  pageSize = 10;
 }

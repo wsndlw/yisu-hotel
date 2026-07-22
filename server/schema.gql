@@ -178,7 +178,10 @@ input CalendarStockBatchSetInput {
 
 """创建酒店订单参数"""
 input CreateOrderInput {
+  """入住日期（YYYY-MM-DD）"""
   checkIn: String!
+
+  """离店日期（YYYY-MM-DD）"""
   checkOut: String!
   guestCount: Int!
   guestName: String!
@@ -913,6 +916,68 @@ type NewHotelItem {
   merchantName: String!
 }
 
+"""酒店订单"""
+type Order {
+  """入住日期（YYYY-MM-DD）"""
+  checkIn: String!
+
+  """离店日期（YYYY-MM-DD）"""
+  checkOut: String!
+  createdAt: DateTime!
+
+  """入住人数"""
+  guestCount: Int!
+
+  """入住人姓名"""
+  guestName: String!
+
+  """入住人手机号"""
+  guestPhone: String!
+
+  """酒店ID"""
+  hotelId: ID!
+
+  """酒店名称快照"""
+  hotelName: String!
+  id: ID!
+
+  """房型ID"""
+  roomTypeId: ID!
+
+  """房型名称快照"""
+  roomTypeName: String!
+  status: OrderStatus!
+
+  """下单总金额（服务端计算快照）"""
+  totalAmount: Float!
+  updatedAt: DateTime!
+
+  """下单用户ID"""
+  userId: ID!
+}
+
+"""我的订单分页结果"""
+type OrderConnection {
+  items: [Order!]!
+  page: Int!
+  pageSize: Int!
+  total: Int!
+}
+
+"""订单分页参数"""
+input OrderPaginationInput {
+  page: Int! = 1
+  pageSize: Int! = 10
+}
+
+"""订单状态"""
+enum OrderStatus {
+  CANCELLED
+  COMPLETED
+  PAID
+  PENDING
+}
+
 """OSS 表单直传签名信息"""
 type OssType {
   """上传目录前缀"""
@@ -938,47 +1003,6 @@ type OssType {
 
   """签名版本"""
   x_oss_signature_version: String!
-}
-
-"""酒店订单"""
-type Order {
-  checkIn: String!
-  checkOut: String!
-  createdAt: DateTime!
-  guestCount: Int!
-  guestName: String!
-  guestPhone: String!
-  hotelId: ID!
-  hotelName: String!
-  id: ID!
-  roomTypeId: ID!
-  roomTypeName: String!
-  status: OrderStatus!
-  totalAmount: Float!
-  updatedAt: DateTime!
-  userId: ID!
-}
-
-"""我的订单分页结果"""
-type OrderConnection {
-  items: [Order!]!
-  page: Int!
-  pageSize: Int!
-  total: Int!
-}
-
-"""订单分页参数"""
-input OrderPaginationInput {
-  page: Int! = 1
-  pageSize: Int! = 10
-}
-
-"""订单状态"""
-enum OrderStatus {
-  CANCELLED
-  COMPLETED
-  PAID
-  PENDING
 }
 
 type Page {
@@ -1383,7 +1407,7 @@ type UserResult {
   message: String!
 }
 
-"""用户角色"""
+"""用户角色（消费者/商户/管理员）"""
 enum UserRole {
   ADMIN
   CUSTOMER

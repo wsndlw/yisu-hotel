@@ -58,12 +58,12 @@ export class OrderService {
       // 锁定房型可串行化同一房型的库存检查和扣减，防止并发超卖。
       const roomType = await manager.findOne(RoomTypeEntity, {
         where: { id: input.roomTypeId },
-        lock: { mode: 'pessimistic_write' },
+        lock: this.writeLock,
       });
       if (!roomType || roomType.hotelId !== input.hotelId) {
         throw new NotFoundException('酒店或房型不存在');
       }
-      if (roomType.isOnSale !== true) throw new BadRequestException('该房型当前不可预订');
+      if (!roomType.isOnSale) throw new BadRequestException('该房型当前不可预订');
       if (roomType.maxGuests != null && input.guestCount > roomType.maxGuests) {
         throw new BadRequestException('入住人数超过房型可住人数');
       }
@@ -74,7 +74,7 @@ export class OrderService {
 
       const stockRows = await manager.find(CalendarStockEntity, {
         where: { roomTypeId: roomType.id, date: In(nights) },
-        lock: { mode: 'pessimistic_write' },
+        lock: this.writeLock,
       });
       const priceRows = await manager.find(CalendarPriceEntity, {
         where: { roomTypeId: roomType.id, date: In(nights) },
@@ -116,7 +116,7 @@ export class OrderService {
     return this.dataSource.transaction(async (manager) => {
       const order = await manager.findOne(OrderEntity, {
         where: { id },
-        lock: { mode: 'pessimistic_write' },
+        lock: this.writeLock,
       });
       if (!order) throw new NotFoundException('订单不存在');
       if (order.userId !== user.id) throw new ForbiddenException('无权操作该订单');
@@ -128,7 +128,7 @@ export class OrderService {
       const stockRows = nights.length
         ? await manager.find(CalendarStockEntity, {
             where: { roomTypeId: order.roomTypeId, date: In(nights) },
-            lock: { mode: 'pessimistic_write' },
+            lock: this.writeLock,
           })
         : [];
       for (const row of stockRows) row.stock += 1;
@@ -167,6 +167,11 @@ export class OrderService {
   private assertCustomer(user: UserEntity) {
     if (!user?.id) throw new ForbiddenException('请先登录');
     if (user.role !== UserRole.CUSTOMER) throw new ForbiddenException('仅消费者可操作订单');
+  }
+
+  private get writeLock(): { mode: 'pessimistic_write' } | undefined {
+    // SQL.js 仅用于本地/自动化验收且不支持悲观锁；生产 MySQL 始终启用写锁。
+    return this.dataSource.options.type === 'sqljs' ? undefined : { mode: 'pessimistic_write' };
   }
 
   private validateCreateInput(input: CreateOrderInput) {

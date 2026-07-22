@@ -10,7 +10,7 @@ import { UpdateMeInput } from './dto/user.input';
 import { UserService } from './user.service';
 import { UserResult } from './dto/result-user.output';
 import * as CODE from '../../common/constants/code';
-import { getMsg } from 'src/shared/utils/msg';
+import { getMsg } from '../../shared/utils/msg';
 
 
 @Resolver()
