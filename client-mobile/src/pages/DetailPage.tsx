@@ -18,16 +18,11 @@ import RoomFilterModal, { FilterOptions } from '../components/RoomFilterModal';
 // 导入真实类型和Hooks
 import type {  Room } from '../types/hotel';
 import { useHotelDetail,  } from '../services/hotel-h5';
+import type { RootStackParamList } from '../navigation/navigationRef';
+import { useAuthStore } from '../store/authStore';
 
 // 导入样式
 import styles from './DetailPage.styles';
-
-// 路由类型定义（补充完整参数）
-type RootStackParamList = {
-  Search: undefined;
-  List: undefined;
-  Detail: { id: string; checkInDate?: string; checkOutDate?: string };
-};
 
 const cityCodeMap: Record<string, string> = {
   '110100': '北京市',
@@ -45,6 +40,14 @@ const DetailPage = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Detail'>>();
   const { id: hotelId, checkInDate: routeCheckIn, checkOutDate: routeCheckOut } = route.params || {};
+  const authToken = useAuthStore((state) => state.token);
+
+  const handleBookNow = () => {
+    if (!authToken) {
+      navigation.navigate('Login', { redirectTo: 'Detail' });
+    }
+    // 已登录后的预订草稿与确认页接线属于 P4。
+  };
 
   // 收藏状态  动画
   const [isFavorite, setIsFavorite] = useState(false);
@@ -612,7 +615,7 @@ const DetailPage = () => {
                   <Text style={styles.roomPrice}>¥{room.price || 0}</Text>
                   <Text style={styles.priceUnit}>每晚</Text>
                   <Text style={styles.totalPrice}>总计: ¥{room.price || 0}</Text>
-                  <TouchableOpacity style={styles.bookBtn}>
+                  <TouchableOpacity style={styles.bookBtn} onPress={handleBookNow}>
                     <Text style={styles.bookBtnText}>立即预订</Text>
                   </TouchableOpacity>
                   <View style={styles.roomActions}>

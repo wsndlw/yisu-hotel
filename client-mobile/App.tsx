@@ -7,15 +7,21 @@ import { Provider as AntdProvider } from '@ant-design/react-native'; // UI库
 // 引入 Apollo 必要组件
 import { ApolloProvider } from '@apollo/client';
 import { client } from './src/utils/apollo'; 
-import { flushPendingLoginNavigation, navigationRef } from './src/navigation/navigationRef';
+import {
+  flushPendingLoginNavigation,
+  navigationRef,
+  type RootStackParamList,
+} from './src/navigation/navigationRef';
 import { restoreAuthSession } from './src/services/authSession';
 
 // 引入页面
 import SearchPage from './src/pages/SearchPage';
 import ListPage from './src/pages/ListPage'; 
 import DetailPage from './src/pages/DetailPage'; 
+import LoginPage from './src/pages/LoginPage';
+import RegisterPage from './src/pages/RegisterPage';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [sessionReady, setSessionReady] = useState(false);
@@ -53,6 +59,16 @@ export default function App() {
               <Stack.Screen
                 name="Detail"
                 component={DetailPage}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Login"
+                component={LoginPage}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Register"
+                component={RegisterPage}
                 options={{ headerShown: false }}
               />
             </Stack.Navigator>

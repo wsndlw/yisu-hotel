@@ -5,6 +5,7 @@ export type RootStackParamList = {
   HotelList: Record<string, unknown> | undefined;
   Detail: { id: string; checkInDate?: string; checkOutDate?: string };
   Login: { redirectTo?: string } | undefined;
+  Register: undefined;
 };
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();

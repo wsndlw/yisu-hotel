@@ -647,18 +647,18 @@ export class HotelService {
         if (nights.length > 0) {
           qb.andWhere(`
             NOT EXISTS (
-              SELECT 1 FROM stock s 
-              WHERE s.room_type_id = roomType.id 
-              AND s.date IN (:...dates) 
+              SELECT 1 FROM calendar_stock s
+              WHERE s.roomTypeId = roomType.id
+              AND s.date IN (:...dates)
               AND s.stock <= 0
             )
             AND (
               (roomType.stock > 0 OR roomType.stock IS NULL)
-              OR 
+              OR
               (
-                (SELECT COUNT(1) FROM stock s 
-                 WHERE s.room_type_id = roomType.id 
-                 AND s.date IN (:...dates) 
+                (SELECT COUNT(1) FROM calendar_stock s
+                 WHERE s.roomTypeId = roomType.id
+                 AND s.date IN (:...dates)
                  AND s.stock > 0) = :nightsCount
               )
             )
