@@ -26,6 +26,8 @@ export const GET_HOME_CONFIG = gql`
         cities {
           code
           name
+          latitude
+          longitude
         }
         facilities {
           id
@@ -59,7 +61,7 @@ export const GET_HOME_CONFIG = gql`
 //           distanceText
 //           address
 //           latitude
-//           longitude 
+//           longitude
 //         }
 //         page {
 //           total
@@ -162,6 +164,7 @@ export const GET_HOTEL_DETAIL = gql`
           hasWindow
           coverImage
           maxGuests
+          stock
         }
       }
     }
@@ -190,6 +193,8 @@ export const HOTEL_MIN_PRICE_CALENDAR = gql`
       days {
         date
         price
+        available
+        stock
       }
     }
   }

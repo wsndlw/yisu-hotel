@@ -150,8 +150,8 @@ input CalendarClearRangeInput {
 input CalendarPriceBatchSetInput {
   endDate: String!
 
-  """价格（单位：分）"""
-  price: Int!
+  """价格（单位：元，最多两位小数）"""
+  price: Float!
   roomTypeId: ID!
   startDate: String!
 }
@@ -476,11 +476,17 @@ type HotelMinPriceCalendar {
 
 """酒店最低价日历（按天）"""
 type HotelMinPriceCalendarDay {
+  """当日是否存在可售房型"""
+  available: Boolean!
+
   """日期（YYYY-MM-DD）"""
   date: String!
 
-  """最低价（单位：分）"""
-  price: Int!
+  """当晚最低可售价（单位：元；无可售房型时为空）"""
+  price: Float
+
+  """最低价房型的合计有效库存（为空表示不限制或未知）"""
+  stock: Int
 }
 
 type HotelResult {
@@ -566,6 +572,12 @@ type MobileBanner {
 """热门城市"""
 type MobileCity {
   code: String!
+
+  """城市内已发布酒店的平均纬度"""
+  latitude: Float
+
+  """城市内已发布酒店的平均经度"""
+  longitude: Float
   name: String!
 }
 
@@ -1186,8 +1198,8 @@ type RoomTypeCalendarDay {
   """日期（YYYY-MM-DD）"""
   date: String!
 
-  """价格（单位：分）"""
-  price: Int!
+  """价格（单位：元）"""
+  price: Float!
 
   """库存（为空表示不限制或未知）"""
   stock: Int

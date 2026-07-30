@@ -1,8 +1,13 @@
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-import { onError } from '@apollo/client/link/error';
-import { requestLoginNavigation } from '../navigation/navigationRef';
-import { useAuthStore } from '../store/authStore';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+} from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
+import { requestLoginNavigation } from "../navigation/navigationRef";
+import { useAuthStore } from "../store/authStore";
 
 type HeaderMap = Record<string, string>;
 
@@ -20,8 +25,15 @@ async function getStoredToken() {
   return useAuthStore.getState().token;
 }
 
-export function buildAuthHeaders(headers: HeaderMap = {}, token: string | null): HeaderMap {
-  const { Authorization: _authorization, authorization: _lowercaseAuthorization, ...rest } = headers;
+export function buildAuthHeaders(
+  headers: HeaderMap = {},
+  token: string | null,
+): HeaderMap {
+  const {
+    Authorization: _authorization,
+    authorization: _lowercaseAuthorization,
+    ...rest
+  } = headers;
   return token ? { ...rest, Authorization: `Bearer ${token}` } : rest;
 }
 
@@ -30,10 +42,14 @@ export function isUnauthenticatedError(
   networkError?: unknown,
 ) {
   const hasGraphQLAuthError = graphQLErrors?.some(({ extensions }) => {
-    const response = extensions?.response as { statusCode?: unknown } | undefined;
-    const originalError = extensions?.originalError as { statusCode?: unknown } | undefined;
+    const response = extensions?.response as
+      | { statusCode?: unknown }
+      | undefined;
+    const originalError = extensions?.originalError as
+      | { statusCode?: unknown }
+      | undefined;
     return (
-      extensions?.code === 'UNAUTHENTICATED' ||
+      extensions?.code === "UNAUTHENTICATED" ||
       response?.statusCode === 401 ||
       originalError?.statusCode === 401
     );
@@ -42,7 +58,11 @@ export function isUnauthenticatedError(
   const httpError = networkError as
     | { statusCode?: unknown; response?: { status?: unknown } }
     | undefined;
-  return !!hasGraphQLAuthError || httpError?.statusCode === 401 || httpError?.response?.status === 401;
+  return (
+    !!hasGraphQLAuthError ||
+    httpError?.statusCode === 401 ||
+    httpError?.response?.status === 401
+  );
 }
 
 async function handleUnauthenticated() {
@@ -59,9 +79,16 @@ async function handleUnauthenticated() {
   }
 }
 
+/**
+ * 模拟器可使用 localhost；连接真机时通过 EXPO_PUBLIC_GRAPHQL_URL
+ * 配置为开发机局域网地址，避免真机把 localhost 解析为手机自身。
+ */
+export const GRAPHQL_ENDPOINT =
+  process.env.EXPO_PUBLIC_GRAPHQL_URL?.trim() ||
+  "http://localhost:3000/graphql";
+
 const httpLink = new HttpLink({
-  uri: //'http://192.168.1.3:3000/graphql'
-       'http://localhost:3000/graphql'
+  uri: GRAPHQL_ENDPOINT,
 });
 
 export const authLink = setContext(async (_, { headers }) => {
@@ -74,7 +101,6 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
     void handleUnauthenticated();
   }
 });
-
 
 export const client = new ApolloClient({
   link: ApolloLink.from([errorLink, authLink, httpLink]),

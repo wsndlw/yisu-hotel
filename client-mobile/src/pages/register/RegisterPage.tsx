@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import type { RootStackParamList } from '../navigation/navigationRef';
-import { register } from '../services/auth';
+import type { RootStackParamList } from '../../navigation/navigationRef';
+import { register } from '../../services/auth';
 import styles from './RegisterPage.styles';
 
 type RegisterPageProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
@@ -28,7 +28,7 @@ function getErrorMessage(error: unknown): string {
   return '注册失败，请稍后重试';
 }
 
-export default function RegisterPage({ navigation }: RegisterPageProps) {
+export default function RegisterPage({ navigation, route }: RegisterPageProps) {
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
   const [username, setUsername] = useState('');
@@ -74,7 +74,16 @@ export default function RegisterPage({ navigation }: RegisterPageProps) {
     try {
       await register({ username: username.trim(), password });
       setSubmitting(false);
-      navigation.reset({ index: 0, routes: [{ name: 'Search' }] });
+      if (route.params?.redirectTo === 'BookingConfirm') {
+        navigation.reset({
+          index: 1,
+          routes: [{ name: 'MainTabs' }, { name: 'BookingConfirm' }],
+        });
+      } else if (route.params?.returnToExisting && navigation.canGoBack()) {
+        navigation.pop(2);
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+      }
     } catch (error) {
       setSubmitError(getErrorMessage(error));
       setSubmitting(false);

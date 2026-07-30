@@ -23,6 +23,12 @@ export class MobileCity {
 
   @Field(() => String)
   name: string;
+
+  @Field(() => Number, { nullable: true, description: '城市内已发布酒店的平均纬度' })
+  latitude?: number | null;
+
+  @Field(() => Number, { nullable: true, description: '城市内已发布酒店的平均经度' })
+  longitude?: number | null;
 }
 
 @ObjectType({ description: '快捷设施（移动端）' })

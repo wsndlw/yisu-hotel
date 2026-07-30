@@ -1,197 +1,312 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Dimensions
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+import type { HotelMinPriceCalendarDay } from '../types/hotel';
 
-// 定义组件接收的参数类型（新增 currentMonth 和 onMonthChange）
+const WEEK_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
 interface CustomCalendarProps {
-    startDate: string;
-    endDate: string;
-    onSelectDate: (date: string) => void;
-    currentMonth?: Date; // 新增：外部传入的当前月份
-    onMonthChange?: (date: Date) => void; // 新增：月份变化回调
+  startDate: string;
+  endDate: string;
+  calendarStartDate: string;
+  monthCount: number;
+  days: HotelMinPriceCalendarDay[];
+  loading?: boolean;
+  onSelectDate: (date: string) => void;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ 
-    startDate, 
-    endDate, 
-    onSelectDate,
-    currentMonth,
-    onMonthChange 
-}) => {
-    // 当前显示的月份状态 - 优先使用传入的 currentMonth
-    const [currentDate, setCurrentDate] = useState(() => {
-        if (currentMonth) return new Date(currentMonth);
-        return new Date();
-    });
+interface CalendarMonth {
+  key: string;
+  title: string;
+  year: number;
+  month: number;
+  leadingEmptyDays: number;
+  daysInMonth: number;
+}
 
-    // 当外部传入的 currentMonth 变化时更新内部状态
-    useEffect(() => {
-        if (currentMonth) {
-            setCurrentDate(new Date(currentMonth));
-        }
-    }, [currentMonth]);
+function pad(value: number) {
+  return String(value).padStart(2, '0');
+}
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth(); // 0-11
+function formatDate(year: number, month: number, day: number) {
+  return `${year}-${pad(month + 1)}-${pad(day)}`;
+}
 
-    // 获取当月有多少天
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    // 获取当月第一天是周几 (0是周日)
-    const firstDay = new Date(year, month, 1).getDay();
+function parseLocalDate(value: string) {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
 
-    // 切换月份
-    const changeMonth = (delta: number) => {
-        const newDate = new Date(currentDate);
-        newDate.setMonth(newDate.getMonth() + delta);
-        setCurrentDate(newDate);
-        // 通知父组件月份变化
-        onMonthChange?.(newDate);
+function formatLocalDate(date: Date) {
+  return formatDate(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function buildMonths(startDate: string, count: number): CalendarMonth[] {
+  const firstMonth = parseLocalDate(startDate);
+  firstMonth.setDate(1);
+
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    return {
+      key: `${year}-${pad(month + 1)}`,
+      title: `${year}年${month + 1}月`,
+      year,
+      month,
+      leadingEmptyDays: date.getDay(),
+      daysInMonth: new Date(year, month + 1, 0).getDate(),
     };
+  });
+}
 
-    // 渲染每一天
-    const renderDays = () => {
-        const days = [];
-        // 1. 填充前面的空白 (上个月的残留)
-        for (let i = 0; i < firstDay; i++) {
-            days.push(<View key={`empty-${i}`} style={styles.dayCell} />);
-        }
+export default function CustomCalendar({
+  startDate,
+  endDate,
+  calendarStartDate,
+  monthCount,
+  days,
+  loading = false,
+  onSelectDate,
+}: CustomCalendarProps) {
+  const { width } = useWindowDimensions();
+  const cellWidth = Math.floor((width - 24) / 7);
+  const today = formatLocalDate(new Date());
+  const months = useMemo(
+    () => buildMonths(calendarStartDate, monthCount),
+    [calendarStartDate, monthCount],
+  );
+  const dayMap = useMemo(
+    () => new Map(days.map((day) => [day.date, day])),
+    [days],
+  );
+  const lowestPrice = useMemo(() => {
+    const prices = days
+      .filter((day) => day.available && day.stock !== 0 && day.price != null)
+      .map((day) => Number(day.price))
+      .filter((price) => Number.isFinite(price) && price >= 0);
+    return prices.length > 0 ? Math.min(...prices) : null;
+  }, [days]);
 
-        // 2. 填充这个月的日期
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+  return (
+    <View style={styles.calendarContainer}>
+      {months.map((calendarMonth) => (
+        <View key={calendarMonth.key} style={styles.monthSection}>
+          <Text style={styles.monthTitle}>{calendarMonth.title}</Text>
+          <View style={styles.daysGrid}>
+            {Array.from({ length: calendarMonth.leadingEmptyDays }, (_, index) => (
+              <View
+                key={`${calendarMonth.key}-empty-${index}`}
+                style={{ width: cellWidth, height: 64 }}
+              />
+            ))}
+            {Array.from({ length: calendarMonth.daysInMonth }, (_, index) => {
+              const dayNumber = index + 1;
+              const date = formatDate(
+                calendarMonth.year,
+                calendarMonth.month,
+                dayNumber,
+              );
+              const calendarDay = dayMap.get(date);
+              const numericPrice = Number(calendarDay?.price);
+              const isPast = date < today;
+              const isStart = date === startDate;
+              const isEnd = date === endDate;
+              const isInRange = Boolean(
+                startDate
+                && endDate
+                && date > startDate
+                && date < endDate,
+              );
+              const isUnavailable = !isPast && (
+                !calendarDay
+                || !calendarDay.available
+                || calendarDay.stock === 0
+                || calendarDay.price == null
+                || !Number.isFinite(numericPrice)
+                || numericPrice < 0
+              );
+              const isLowestPrice = (
+                !isUnavailable
+                && lowestPrice != null
+                && numericPrice === lowestPrice
+              );
+              const isDisabled = loading || isPast || isUnavailable;
+              const isSelected = isStart || isEnd;
 
-            const isStart = dateStr === startDate;
-            const isEnd = dateStr === endDate;
-            let isInRange = false;
-
-            if (startDate && endDate && dateStr > startDate && dateStr < endDate) {
-                isInRange = true;
-            }
-
-            // 样式逻辑
-            let bgStyle: any = {};
-            let textStyle: any = { color: '#333' };
-            let containerStyle: any = {};
-
-            if (isStart || isEnd) {
-                bgStyle = { backgroundColor: '#0086F6', borderRadius: 4 };
-                textStyle = { color: '#fff', fontWeight: 'bold' };
-            } else if (isInRange) {
-                // 浅蓝色背景连接效果
-                bgStyle = { backgroundColor: '#E6F7FF' };
-                // 为了让连接处没有缝隙，可以调整 margin
-                containerStyle = { marginVertical: 2, marginHorizontal: 0, width: (width - 20) / 7 };
-                textStyle = { color: '#0086F6' };
-            }
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const isPast = dateStr < todayStr;
-            if (isPast) {
-                textStyle = { color: '#ccc' };
-            }
-
-            days.push(
-                <TouchableOpacity
-                    key={dateStr}
-                    style={[styles.dayCell, containerStyle, bgStyle]}
-                    disabled={isPast}
-                    onPress={() => onSelectDate(dateStr)}
+              return (
+                <View
+                  key={date}
+                  style={[
+                    styles.dayCell,
+                    { width: cellWidth },
+                    isInRange && styles.rangeCell,
+                  ]}
                 >
-                    <Text style={[styles.dayText, textStyle]}>{i}</Text>
-                    {isStart && <Text style={styles.dayLabel}>入住</Text>}
-                    {isEnd && <Text style={styles.dayLabel}>离店</Text>}
-                </TouchableOpacity>
-            );
-        }
-        return days;
-    };
-
-    return (
-        <View style={styles.calendarContainer}>
-            {/* 头部：切换月份 */}
-            <View style={styles.calendarHeader}>
-                <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.arrowBtn}>
-                    <Ionicons name="chevron-back" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.monthTitle}>{year}年 {month + 1}月</Text>
-                <TouchableOpacity onPress={() => changeMonth(1)} style={styles.arrowBtn}>
-                    <Ionicons name="chevron-forward" size={24} color="#333" />
-                </TouchableOpacity>
-            </View>
-
-            {/* 星期栏 */}
-            <View style={styles.weekRow}>
-                {['日', '一', '二', '三', '四', '五', '六'].map(d => (
-                    <Text key={d} style={styles.weekText}>{d}</Text>
-                ))}
-            </View>
-
-            {/* 日期网格 */}
-            <View style={styles.daysGrid}>
-                {renderDays()}
-            </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${date}${isUnavailable ? '无房' : ''}`}
+                    disabled={isDisabled}
+                    onPress={() => onSelectDate(date)}
+                    style={({ pressed }) => [
+                      styles.dayButton,
+                      isSelected && styles.selectedDay,
+                      pressed && !isDisabled && styles.pressedDay,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.dayNumber,
+                        (isPast || isUnavailable) && styles.disabledText,
+                        isInRange && styles.rangeText,
+                        isSelected && styles.selectedText,
+                      ]}
+                    >
+                      {dayNumber}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.dayMeta,
+                        isLowestPrice && styles.lowestPriceText,
+                        (isPast || isUnavailable) && styles.disabledMetaText,
+                        isInRange && styles.rangeText,
+                        isSelected && styles.selectedText,
+                      ]}
+                    >
+                      {isStart
+                        ? '入住'
+                        : isEnd
+                          ? '离店'
+                          : isPast
+                            ? ''
+                            : isUnavailable
+                              ? loading
+                                ? '加载中'
+                                : '无房'
+                              : `${isLowestPrice ? '低价 ' : ''}¥${Math.round(numericPrice)}`}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
         </View>
-    );
-};
+      ))}
+    </View>
+  );
+}
+
+export function CalendarWeekHeader() {
+  return (
+    <View style={styles.weekRow}>
+      {WEEK_LABELS.map((label, index) => (
+        <Text
+          key={label}
+          style={[
+            styles.weekText,
+            (index === 0 || index === 6) && styles.weekendText,
+          ]}
+        >
+          {label}
+        </Text>
+      ))}
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-    calendarContainer: {
-        padding: 10
-    },
-    calendarHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20
-    },
-    arrowBtn: {
-        padding: 10
-    },
-    monthTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333'
-    },
-    weekRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 10
-    },
-    weekText: {
-        width: (width - 20) / 7,
-        textAlign: 'center',
-        color: '#999',
-        fontSize: 14
-    },
-    daysGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap'
-    },
-    dayCell: {
-        width: (width - 20) / 7,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginVertical: 2
-    },
-    dayText: {
-        fontSize: 16,
-        fontWeight: '500'
-    },
-    dayLabel: {
-        fontSize: 9,
-        color: '#fff',
-        position: 'absolute',
-        bottom: 2
-    }
+  calendarContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 28,
+  },
+  monthSection: {
+    paddingTop: 24,
+  },
+  monthTitle: {
+    color: '#17233d',
+    fontSize: 20,
+    fontWeight: '700',
+    paddingHorizontal: 8,
+    paddingBottom: 14,
+  },
+  weekRow: {
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#eef1f5',
+  },
+  weekText: {
+    width: `${100 / 7}%`,
+    color: '#536176',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  weekendText: {
+    color: '#f26a2e',
+  },
+  daysGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    height: 64,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+  },
+  dayButton: {
+    minHeight: 56,
+    marginVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  selectedDay: {
+    backgroundColor: '#1677ff',
+  },
+  pressedDay: {
+    opacity: 0.72,
+  },
+  rangeCell: {
+    backgroundColor: '#eaf3ff',
+  },
+  dayNumber: {
+    color: '#17233d',
+    fontSize: 16,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  dayMeta: {
+    maxWidth: '100%',
+    color: '#64748b',
+    fontSize: 9,
+    lineHeight: 14,
+    fontVariant: ['tabular-nums'],
+  },
+  lowestPriceText: {
+    color: '#f26a2e',
+    fontWeight: '700',
+  },
+  disabledText: {
+    color: '#c7cdd6',
+  },
+  disabledMetaText: {
+    color: '#b7bec9',
+  },
+  rangeText: {
+    color: '#1677ff',
+  },
+  selectedText: {
+    color: '#fff',
+  },
 });
-
-export default CustomCalendar;

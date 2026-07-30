@@ -123,14 +123,14 @@ export function useHotelSearch() {
 
   const result = data?.searchHotels;
   const bizError = buildBizError(result);
-  
+
   // 数据解包：HotelConnection 里已经包含了 items 和 page 信息
   const connection = result?.code === 200 ? result.data : undefined;
 
   return {
     // 这里的 input 必须严格符合 SearchHotelInput 接口（注意 pagination 是嵌套对象）
     search: (input: SearchHotelInput) => run({ variables: { input } }),
-    data: connection, 
+    data: connection,
     loading,
     error: error || bizError,
     refetch,
@@ -183,14 +183,14 @@ export const useHotelDetail = (
 export const usePoiList = (input: any) => {
   // 1. 泛型定义要准确：告诉 Apollo 返回值里有个 poiList 数组
   const { data: result, loading, error } = useQuery<{ poiList: any[] }>(
-    POI_LIST, 
+    POI_LIST,
     {
       // 2. 传参结构必须符合 Schema：需要包一层 input
-      variables: { 
+      variables: {
         input: {
           city: input.city,
           // 如果需要其他参数如 limit，也可以在这里解构
-          // limit: 50 
+          // limit: 50
         }
       },
       // 只有当 city 存在时才发请求
@@ -210,17 +210,19 @@ export const usePoiList = (input: any) => {
 
 // 3. 获取酒店最低价日历
 export const useHotelMinPriceCalendar = (input: HotelMinPriceCalendarInput) => {
-  const { data: result, loading, error } = useQuery<ApiResponse<HotelMinPriceCalendar>>(
+  const { data: result, loading, error, refetch } = useQuery<CalendarRes, HotelMinPriceCalendarInput>(
     HOTEL_MIN_PRICE_CALENDAR,
     {
       variables: input,
       skip: !input.hotelId,
+      fetchPolicy: 'cache-and-network',
     }
   );
 
   return {
-    data: result?.code === 200 ? result.data : undefined,
+    data: result?.hotelMinPriceCalendar,
     loading,
     error,
+    refetch,
   };
 };

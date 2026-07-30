@@ -64,6 +64,20 @@ export interface Room {
   maxGuests?: number | null;
 }
 
+/**
+ * 房型报价方案。当前后端每个房型只返回一条报价，因此 MVP 由客户端
+ * 将房型报价规范化为一条基础方案；未来接入多方案接口时可直接复用。
+ */
+export interface RoomRatePlan {
+  id: string;
+  roomTypeId: string;
+  name: string;
+  price: number;
+  stock?: number | null;
+  hasBreakfast?: boolean | null;
+  refundable?: boolean | null;
+}
+
 export interface NearbyPoi {
   id: string;
   name: string;
@@ -138,7 +152,11 @@ export interface PoiListInput {
 
 export interface HotelMinPriceCalendarDay {
   date: string;
-  price: number;
+  /** 当晚最低可售价，单位：元；无可售房型时为 null。 */
+  price: number | null;
+  available: boolean;
+  /** 最低价房型的合计有效库存；null 表示库存不限制或未知。 */
+  stock?: number | null;
 }
 
 export interface HotelMinPriceCalendar {
@@ -151,4 +169,3 @@ export interface HotelMinPriceCalendarInput {
   startDate?: string;
   endDate?: string;
 }
-

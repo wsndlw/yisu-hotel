@@ -6,19 +6,24 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useQuery } from '@apollo/client';
 import { Ionicons } from '@expo/vector-icons';
-import { SEARCH_HOTELS, } from '../graphql/hotel-h5';
+import { SEARCH_HOTELS, } from '../../graphql/hotel-h5';
 import {
     FACILITY_CATEGORIES,
-} from '../graphql/facility-h5';
+} from '../../graphql/facility-h5';
 
-import { useHomeConfigV2 } from '../services/hotel-h5';
-import { useFacilitiesForH5 } from '../services/facility-h5';
+import { useHomeConfigV2 } from '../../services/hotel-h5';
+import { useFacilitiesForH5 } from '../../services/facility-h5';
+import {
+    parsePriceLabel,
+    parseStarLabel,
+    useHotelSearchStore,
+} from '../../store/hotelSearchStore';
 
 // 引入组件
-import DateSelectorModal from '../components/DateSelectorModal';
-import CitySelectorModal from '../components/CitySelectorModal';
-import PriceStarFilterModal from '../components/PriceStarFilterModal';
-import LocationFilterModal from '../components/LocationFilterModal';
+import DateSelectorModal from '../../components/DateSelectorModal';
+import CitySelectorModal from '../../components/CitySelectorModal';
+import PriceStarFilterModal from '../../components/PriceStarFilterModal';
+import LocationFilterModal from '../../components/LocationFilterModal';
 
 // 引入样式
 import styles from './ListPage.styles';
@@ -81,25 +86,32 @@ const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => 
 
 const ListPage = ({ navigation, route }: any) => {
     const {
-        cityCode = '320100', checkIn = '2026-03-04', checkOut = '2026-03-05', keyword = '',
-        priceMin, priceMax, starRating, tags, displayInfo = {}
-    } = route.params || {};
+        city: currentCity,
+        keyword: searchKeyword,
+        checkIn: currentCheckIn,
+        checkOut: currentCheckOut,
+        selectedPrice,
+        selectedStar,
+        selectedTags: selectedFacilities,
+        setCity: setCurrentCity,
+        setKeyword: setSearchKeyword,
+        setCheckIn,
+        setCheckOut,
+        setSelectedPrice,
+        setSelectedStar,
+        setSelectedTags: setSelectedFacilities,
+    } = useHotelSearchStore();
 
-    const [keyWordInput, setKeyWordInput] = useState(keyword);
-    const [searchKeyword, setSearchKeyword] = useState(keyword);
+    const [keyWordInput, setKeyWordInput] = useState(searchKeyword);
     //  默认排序改为大写 DEFAULT
     const [sortValue, setSortValue] = useState('DEFAULT');
 
-    const [currentCity, setCurrentCity] = useState({ code: cityCode, name: displayInfo.cityName || '南京' });
-    const [currentCheckIn, setCheckIn] = useState(checkIn);
-    const [currentCheckOut, setCheckOut] = useState(checkOut);
     const nights = getNights(currentCheckIn, currentCheckOut);
-
-    const [currentPriceMin, setPriceMin] = useState(priceMin);
-    const [currentPriceMax, setPriceMax] = useState(priceMax);
-    const [currentStar, setStar] = useState(starRating);
-
-    const [selectedFacilities, setSelectedFacilities] = useState<string[]>(tags || []);
+    const {
+        priceMin: currentPriceMin,
+        priceMax: currentPriceMax,
+    } = parsePriceLabel(selectedPrice);
+    const currentStar = parseStarLabel(selectedStar);
 
     const [activeModal, setActiveModal] = useState<'none' | 'sort' | 'filter' | 'city' | 'date' | 'priceStar' | 'location'>('none');
 
@@ -133,6 +145,8 @@ const ListPage = ({ navigation, route }: any) => {
                 priceMax: currentPriceMax,
                 starRating: currentStar,
                 facilityIds: selectedFacilities,
+                latitude: currentCity.latitude,
+                longitude: currentCity.longitude,
                 sort: sortValue,
                 pagination: {
                     page: 1,
@@ -204,6 +218,8 @@ const ListPage = ({ navigation, route }: any) => {
                     priceMax: currentPriceMax,
                     starRating: currentStar,
                     facilityIds: selectedFacilities,
+                    latitude: currentCity.latitude,
+                    longitude: currentCity.longitude,
                     sort: sortValue,
                     pagination: {
                         page: page + 1,
@@ -262,24 +278,8 @@ const ListPage = ({ navigation, route }: any) => {
     };
 
     const handlePriceStarConfirm = (pStr: string, sStr: string) => {
-        let min, max;
-        if (pStr.includes('以下')) max = parseInt(pStr.replace(/\D/g, ''));
-        else if (pStr.includes('以上')) min = parseInt(pStr.replace(/\D/g, ''));
-        else if (pStr.includes('-')) {
-            const parts = pStr.split('-');
-            min = parseInt(parts[0].replace(/\D/g, ''));
-            max = parseInt(parts[1].replace(/\D/g, ''));
-        }
-
-        let star;
-        if (sStr.includes('2')) star = 2;
-        else if (sStr.includes('3')) star = 3;
-        else if (sStr.includes('4')) star = 4;
-        else if (sStr.includes('5')) star = 5;
-
-        setPriceMin(min);
-        setPriceMax(max);
-        setStar(star);
+        setSelectedPrice(pStr);
+        setSelectedStar(sStr);
         setPage(1);
     };
 
@@ -305,12 +305,12 @@ const ListPage = ({ navigation, route }: any) => {
             dynamicTags.push({ text: bedText, color: '#333', bg: '#F5F5F5' });
         }
 
-        // 3. 窗户标签 
+        // 3. 窗户标签
         if (firstRoom && firstRoom.hasWindow) {
             dynamicTags.push({ text: '有窗', color: '#333', bg: '#F5F5F5' });
         }
 
-        // 4. 免费取消 
+        // 4. 免费取消
         if (item.roomType?.some((r: any) => r.refundable)) {
             dynamicTags.push({ text: '免费取消', color: '#0086F6', bg: '#F0F8FF' });
         }
@@ -326,8 +326,8 @@ const ListPage = ({ navigation, route }: any) => {
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('Detail', {
                     id: item.id,
-                    checkIn: currentCheckIn, //  state 里存的入住日期变量
-                    checkOut: currentCheckOut   //  state 里存的离店日期变量 
+                    checkInDate: currentCheckIn,
+                    checkOutDate: currentCheckOut
                 })}
             >
                 <View style={styles.imageWrapper}>
@@ -454,8 +454,8 @@ const ListPage = ({ navigation, route }: any) => {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.filterItem} onPress={() => setActiveModal('priceStar')}>
-                    <Text style={[styles.filterText, (currentPriceMin || currentStar) && styles.activeText]}>价格星级</Text>
-                    <Ionicons name="caret-down" size={10} color="#666" />
+                    <Text style={[styles.filterText, (selectedPrice || selectedStar) && styles.activeText]}>价格星级</Text>
+                    <Ionicons name="caret-down" size={10} color={(selectedPrice || selectedStar) ? '#0086F6' : '#666'} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.filterItem} onPress={() => setActiveModal('filter')}>
@@ -515,14 +515,22 @@ const ListPage = ({ navigation, route }: any) => {
             <CitySelectorModal
                 visible={activeModal === 'city'}
                 onClose={() => setActiveModal('none')}
-                onSelect={(city: any) => { setCurrentCity(city); setActiveModal('none'); setPage(1); }}
+                onSelect={(city: any) => {
+                    setCurrentCity({
+                        code: city.code,
+                        name: city.name,
+                        country: '',
+                    });
+                    setActiveModal('none');
+                    setPage(1);
+                }}
                 data={cityList}
             />
 
             {/* 日期选择器 */}
             <DateSelectorModal
                 visible={activeModal === 'date'}
-                startDate={currentCheckIn} 
+                startDate={currentCheckIn}
                 endDate={currentCheckOut}
                 onClose={() => setActiveModal('none')}
                 onSelect={handleDateSelect}
@@ -570,6 +578,8 @@ const ListPage = ({ navigation, route }: any) => {
                 visible={activeModal === 'priceStar'}
                 onClose={() => setActiveModal('none')}
                 onConfirm={handlePriceStarConfirm}
+                initialPrice={selectedPrice}
+                initialStar={selectedStar}
             />
 
             <Modal visible={activeModal === 'filter'} animationType="slide" transparent>

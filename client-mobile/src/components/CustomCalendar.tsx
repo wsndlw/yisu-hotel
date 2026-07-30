@@ -3,12 +3,9 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
-    Dimensions
+    TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-const { width } = Dimensions.get('window');
 
 // 定义组件接收的参数类型
 interface CustomCalendarProps {
@@ -67,8 +64,8 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ startDate, endDate, onS
             } else if (isInRange) {
                 // 浅蓝色背景连接效果
                 bgStyle = { backgroundColor: '#E6F7FF' };
-                // 为了让连接处没有缝隙，可以调整 margin
-                containerStyle = { marginVertical: 2, marginHorizontal: 0, width: (width - 20) / 7 };
+                // 保持七列布局，避免根据整屏宽度计算后超出实际容器。
+                containerStyle = { marginVertical: 2, marginHorizontal: 0 };
                 textStyle = { color: '#0086F6' };
             }
 
@@ -142,11 +139,10 @@ const styles = StyleSheet.create({
     },
     weekRow: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
         marginBottom: 10
     },
     weekText: {
-        width: (width - 20) / 7,
+        flex: 1,
         textAlign: 'center',
         color: '#999',
         fontSize: 14
@@ -156,7 +152,8 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap'
     },
     dayCell: {
-        width: (width - 20) / 7,
+        flexBasis: `${100 / 7}%`,
+        maxWidth: `${100 / 7}%`,
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',

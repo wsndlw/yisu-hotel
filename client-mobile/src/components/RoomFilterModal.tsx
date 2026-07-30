@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // 定义筛选条件的类型
 export interface FilterOptions {
@@ -127,7 +128,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose}>
             <Ionicons name="close" size={28} color="#333" />
@@ -144,7 +145,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
           ])}
 
           {renderOptionGroup('早餐', 'breakfast', [
-            '含早餐', '单份早餐', '双份早餐'
+            '含早餐'
           ], 'single')}
 
           {renderOptionGroup('房间面积', 'area', [
@@ -159,7 +160,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
             '2人', '3人', '4人', '5人', '6人'
           ], 'single')} */}
 
-          {renderOptionGroup('携程服务', 'services', [
+          {renderOptionGroup('预订服务', 'services', [
             '免费取消'
           ], 'single')}
 
@@ -196,7 +197,7 @@ const RoomFilterModal: React.FC<RoomFilterModalProps> = ({ visible, onClose, onA
             <Text style={styles.applyBtnText}>完成</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

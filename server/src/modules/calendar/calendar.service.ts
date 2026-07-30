@@ -1,11 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoomTypeService } from '../roomType/roomType.service';
 import { CalendarPriceService } from '../calendarPrice/calendarPrice.service';
 import { CalendarStockService } from '../calendarStock/calendarStock.service';
 import { HotelMinPriceCalendar, RoomTypeCalendar, RoomTypeCalendarDay } from './common/calendar.type';
-import { HotelEntity } from '../hotel/models/hotel.entity';
+import { HotelEntity, HotelStatus } from '../hotel/models/hotel.entity';
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DEFAULT_CALENDAR_DAYS = 90;
+const MAX_CALENDAR_DAYS = 366;
+const BUSINESS_TIME_ZONE = 'Asia/Shanghai';
+
+function assertDate(value: string, fieldName: string): string {
+  if (!DATE_RE.test(value)) {
+    throw new BadRequestException(`${fieldName} 必须是 YYYY-MM-DD 格式`);
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
+    throw new BadRequestException(`${fieldName} 不是有效日期`);
+  }
+
+  return value;
+}
+
+function addDays(date: string, days: number): string {
+  const value = new Date(`${date}T00:00:00.000Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+function countDaysInclusive(start: string, end: string): number {
+  const startTime = new Date(`${start}T00:00:00.000Z`).getTime();
+  const endTime = new Date(`${end}T00:00:00.000Z`).getTime();
+  return Math.floor((endTime - startTime) / (24 * 3600 * 1000)) + 1;
+}
+
+function getBusinessToday(): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const values = new Map(parts.map((part) => [part.type, part.value]));
+  return `${values.get('year')}-${values.get('month')}-${values.get('day')}`;
+}
 
 function enumerateDates(start: string, end: string): string[] {
   const out: string[] = [];
@@ -29,47 +70,93 @@ export class CalendarService {
   ) { }
 
   private resolveRange(startDate?: string, endDate?: string) {
-    const today = new Date();
-    const start = startDate ? new Date(startDate + 'T00:00:00.000Z') : new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-    const end = endDate
-      ? new Date(endDate + 'T00:00:00.000Z')
-      : new Date(start.getTime() + 30 * 24 * 3600 * 1000);
-    const format = (d: Date) => d.toISOString().slice(0, 10);
-    return { start: format(start), end: format(end) };
+    const start = startDate ? assertDate(startDate, 'startDate') : getBusinessToday();
+    const end = endDate ? assertDate(endDate, 'endDate') : addDays(start, DEFAULT_CALENDAR_DAYS - 1);
+
+    if (end < start) {
+      throw new BadRequestException('endDate 不能早于 startDate');
+    }
+
+    const rangeDays = countDaysInclusive(start, end);
+    if (rangeDays > MAX_CALENDAR_DAYS) {
+      throw new BadRequestException(`日期范围不能超过 ${MAX_CALENDAR_DAYS} 天`);
+    }
+
+    return { start, end };
   }
 
-  async getHotelMinPriceCalendar(hotelId: string, startDate?: string, endDate?: string) {
+  async getHotelMinPriceCalendar(
+    hotelId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<HotelMinPriceCalendar> {
     const { start, end } = this.resolveRange(startDate, endDate);
     const hotel = await this.hotelRepo.findOne({
-      where: { id: hotelId },
+      where: { id: hotelId, status: HotelStatus.PUBLISHED },
       relations: ['roomTypes'],
     });
 
-    const roomTypes = hotel?.roomTypes || [];
-    if (roomTypes.length === 0) {
-      return { hotelId, days: [] };
+    if (!hotel) {
+      throw new NotFoundException('酒店不存在或未发布');
     }
 
     const dateList = enumerateDates(start, end);
-    const days = dateList.map((date) => ({ date, price: Number.POSITIVE_INFINITY }));
+    const roomTypes = (hotel.roomTypes || []).filter((room) => Number(room.isOnSale) === 1);
+    const roomCalendars = await Promise.all(
+      roomTypes.map(async (room) => {
+        const [prices, stocks] = await Promise.all([
+          this.priceService.list(room.id, start, end),
+          this.stockService.list(room.id, start, end),
+        ]);
 
-    for (const room of roomTypes) {
-      const prices = await this.priceService.list(room.id, start, end);
-      const priceMap = new Map(prices.map((p) => [p.date, p.price]));
-      days.forEach((day) => {
-        const price = priceMap.has(day.date) ? Number(priceMap.get(day.date)!) : Number(room.basePrice);
-        if (price < day.price) {
-          day.price = price;
+        return {
+          room,
+          priceMap: new Map(prices.map((item) => [item.date, Number(item.price)])),
+          stockMap: new Map(stocks.map((item) => [item.date, Number(item.stock)])),
+        };
+      }),
+    );
+
+    const days = dateList.map((date) => {
+      let minPrice: number | null = null;
+      let minPriceStock: number | null = 0;
+
+      for (const { room, priceMap, stockMap } of roomCalendars) {
+        const stock = stockMap.has(date)
+          ? stockMap.get(date)!
+          : room.stock == null
+            ? null
+            : Number(room.stock);
+
+        if (stock !== null && stock <= 0) {
+          continue;
         }
-      });
-    }
 
-    const normalized = days.map((day) => ({
-      date: day.date,
-      price: Number.isFinite(day.price) ? day.price : 0,
-    }));
+        const price = priceMap.has(date) ? priceMap.get(date)! : Number(room.basePrice);
+        if (!Number.isFinite(price) || price < 0) {
+          continue;
+        }
 
-    return { hotelId, days: normalized };
+        if (minPrice === null || price < minPrice) {
+          minPrice = price;
+          minPriceStock = stock;
+          continue;
+        }
+
+        if (price === minPrice) {
+          minPriceStock = minPriceStock === null || stock === null ? null : minPriceStock + stock;
+        }
+      }
+
+      return {
+        date,
+        price: minPrice,
+        available: minPrice !== null,
+        stock: minPrice === null ? 0 : minPriceStock,
+      };
+    });
+
+    return { hotelId, days };
   }
 
   /**
@@ -83,7 +170,7 @@ export class CalendarService {
       this.stockService.list(roomTypeId, startDate, endDate),
     ]);
 
-    const priceMap = new Map(prices.map((p) => [p.date, p.price]));
+    const priceMap = new Map(prices.map((p) => [p.date, Number(p.price)]));
     const stockMap = new Map(stocks.map((s) => [s.date, s.stock]));
 
     const days: RoomTypeCalendarDay[] = enumerateDates(startDate, endDate).map((date) => ({

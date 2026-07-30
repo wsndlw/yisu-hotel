@@ -34,7 +34,7 @@ export class CalendarResolver {
   ) {}
 
   /**
-   * 移动端：获取酒店最低价日历（默认返回未来 30 天）
+   * 移动端：获取酒店最低价日历（默认返回未来 90 天）
    */
   @Query(() => HotelMinPriceCalendar, { description: '酒店最低价日历（移动端）' })
   hotelMinPriceCalendar(

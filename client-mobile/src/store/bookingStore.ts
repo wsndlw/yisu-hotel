@@ -16,8 +16,27 @@ export interface SelectedHotel {
 export interface SelectedRoom {
   id: string;
   name: string;
+  /** 兼容现有确认页的每晚参考价。 */
   price: number;
   maxGuests?: number | null;
+  ratePlan: {
+    id: string;
+    name: string;
+    hasBreakfast?: boolean | null;
+    refundable?: boolean | null;
+  };
+  priceSnapshot: BookingPriceSnapshot;
+}
+
+export interface BookingPriceSnapshot {
+  currency: 'CNY';
+  nightlyPrice: number;
+  nights: number;
+  totalPrice: number;
+  checkIn: string;
+  checkOut: string;
+  guestCount: number;
+  capturedAt: string;
 }
 
 interface BookingData {

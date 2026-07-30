@@ -28,7 +28,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "允许易宿酒店使用您的位置，以匹配所在城市并展示附近酒店。"
+        }
+      ]
     ]
   }
 }

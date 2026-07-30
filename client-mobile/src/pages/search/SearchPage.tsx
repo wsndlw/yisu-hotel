@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+    Alert,
     View,
     Text,
     Image,
+    Linking,
     ScrollView,
     TouchableOpacity,
     TextInput,
@@ -13,13 +15,21 @@ import { Carousel } from '@ant-design/react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as Location from 'expo-location';
 
 //  引入后端服务
-import { useHomeConfigV2 } from '../services/hotel-h5';
+import { useHomeConfigV2 } from '../../services/hotel-h5';
 //  引入弹窗组件
-import CitySelectorModal from '../components/CitySelectorModal';
-import DateSelectorModal from '../components/DateSelectorModal';
+import CitySelectorModal from '../../components/CitySelectorModal';
+import DateSelectorModal from '../../components/DateSelectorModal';
+import {
+    parsePriceLabel,
+    parseStarLabel,
+    useHotelSearchStore,
+} from '../../store/hotelSearchStore';
+import {
+    CurrentLocationError,
+    getCurrentSupportedLocation,
+} from '../../utils/current-location';
 //  引入样式
 import styles from './SearchPage.styles';
 
@@ -68,14 +78,6 @@ const formatDate = (dateString: string) => {
     const weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
     return `${month}月${day}日 ${weekday}`;
 }
-
-const getTodayStr = () => new Date().toISOString().split('T')[0];
-
-const getTomorrowStr = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-};
 
 const getNights = (start: string, end: string) => {
     if (!start || !end) return 0;
@@ -128,38 +130,46 @@ const SearchPage = () => {
     // === 状态管理 ===
     const [activeTab, setActiveTab] = useState('hotel');
 
-    // 城市状态
-    const [city, setCity] = useState({ name: '北京', code: '110100', country: '' });
+    // 查询页与列表页共用同一份查询条件，返回时会自动显示列表页的最新选择。
+    const {
+        city,
+        keyword,
+        checkIn: startDate,
+        checkOut: endDate,
+        selectedPrice,
+        selectedStar,
+        selectedTags,
+        setCity,
+        setKeyword,
+        setCheckIn: setStartDate,
+        setCheckOut: setEndDate,
+        setSelectedPrice,
+        setSelectedStar,
+        setSelectedTags,
+    } = useHotelSearchStore();
+
     const [modalVisible, setModalVisible] = useState(false);
 
-    // 搜索框文字
-    const [keyword, setKeyword] = useState('');
-
-    // 日期状态
     const [dateModalVisible, setDateModalVisible] = useState(false);
-    const [startDate, setStartDate] = useState(getTodayStr());
-    const [endDate, setEndDate] = useState(getTomorrowStr());
     const totalNights = getNights(startDate, endDate);
 
-    // 价格星级状态
     const [priceModalVisible, setPriceModalVisible] = useState(false);
-    const [selectedPrice, setSelectedPrice] = useState<string>('');
-    const [selectedStar, setSelectedStar] = useState<string>('');
-
-    // 快捷标签状态
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
     //  定位相关状态
-    const [isLocated, setIsLocated] = useState(false); // 是否已定位
+    const isLocated = (
+        Number.isFinite(city.latitude)
+        && Number.isFinite(city.longitude)
+    );
     const [locationTip, setLocationTip] = useState(''); // 顶部气泡提示
     const [isLocating, setIsLocating] = useState(false); // 定位Loading状态
+    const locationTipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
     // 初始化城市 (仅一次)
     useEffect(() => {
         if (backendCities.length > 0) {
             const firstCity = backendCities[0];
-            if (city.code !== firstCity.code && city.code === '110100') {
+            if (!isLocated && city.code !== firstCity.code && city.code === '110100') {
                 setCity({
                     name: firstCity.name,
                     code: firstCity.code,
@@ -167,17 +177,25 @@ const SearchPage = () => {
                 });
             }
         }
-    }, [backendCities]);
+    }, [backendCities, isLocated]);
+
+    useEffect(() => () => {
+        if (locationTipTimer.current) clearTimeout(locationTipTimer.current);
+    }, []);
+
+    const showLocationTip = (message: string) => {
+        if (locationTipTimer.current) clearTimeout(locationTipTimer.current);
+        setLocationTip(message);
+        locationTipTimer.current = setTimeout(() => setLocationTip(''), 4000);
+    };
 
     // 处理城市选择
     const handleSelectCity = (item: any) => {
         setCity({
-            ...city,
             name: item.name,
             code: item.code,
+            country: '',
         });
-        // 
-        setIsLocated(false);
         setLocationTip(''); // 顺便把头顶的气泡也清空（如果有的话）
         setModalVisible(false);
     };
@@ -210,104 +228,61 @@ const SearchPage = () => {
         return `${selectedPrice} ${selectedStar}`.trim();
     };
 
-    //  解析价格字符串
-    const parsePrice = (priceStr: string) => {
-        if (!priceStr) return { min: undefined, max: undefined };
-
-        // 1. 处理 "¥200以下" -> max: 200
-        if (priceStr.includes('以下')) {
-            const max = parseInt(priceStr.replace(/[^0-9]/g, ''));
-            return { min: 0, max };
-        }
-        // 2. 处理 "¥2000以上" -> min: 2000
-        if (priceStr.includes('以上')) {
-            const min = parseInt(priceStr.replace(/[^0-9]/g, ''));
-            return { min, max: undefined };
-        }
-        // 3. 处理 "¥200-¥350" -> min: 200, max: 350
-        const parts = priceStr.split('-');
-        if (parts.length === 2) {
-            return {
-                min: parseInt(parts[0].replace(/[^0-9]/g, '')),
-                max: parseInt(parts[1].replace(/[^0-9]/g, ''))
-            };
-        }
-        return { min: undefined, max: undefined };
-    };
-
-    // 解析星级 
-    const parseStar = (starStr: string) => {
-        if (!starStr) return undefined;
-        if (starStr.includes('2')) return 2;
-        if (starStr.includes('3')) return 3;
-        if (starStr.includes('4')) return 4;
-        if (starStr.includes('5')) return 5;
-        if (starStr.includes('钻')) return 5;
-        return undefined;
-    };
-
     //   定位功能函数
     const handleLocate = async () => {
+        if (isLocating) return;
         setIsLocating(true);
         try {
-            console.log("1. 开始请求权限...");
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                alert('定位权限被拒绝');
+            const result = await getCurrentSupportedLocation(backendCities);
+            setCity({
+                code: result.city.code,
+                name: result.city.name,
+                country: result.country || '',
+                latitude: result.coordinates.latitude,
+                longitude: result.coordinates.longitude,
+            });
+            const detail = result.detailName ? ` · ${result.detailName}` : '';
+            showLocationTip(
+                result.usedNearestCityFallback
+                    ? `已按当前位置匹配到 ${result.city.name}`
+                    : `已定位到 ${result.city.name}${detail}`,
+            );
+        } catch (error) {
+            console.warn('定位流程出错:', error);
+            if (!(error instanceof CurrentLocationError)) {
+                Alert.alert('定位失败', '暂时无法完成定位，请稍后重试');
                 return;
             }
 
-            console.log("2. 权限通过，正在获取经纬度...");
-            //  增加 accuracy 和 timeout，防止安卓模拟器卡死
-            let location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced,
-            });
-
-            console.log("3. 获取到坐标:", location.coords);
-
-            console.log("4. 正在解析地址(逆地理编码)...");
-            let addressResponse = await Location.reverseGeocodeAsync({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude
-            });
-
-            console.log("5. 解析结果:", addressResponse);
-
-            if (addressResponse.length === 0) {
-                console.log(" 模拟器无法解析地址，使用兜底数据");
-                addressResponse = [{
-                    city: '旧金山',
-                    name: '苹果总部',
-                    district: 'Cupertino',
-                    street: 'Infinite Loop',
-                    region: 'California',
-                    country: 'USA',
-                    postalCode: '95014',
-                    timezone: 'America/Los_Angeles',
-                    isoCountryCode: 'US',
-                    subregion: 'Santa Clara County'
-                }] as any;
-            }
-
-            if (addressResponse && addressResponse.length > 0) {
-                const addr = addressResponse[0];
-                // 兼容不同系统的字段名
-                const cityName = addr.city || addr.region || addr.subregion || city.name;
-                const detailName = addr.name || addr.street || addr.district || '附近';
-
-                //  关键：只有这里执行了，UI 才会变
-                console.log("6. 更新UI状态 ->", cityName);
-                setCity(prev => ({ ...prev, name: cityName }));
-                setIsLocated(true);
-                setLocationTip(`已定位到 ${cityName} · ${detailName}`);
-
-                setTimeout(() => setLocationTip(''), 3000);
+            if (error.code === 'PERMISSION_BLOCKED') {
+                Alert.alert(
+                    '需要定位权限',
+                    '定位权限已被关闭，请在系统设置中允许易宿酒店使用您的位置。',
+                    [
+                        { text: '取消', style: 'cancel' },
+                        {
+                            text: '打开设置',
+                            onPress: () => void Linking.openSettings(),
+                        },
+                    ],
+                );
+            } else if (error.code === 'PERMISSION_DENIED') {
+                Alert.alert('未获得定位权限', '允许定位权限后才能自动匹配所在城市。');
+            } else if (error.code === 'SERVICES_DISABLED') {
+                Alert.alert('定位服务未开启', '请先在系统设置中开启定位服务，然后重试。');
+            } else if (error.code === 'UNSUPPORTED_CITY') {
+                Alert.alert(
+                    '当前位置暂不支持',
+                    `${error.placeName ? `已定位到 ${error.placeName}，但` : ''}当前没有可查询的酒店城市，请手动选择城市。`,
+                );
+            } else if (error.code === 'GEOCODING_UNAVAILABLE') {
+                Alert.alert(
+                    '暂时无法识别城市',
+                    '已经取得当前位置，但地址解析服务暂时不可用。请检查网络后重试，或手动选择城市。',
+                );
             } else {
-                alert("未解析到地址信息，请检查网络或模拟器位置设置");
+                Alert.alert('定位失败', error.message);
             }
-        } catch (error: any) {
-            console.log("定位流程出错:", error);
-            alert("定位失败: " + error.message);
         } finally {
             setIsLocating(false);
         }
@@ -315,18 +290,22 @@ const SearchPage = () => {
 
     // 点击查询
     const handleSearch = () => {
-        const { min, max } = parsePrice(selectedPrice);
-        const star = parseStar(selectedStar);
+        const { priceMin, priceMax } = parsePriceLabel(selectedPrice);
+        const starRating = parseStarLabel(selectedStar);
 
         const searchParams = {
             cityCode: city.code,
             checkIn: startDate,
             checkOut: endDate,
             keyword: keyword,
-            priceMin: min,
-            priceMax: max,
-            starRating: star,
+            priceMin,
+            priceMax,
+            starRating,
             tags: selectedTags,
+            latitude: city.latitude,
+            longitude: city.longitude,
+            selectedPrice,
+            selectedStar,
             displayInfo: {
                 cityName: city.name,
                 dateRange: `${formatDate(startDate)}-${formatDate(endDate)}`,
@@ -468,7 +447,7 @@ const SearchPage = () => {
                         ))}
                     </View>
 
-                    <View style={styles.cardContent}> 
+                    <View style={styles.cardContent}>
                         {/* 城市与搜索栏 */}
                         <View style={styles.searchRow}>
                             {/*  悬浮气泡提示  */}
@@ -487,7 +466,7 @@ const SearchPage = () => {
                                     {/* 增加定位状态判断 */}
                                     <View>
                                         <Text style={[styles.cityText, isLocated && { fontSize: 16, color: '#0086F6' }]}>
-                                            {isLocated ? '我的位置' : city.name}
+                                            {city.name}
                                         </Text>
                                         {/* 如果定位了，这里可以额外显示一个小标或者保持原样 */}
                                     </View>
@@ -620,7 +599,7 @@ const SearchPage = () => {
                             <TouchableOpacity
                                 key={index}
                                 style={[styles.smallBox, { backgroundColor: box.bg }]}
-                                activeOpacity={0.8} 
+                                activeOpacity={0.8}
                             >
                                 {/* 右上角的装饰性图标背景 */}
                                 <Ionicons name={box.icon as any} size={60} color={box.color} style={styles.boxDecorationIcon} />

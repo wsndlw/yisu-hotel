@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Props {
   visible: boolean;
@@ -14,7 +15,7 @@ const GuestSelectorModal: React.FC<Props> = ({ visible, onClose, currentCount, o
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose}>
             <Ionicons name="close" size={28} color="#333" />
@@ -42,7 +43,7 @@ const GuestSelectorModal: React.FC<Props> = ({ visible, onClose, currentCount, o
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

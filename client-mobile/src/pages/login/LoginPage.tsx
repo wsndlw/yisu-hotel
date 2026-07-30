@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import type { RootStackParamList } from '../navigation/navigationRef';
-import { login } from '../services/auth';
+import type { RootStackParamList } from '../../navigation/navigationRef';
+import { login } from '../../services/auth';
 import styles from './LoginPage.styles';
 
 type LoginPageProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -22,7 +22,7 @@ function getErrorMessage(error: unknown): string {
   return '登录失败，请稍后重试';
 }
 
-export default function LoginPage({ navigation }: LoginPageProps) {
+export default function LoginPage({ navigation, route }: LoginPageProps) {
   const passwordInputRef = useRef<TextInput>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -53,10 +53,14 @@ export default function LoginPage({ navigation }: LoginPageProps) {
       await login({ username: username.trim(), password });
       setSubmitting(false);
 
-      if (navigation.canGoBack()) {
+      if (route.params?.returnToExisting && navigation.canGoBack()) {
+        navigation.goBack();
+      } else if (route.params?.redirectTo === 'BookingConfirm') {
+        navigation.replace('BookingConfirm');
+      } else if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
-        navigation.reset({ index: 0, routes: [{ name: 'Search' }] });
+        navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
       }
     } catch (error) {
       setSubmitError(getErrorMessage(error));
@@ -179,7 +183,17 @@ export default function LoginPage({ navigation }: LoginPageProps) {
             <Text style={styles.footerText}>还没有账号？</Text>
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigation.navigate('Register')}
+              onPress={() =>
+                navigation.navigate(
+                  'Register',
+                  route.params?.redirectTo
+                    ? {
+                        redirectTo: route.params.redirectTo,
+                        returnToExisting: route.params.returnToExisting,
+                      }
+                    : undefined,
+                )
+              }
               disabled={submitting}
             >
               <Text style={styles.footerLink}>立即注册</Text>

@@ -1,5 +1,5 @@
-import { Field, ID, InputType, Int } from '@nestjs/graphql';
-import { IsInt, IsNotEmpty, IsOptional, Matches, Min } from 'class-validator';
+import { Field, Float, ID, InputType, Int } from '@nestjs/graphql';
+import { IsInt, IsNumber, Matches, Min } from 'class-validator';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -30,8 +30,8 @@ export class CalendarPriceBatchSetInput {
   @Matches(DATE_RE)
   endDate: string;
 
-  @Field(() => Int, { description: '价格（单位：分）' })
-  @IsInt()
+  @Field(() => Float, { description: '价格（单位：元，最多两位小数）' })
+  @IsNumber({ allowInfinity: false, allowNaN: false, maxDecimalPlaces: 2 })
   @Min(0)
   price: number;
 }

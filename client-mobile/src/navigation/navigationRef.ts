@@ -1,11 +1,22 @@
-import { createNavigationContainerRef } from '@react-navigation/native';
+import {
+  createNavigationContainerRef,
+  NavigatorScreenParams,
+} from '@react-navigation/native';
+
+export type HomeTabParamList = {
+  Home: undefined;
+  Orders: undefined;
+  Profile: undefined;
+};
 
 export type RootStackParamList = {
-  Search: undefined;
+  MainTabs: NavigatorScreenParams<HomeTabParamList> | undefined;
   HotelList: Record<string, unknown> | undefined;
   Detail: { id: string; checkInDate?: string; checkOutDate?: string };
-  Login: { redirectTo?: string } | undefined;
-  Register: undefined;
+  Login: { redirectTo?: string; returnToExisting?: boolean } | undefined;
+  Register: { redirectTo?: string; returnToExisting?: boolean } | undefined;
+  BookingConfirm: undefined;
+  OrderDetail: { id: string };
 };
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -30,5 +41,8 @@ export function flushPendingLoginNavigation() {
   }
 
   loginNavigationPending = false;
-  navigationRef.navigate('Login', { redirectTo: currentRoute?.name });
+  navigationRef.navigate('Login', {
+    redirectTo: currentRoute?.name,
+    returnToExisting: true,
+  });
 }

@@ -54,13 +54,15 @@ export class MobileHotelResolver {
         cities: cities.map((c) => ({
           code: c.cityCode,
           name: c.cityName,
+          latitude: c.latitude,
+          longitude: c.longitude,
         })),
         facilities: facilities.map((t) => ({ id: t.id, name: t.name })),
       },
     };
   }
 
-  
+
 
   @Query(() => HotelConnectionResult, { description: '移动端搜索酒店列表' })
   async searchHotels(
@@ -69,7 +71,7 @@ export class MobileHotelResolver {
     // 1. 强制解析并兜底分页参数 (解决 pagination 失效)
     const page = Number(input.pagination?.page) || 1;
     const pageSize = Number(input.pagination?.pageSize) || 10;
-    
+
     let searchLat = input.latitude;
     let searchLng = input.longitude;
 
@@ -100,13 +102,13 @@ export class MobileHotelResolver {
       maxPrice: input.priceMax,        // 解决 priceMax 失效
       starLevel: input.starRating,     // 解决 starRating 失效
       facilityIds: input.facilityIds,  // 解决 facilityIds 失效
-      bedType: input.bedType,          
+      bedType: input.bedType,
       guestCount: input.guestCount,    // 解决 guestCount 失效
-      distanceMax: input.distanceMax,  
+      distanceMax: input.distanceMax,
       latitude: searchLat,
       longitude: searchLng,
       page: page,                      // 解决 pagination 失效
-      pageSize: pageSize,              
+      pageSize: pageSize,
       sortBy: sortBy,
       checkIn: checkInStr,
       checkOut: checkOutStr,
@@ -132,7 +134,7 @@ export class MobileHotelResolver {
               avgPrice = totalPrice / nightsCount;
             }
           }
-          
+
           if (avgPrice < minAvgPrice) minAvgPrice = avgPrice;
         }
         if (minAvgPrice !== Infinity) finalMinPrice = minAvgPrice;
@@ -144,10 +146,10 @@ export class MobileHotelResolver {
         name: hotel.nameZh,
         images: Array.isArray(hotel.images) ? hotel.images : [],
         coverImage: hotel.images?.[0]?.url || null,
-        
+
         // 使用 Number() 来解析数据库的 Decimal
         score: hotel.score ? Number(hotel.score) : null,
-        
+
         minPrice: finalMinPrice,
         distance: hotel.distance ?? null,
         distanceText: hotel.distanceText ?? null,
@@ -216,11 +218,9 @@ export class MobileHotelResolver {
           const totalPrice = await this.calendarService.getDateRangePrice(room.id, checkIn, checkOut);
           const nights = this.calculateNights(checkIn, checkOut);
           price = nights > 0 ? totalPrice / nights : Number(room.basePrice);
-        }else {
-          // 日历表里查不到，使用基础价格和基础库存
-          available = true; 
+        } else {
+          // 保留基础价格用于售罄房型展示，但库存必须明确返回 0。
           price = Number(room.basePrice);
-          // stock 保持原样，不置为 0
         }
         stock = available ? stock : 0;
       }

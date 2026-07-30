@@ -849,6 +849,8 @@ export class HotelService {
       .createQueryBuilder('hotel')
       .select('hotel.city', 'cityCode')
       .addSelect('COUNT(hotel.id)', 'hotelCount')
+      .addSelect('AVG(hotel.latitude)', 'latitude')
+      .addSelect('AVG(hotel.longitude)', 'longitude')
       .where('hotel.status = :status', { status: HotelStatus.PUBLISHED })
       .groupBy('hotel.city')
       .orderBy('hotelCount', 'DESC')
@@ -859,6 +861,8 @@ export class HotelService {
       cityCode: item.cityCode,
       cityName: this.getCityName(item.cityCode),
       hotelCount: parseInt(item.hotelCount, 10),
+      latitude: item.latitude == null ? null : Number(item.latitude),
+      longitude: item.longitude == null ? null : Number(item.longitude),
     }));
   }
 
