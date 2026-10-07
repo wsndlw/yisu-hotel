@@ -1,5 +1,5 @@
 import { DownOutlined } from "@ant-design/icons";
-import { Dropdown, Modal, Space, Tag, type TableProps } from "antd";
+import { Dropdown, Modal, Space, type TableProps } from "antd";
 import { Link } from "react-router-dom";
 import styles from './index.module.css';
 import { formatCity } from "../../admin/HotelList/constants";

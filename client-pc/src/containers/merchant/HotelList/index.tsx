@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import styles from './index.module.css';
 import { Button, Card, message, Modal, Select, Space, Table } from 'antd';

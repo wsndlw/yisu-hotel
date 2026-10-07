@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {Tag} from 'antd';
+import { Tag, type TableProps } from 'antd';
 
 
 export const ACTION_OPTIONS = [
@@ -13,7 +13,7 @@ export const ACTION_OPTIONS = [
   { label: '申请下线', value: 'OFFLINE_REQUEST' },
 ];
 
-export const getColumns = ()=>[
+export const getColumns = (): TableProps<any>['columns'] => [
     {
       align: 'center',
       title: '时间',

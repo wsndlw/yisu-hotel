@@ -1,4 +1,4 @@
-import { Space, Tag, type TableProps } from "antd";
+import { Space, type TableProps } from "antd";
 import { getCityName } from "../../../constants/cities";
 import dayjs from 'dayjs';
 import { statusTag } from "../../../utils/tags";

@@ -7,7 +7,6 @@ import { HomeOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useMe } from '../../services/auth';
 import { useUserStore } from '../../store/user';
 import { routes } from '../../routes/menus';
-import { useGoTo } from '../../hooks';
 
 /**
 *Layout容器
@@ -33,8 +32,6 @@ export default function Layout() {
     if (role === 'MERCHANT') return !r.key.startsWith('admin_');
     return true;
   });
-
-  const { go } = useGoTo()
 
   return (
     <ProLayout
@@ -71,4 +68,3 @@ export default function Layout() {
     </ProLayout>
   );
 }
-

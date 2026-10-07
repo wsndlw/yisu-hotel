@@ -1,6 +1,6 @@
 import { Button, Card, Form, Input, Radio, Typography } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserOutlined, LockOutlined, HomeOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, HomeOutlined, MailOutlined } from '@ant-design/icons';
 import styles from './index.module.css';
 import { useEmailRegister, useSendEmailCode } from '../../services/auth';
 import { useUserStore } from '../../store/user';

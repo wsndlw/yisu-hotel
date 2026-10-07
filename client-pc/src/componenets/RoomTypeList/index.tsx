@@ -1,7 +1,6 @@
 //抽出来房型列表组件，用于房型编辑，房型运营管理（调整价格之类的）
 
 
-import React from 'react';
 import { Table, Space, type TableProps } from 'antd';
 import styles from './index.module.css';
 

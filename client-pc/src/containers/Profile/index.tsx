@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Button, Card, Form, Input, Space } from 'antd';
 import { useMe } from '../../services/auth';
 import { useUpdateMe } from '../../services/user';

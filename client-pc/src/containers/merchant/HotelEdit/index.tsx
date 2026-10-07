@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 
-import styles from './index.module.css';
 import { Button, Card, message, Space, Tabs } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useHotelDetail, useSubmitHotel } from '../../../services/hotel';

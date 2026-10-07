@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import styles from './index.module.css';
-import { App, Button, Card, Form, Input, Modal, Select, Space, Table, Tabs } from 'antd';
+import { Button, Card, Form, Input, Select, Space, Table, Tabs } from 'antd';
 import { debounce } from 'lodash';
 import HotelDetail from './components/HotelDetail';
 import RejectModal from './components/RejectModal';

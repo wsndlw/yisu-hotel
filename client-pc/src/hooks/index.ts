@@ -21,7 +21,7 @@ export const useGoTo = () => {
       // /page/:id 参数示例：{ id: 1 } => /page/1
       const url = route.path.replace(
         /\/:(\w+)/g,
-        (exp: string, exp1: string) => `/${params[exp1]}`,
+        (_match: string, exp1: string) => `/${params[exp1]}`,
       );
       nav(`/${url}`);
     }

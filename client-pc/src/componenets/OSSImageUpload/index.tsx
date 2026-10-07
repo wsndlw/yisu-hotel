@@ -1,4 +1,3 @@
-import React from 'react';
 import type { UploadFile, UploadProps } from 'antd';
 import { App, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
@@ -22,7 +21,7 @@ export interface OSSImageUploadProps {
 export default function OSSImageUpload(props: Readonly<OSSImageUploadProps>) {
   const { message } = App.useApp();
   // const { data, refetch } = useOssInfo();
-  const { data, loading, refetch } = useQuery(GET_OSS_INFO, {
+  const { data, refetch } = useQuery(GET_OSS_INFO, {
     fetchPolicy: 'no-cache',
   });
   

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 
-import style from './index.module.css';
-import { App, Button, Card, Form, Input, message, Modal, Select, Space, Switch, Table } from 'antd';
+import { Button, Card, Form, Input, message, Modal, Select, Space, Switch, Table } from 'antd';
 import { useAllFacilities, useUpsertFacility, useSetFacilityEnabled, useDeleteFacility, useHardDeleteFacility } from '../../../services/facility';
 import BatchAddModal from './components/BatchAddModal';
 import { getColumns } from './constants';
@@ -52,7 +51,7 @@ const Facilities = ({ }) => {
 
   const onSave = async () => {
     const values = await form.validateFields();
-    const success = await upsertFacility(
+    await upsertFacility(
       editing?.id ?? null,
       values.name,
       'FACILITY',
@@ -67,7 +66,6 @@ const Facilities = ({ }) => {
   };
 
   const onBatchSubmit = async (
-    type: string,
     names: string[],
     enabled: boolean,
     category: string,
@@ -196,7 +194,7 @@ const Facilities = ({ }) => {
         open={batchOpen}
         title="批量新增设施"
         onClose={() => setBatchOpen(false)}
-        onSubmit={(names, enabled, category) => onBatchSubmit('FACILITY', names, enabled, category)} />
+        onSubmit={onBatchSubmit} />
     </>
   );
 }

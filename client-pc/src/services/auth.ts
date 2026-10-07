@@ -1,6 +1,6 @@
 import { message } from 'antd';
 import { useMutation, useQuery } from '@apollo/client';
-import { EMAIL_LOGIN, EMAIL_REGISTER, LOGIN, ME, REGISTER, SEND_EMAIL_CODE } from '../graphql/auth';
+import { EMAIL_LOGIN, EMAIL_REGISTER, LOGIN, ME, SEND_EMAIL_CODE } from '../graphql/auth';
 
 /**
  * 用户登录

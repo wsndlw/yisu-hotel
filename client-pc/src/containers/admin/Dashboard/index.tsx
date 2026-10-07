@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-
 import styles from './index.module.css';
 import { Card, Col, Row, Statistic, Table, Tag } from 'antd';
 import { useAdminDashboardStats } from '../../../services/stats';

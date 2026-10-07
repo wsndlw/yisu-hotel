@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import styles from './index.module.css';
 import { useMyHotels } from '../../../services/hotel';

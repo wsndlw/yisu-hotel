@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Form, Input, Button, Select, DatePicker, Divider } from 'antd';
 import dayjs from 'dayjs';
 import CitySelect from '../../../../../componenets/CitySelector';

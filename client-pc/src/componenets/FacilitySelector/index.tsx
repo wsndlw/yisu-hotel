@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import styles from './index.module.css';
 import { Button, Checkbox, Col, Divider, Drawer, Row, Space, Tag } from 'antd';
@@ -17,7 +17,7 @@ const FacilitySelector = ({ value = [], onChange }: FacilitySelectorProps) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
   const [tempSelected, setTempSelected] = useState<string[]>([]);
 
-  const { data: allFacilities, loading } = useFacilities();
+  const { data: allFacilities } = useFacilities();
 
 // 按分类分组设施
   const facilitiesByCategory = useMemo(() => {
