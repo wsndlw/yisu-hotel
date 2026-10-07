@@ -1,0 +1,429 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`P1 Node GraphQL contract baseline captures admin audit success and role rejection responses 1`] = `
+{
+  "forbidden": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "FORBIDDEN",
+          "response": {
+            "error": "Forbidden",
+            "message": "Insufficient role",
+            "statusCode": 403,
+          },
+        },
+        "message": "Insufficient role",
+      },
+    ],
+  },
+  "success": {
+    "data": {
+      "auditRecords": {
+        "items": [
+          {
+            "action": "REJECT",
+            "createdAt": "<TIMESTAMP>",
+            "hotelId": "10000000-0000-4000-8000-000000000004",
+            "hotelName": "测试驳回酒店",
+            "id": "70000000-0000-4000-8000-000000000003",
+            "operatorId": "00000000-0000-4000-8000-000000000004",
+            "operatorName": "fixture_admin",
+            "reason": "测试资料不完整",
+          },
+          {
+            "action": "PUBLISH",
+            "createdAt": "<TIMESTAMP>",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "hotelName": "测试已发布酒店",
+            "id": "70000000-0000-4000-8000-000000000002",
+            "operatorId": "00000000-0000-4000-8000-000000000004",
+            "operatorName": "fixture_admin",
+            "reason": null,
+          },
+          {
+            "action": "SUBMIT",
+            "createdAt": "<TIMESTAMP>",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "hotelName": "测试已发布酒店",
+            "id": "70000000-0000-4000-8000-000000000001",
+            "operatorId": "00000000-0000-4000-8000-000000000002",
+            "operatorName": "fixture_merchant_a",
+            "reason": null,
+          },
+        ],
+        "total": 3,
+      },
+    },
+  },
+}
+`;
+
+exports[`P1 Node GraphQL contract baseline captures authentication success and failure responses 1`] = `
+{
+  "failure": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "UNAUTHENTICATED",
+          "response": {
+            "error": "Unauthorized",
+            "message": "用户名或密码错误",
+            "statusCode": 401,
+          },
+        },
+        "message": "用户名或密码错误",
+      },
+    ],
+  },
+  "success": {
+    "data": {
+      "login": {
+        "code": 200,
+        "data": {
+          "accessToken": "<JWT>",
+          "user": {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "role": "CUSTOMER",
+            "username": "fixture_customer",
+          },
+        },
+        "message": "操作成功",
+      },
+    },
+  },
+  "unauthenticated": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "UNAUTHENTICATED",
+          "response": {
+            "message": "Unauthorized",
+            "statusCode": 401,
+          },
+        },
+        "message": "Unauthorized",
+      },
+    ],
+  },
+}
+`;
+
+exports[`P1 Node GraphQL contract baseline captures calendar success, validation failure and role rejection responses 1`] = `
+{
+  "forbidden": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "FORBIDDEN",
+          "response": {
+            "error": "Forbidden",
+            "message": "Insufficient role",
+            "statusCode": 403,
+          },
+        },
+        "message": "Insufficient role",
+      },
+    ],
+  },
+  "invalidRange": {
+    "data": {
+      "merchantRoomTypeCalendar": {
+        "days": [],
+        "roomTypeId": "20000000-0000-4000-8000-000000000001",
+      },
+    },
+  },
+  "success": {
+    "data": {
+      "merchantRoomTypeCalendar": {
+        "days": [
+          {
+            "date": "2028-02-28",
+            "price": 219,
+            "stock": 2,
+          },
+          {
+            "date": "2028-02-29",
+            "price": 229,
+            "stock": 1,
+          },
+          {
+            "date": "2028-03-01",
+            "price": 239,
+            "stock": 0,
+          },
+        ],
+        "roomTypeId": "20000000-0000-4000-8000-000000000001",
+      },
+    },
+  },
+}
+`;
+
+exports[`P1 Node GraphQL contract baseline captures merchant hotel success and role rejection responses 1`] = `
+{
+  "forbidden": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "FORBIDDEN",
+          "response": {
+            "error": "Forbidden",
+            "message": "Insufficient role",
+            "statusCode": 403,
+          },
+        },
+        "message": "Insufficient role",
+      },
+    ],
+  },
+  "success": {
+    "data": {
+      "myHotels": {
+        "code": 200,
+        "data": [
+          {
+            "hasEverPublished": false,
+            "id": "10000000-0000-4000-8000-000000000003",
+            "nameZh": "测试审核中酒店",
+            "rejectReason": null,
+            "status": "REVIEWING",
+          },
+          {
+            "hasEverPublished": false,
+            "id": "10000000-0000-4000-8000-000000000002",
+            "nameZh": "测试草稿酒店",
+            "rejectReason": null,
+            "status": "DRAFT",
+          },
+          {
+            "hasEverPublished": true,
+            "id": "10000000-0000-4000-8000-000000000001",
+            "nameZh": "测试已发布酒店",
+            "rejectReason": null,
+            "status": "PUBLISHED",
+          },
+        ],
+        "message": "操作成功",
+        "page": {
+          "pageNum": 1,
+          "pageSize": 10,
+          "total": 3,
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`P1 Node GraphQL contract baseline captures order success and permission rejection responses 1`] = `
+{
+  "forbidden": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "FORBIDDEN",
+          "response": {
+            "error": "Forbidden",
+            "message": "Insufficient role",
+            "statusCode": 403,
+          },
+        },
+        "message": "Insufficient role",
+      },
+    ],
+  },
+  "success": {
+    "data": {
+      "myOrders": {
+        "items": [
+          {
+            "checkIn": "2028-02-28",
+            "checkOut": "2028-03-01",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "id": "80000000-0000-4000-8000-000000000001",
+            "roomTypeId": "20000000-0000-4000-8000-000000000001",
+            "status": "PENDING",
+            "totalAmount": 448,
+          },
+          {
+            "checkIn": "2028-02-28",
+            "checkOut": "2028-03-01",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "id": "80000000-0000-4000-8000-000000000002",
+            "roomTypeId": "20000000-0000-4000-8000-000000000001",
+            "status": "CANCELLED",
+            "totalAmount": 448,
+          },
+          {
+            "checkIn": "2028-03-02",
+            "checkOut": "2028-03-03",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "id": "80000000-0000-4000-8000-000000000003",
+            "roomTypeId": "20000000-0000-4000-8000-000000000001",
+            "status": "PAID",
+            "totalAmount": 199,
+          },
+          {
+            "checkIn": "2026-01-01",
+            "checkOut": "2026-01-02",
+            "hotelId": "10000000-0000-4000-8000-000000000001",
+            "id": "80000000-0000-4000-8000-000000000004",
+            "roomTypeId": "20000000-0000-4000-8000-000000000001",
+            "status": "COMPLETED",
+            "totalAmount": 199,
+          },
+        ],
+        "page": 1,
+        "pageSize": 10,
+        "total": 4,
+      },
+    },
+  },
+  "unauthenticated": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "UNAUTHENTICATED",
+          "response": {
+            "message": "Unauthorized",
+            "statusCode": 401,
+          },
+        },
+        "message": "Unauthorized",
+      },
+    ],
+  },
+}
+`;
+
+exports[`P1 Node GraphQL contract baseline captures public home, search, detail and failure responses 1`] = `
+{
+  "detail": {
+    "data": {
+      "hotelDetail": {
+        "code": 200,
+        "data": {
+          "address": "测试路 1 号",
+          "facilities": [
+            "测试免费 WiFi",
+            "测试停车场",
+          ],
+          "id": "10000000-0000-4000-8000-000000000001",
+          "images": [
+            "https://example.test/hotel/published-1.jpg",
+            "https://example.test/hotel/published-2.jpg",
+          ],
+          "name": "测试已发布酒店",
+          "rooms": [
+            {
+              "id": "20000000-0000-4000-8000-000000000001",
+              "price": 199,
+              "stock": 0,
+              "title": "测试标准房",
+            },
+            {
+              "id": "20000000-0000-4000-8000-000000000002",
+              "price": 299,
+              "stock": 0,
+              "title": "测试售罄房",
+            },
+            {
+              "id": "20000000-0000-4000-8000-000000000003",
+              "price": 399,
+              "stock": 5,
+              "title": "测试停售房",
+            },
+          ],
+        },
+        "message": "操作成功",
+      },
+    },
+  },
+  "home": {
+    "data": {
+      "homeConfig": {
+        "code": 200,
+        "data": {
+          "banners": [
+            {
+              "id": "90000000-0000-4000-8000-000000000001",
+              "imageUrl": "https://example.test/banner/enabled.jpg",
+              "redirectHotelId": "10000000-0000-4000-8000-000000000001",
+            },
+          ],
+          "cities": [
+            {
+              "code": "310100",
+              "latitude": 31.2304,
+              "longitude": 121.4737,
+              "name": "上海",
+            },
+          ],
+          "facilities": [
+            {
+              "id": "30000000-0000-4000-8000-000000000003",
+              "name": "测试亲子友好",
+            },
+            {
+              "id": "30000000-0000-4000-8000-000000000002",
+              "name": "测试停车场",
+            },
+            {
+              "id": "30000000-0000-4000-8000-000000000001",
+              "name": "测试免费 WiFi",
+            },
+          ],
+        },
+        "message": "操作成功",
+      },
+    },
+  },
+  "missingDetail": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "404",
+          "response": {
+            "error": "Not Found",
+            "message": "酒店不存在",
+            "statusCode": 404,
+          },
+        },
+        "message": "酒店不存在",
+      },
+    ],
+  },
+  "search": {
+    "data": {
+      "searchHotels": {
+        "code": 200,
+        "data": {
+          "items": [
+            {
+              "address": "测试路 1 号",
+              "distanceText": null,
+              "id": "10000000-0000-4000-8000-000000000001",
+              "minPrice": 199,
+              "name": "测试已发布酒店",
+              "score": 4.8,
+              "starLevel": 5,
+            },
+          ],
+          "total": 1,
+        },
+        "message": "操作成功",
+      },
+    },
+  },
+}
+`;

@@ -1,0 +1,49 @@
+{
+  "baselineDate": "2026-10-07",
+  "repositoryCommit": "d9f33c657d2e401cb0ad58f21d9907b0581d790a",
+  "repositoryBranch": "feat/customer-order-api",
+  "artifacts": {
+    "schema.graphql": {
+      "sha256": "4b74702f126fa217aa1ef4bf68d5ce4fe789d460a80bfa32c72519912c2b8d34",
+      "source": "server/schema.gql",
+      "bytes": 26736
+    },
+    "database-schema.sql": {
+      "sha256": "d2dcd97983961aa801a263340b4ab125dd22ef6f6592cc77027ffa403690820c",
+      "tables": 14,
+      "containsData": false
+    },
+    "test-fixture.sql": {
+      "sha256": "d5693bc833dbeb22507b635e46aca700c913c124643f4830b91ce09867261ce9",
+      "syntheticDataOnly": true,
+      "mysqlRestoreVerified": true,
+      "verifiedMysqlVersion": "9.7.1",
+      "verifiedDatabase": "yisu_p1_contract_20261007"
+    },
+    "graphql-operations.json": {
+      "sha256": "2bff0e1e681377e40197ffcb2c257e1db97f46effc9c8de10b5ab64b7ae19a64",
+      "operations": 61,
+      "queries": 22,
+      "mutations": 39
+    },
+    "graphql-document-validation.json": {
+      "sha256": "53bcef8d4860d1b75fd4d80637821871b01c30fc75697b7deaa420132bb4faf2",
+      "operations": 61,
+      "valid": 59,
+      "invalidApproved": 2
+    },
+    "p1-contract.e2e-spec.ts.snap": {
+      "sha256": "e286e95ef45e6004d728adaa302a7ada3188ac2fc77f6aebbdb6fdd5fadb6587",
+      "tests": 6,
+      "snapshots": 6
+    }
+  },
+  "sourceDump": {
+    "path": "/Users/sweet_77/Developer/test/yisu_hotel-2026-10-07_152046-dump.sql",
+    "sha256": "2bb52079f4addfe71cf1e8aac9e10da2f66f42847c2a78c4ca4392ee0f36db75",
+    "mysqlServerVersion": "9.7.1",
+    "containsSensitiveData": true,
+    "trackedByGit": false
+  },
+  "validationReport": "../reports/mysql-fixture-validation.md"
+}

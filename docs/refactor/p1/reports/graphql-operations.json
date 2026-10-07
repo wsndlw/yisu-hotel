@@ -1,0 +1,1193 @@
+{
+  "generatedAt": "2026-10-07T07:31:10.009Z",
+  "totals": {
+    "all": 61,
+    "queries": 22,
+    "mutations": 39,
+    "pc": 44,
+    "mobile": 17,
+    "unused": 1
+  },
+  "duplicateOperationNames": [
+    "EmailLogin",
+    "EmailRegister",
+    "Login",
+    "Me",
+    "Register",
+    "SendEmailCode"
+  ],
+  "missingSchemaRootFields": [
+    "query.getTagsForH5",
+    "query.roomTypeCalendar"
+  ],
+  "operations": [
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "CancelOrder",
+      "rootField": "cancelOrder",
+      "exportName": "CANCEL_ORDER_MUTATION",
+      "definition": "client-mobile/src/graphql/order.ts",
+      "line": 55,
+      "usedBy": [
+        "client-mobile/src/services/order.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/bookingConfirm/BookingConfirmPage.tsx",
+        "client-mobile/src/pages/orderDetail/OrderDetailPage.tsx",
+        "client-mobile/src/pages/orders/OrdersPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "CreateOrder",
+      "rootField": "createOrder",
+      "exportName": "CREATE_ORDER_MUTATION",
+      "definition": "client-mobile/src/graphql/order.ts",
+      "line": 23,
+      "usedBy": [
+        "client-mobile/src/services/order.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/bookingConfirm/BookingConfirmPage.tsx",
+        "client-mobile/src/pages/orderDetail/OrderDetailPage.tsx",
+        "client-mobile/src/pages/orders/OrdersPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "EmailLogin",
+      "rootField": "emailLogin",
+      "exportName": "EMAIL_LOGIN_MUTATION",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 67,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "EmailRegister",
+      "rootField": "emailRegister",
+      "exportName": "EMAIL_REGISTER_MUTATION",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 80,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "Login",
+      "rootField": "login",
+      "exportName": "LOGIN_MUTATION",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 16,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "Register",
+      "rootField": "register",
+      "exportName": "REGISTER_MUTATION",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 29,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "mutation",
+      "operationName": "SendEmailCode",
+      "rootField": "sendEmailCode",
+      "exportName": "SEND_EMAIL_CODE_MUTATION",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 58,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "GetBanners",
+      "rootField": "bannersQuery",
+      "exportName": "GET_BANNERS",
+      "definition": "client-mobile/src/graphql/banner-h5.ts",
+      "line": 8,
+      "usedBy": [
+        "client-mobile/src/services/banner-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/detail/DetailPage.tsx",
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/pages/search/SearchPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "GetFacilitiesForH5",
+      "rootField": "getFacilitiesForH5",
+      "exportName": "GET_FACILITIES_FOR_H5",
+      "definition": "client-mobile/src/graphql/facility-h5.ts",
+      "line": 27,
+      "usedBy": [
+        "client-mobile/src/services/facility-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/list/ListPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "GetHomeConfig",
+      "rootField": "homeConfig",
+      "exportName": "GET_HOME_CONFIG",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts",
+      "line": 15,
+      "usedBy": [
+        "client-mobile/src/services/hotel-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/detail/DetailPage.tsx",
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/pages/search/SearchPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "GetTagsForH5",
+      "rootField": "getTagsForH5",
+      "exportName": "GET_TAGS_FOR_H5",
+      "definition": "client-mobile/src/graphql/facility-h5.ts",
+      "line": 59,
+      "usedBy": [
+        "client-mobile/src/services/facility-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/list/ListPage.tsx"
+      ],
+      "schemaRootFieldPresent": false
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "HotelMinPriceCalendar",
+      "rootField": "hotelMinPriceCalendar",
+      "exportName": "HOTEL_MIN_PRICE_CALENDAR",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts",
+      "line": 189,
+      "usedBy": [
+        "client-mobile/src/services/hotel-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/detail/DetailPage.tsx",
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/pages/search/SearchPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "Me",
+      "rootField": "me",
+      "exportName": "ME_QUERY",
+      "definition": "client-mobile/src/graphql/auth.ts",
+      "line": 42,
+      "usedBy": [
+        "client-mobile/src/services/auth.ts",
+        "client-mobile/src/services/authSession.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/login/LoginPage.tsx",
+        "client-mobile/src/pages/profile/ProfilePage.tsx",
+        "client-mobile/src/pages/register/RegisterPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "MyOrders",
+      "rootField": "myOrders",
+      "exportName": "MY_ORDERS_QUERY",
+      "definition": "client-mobile/src/graphql/order.ts",
+      "line": 32,
+      "usedBy": [
+        "client-mobile/src/services/order.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/bookingConfirm/BookingConfirmPage.tsx",
+        "client-mobile/src/pages/orderDetail/OrderDetailPage.tsx",
+        "client-mobile/src/pages/orders/OrdersPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "OrderDetail",
+      "rootField": "order",
+      "exportName": "ORDER_DETAIL_QUERY",
+      "definition": "client-mobile/src/graphql/order.ts",
+      "line": 46,
+      "usedBy": [
+        "client-mobile/src/services/order.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/bookingConfirm/BookingConfirmPage.tsx",
+        "client-mobile/src/pages/orderDetail/OrderDetailPage.tsx",
+        "client-mobile/src/pages/orders/OrdersPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "PoiList",
+      "rootField": "poiList",
+      "exportName": "POI_LIST",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts",
+      "line": 174,
+      "usedBy": [
+        "client-mobile/src/services/hotel-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/detail/DetailPage.tsx",
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/pages/search/SearchPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "Mobile",
+      "kind": "query",
+      "operationName": "SearchHotels",
+      "rootField": "searchHotels",
+      "exportName": "SEARCH_HOTELS",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts",
+      "line": 76,
+      "usedBy": [
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/services/hotel-h5.ts"
+      ],
+      "pageConsumers": [
+        "client-mobile/src/pages/detail/DetailPage.tsx",
+        "client-mobile/src/pages/list/ListPage.tsx",
+        "client-mobile/src/pages/search/SearchPage.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Approve",
+      "rootField": "approveHotel",
+      "exportName": "APPROVE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 204,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "BatchSetRoomTypePrice",
+      "rootField": "batchSetRoomTypePrice",
+      "exportName": "BATCH_SET_CALENDAR_PRICE",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 29,
+      "usedBy": [
+        "client-pc/src/services/calendar.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomCalendarDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "BatchSetRoomTypeStock",
+      "rootField": "batchSetRoomTypeStock",
+      "exportName": "BATCH_SET_CALENDAR_STOCK",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 47,
+      "usedBy": [
+        "client-pc/src/services/calendar.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomCalendarDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "ClearRoomTypePrice",
+      "rootField": "clearRoomTypePrice",
+      "exportName": "CLEAR_CALENDAR_PRICE",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 38,
+      "usedBy": [
+        "client-pc/src/services/calendar.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomCalendarDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "ClearRoomTypeStock",
+      "rootField": "clearRoomTypeStock",
+      "exportName": "CLEAR_CALENDAR_STOCK",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 56,
+      "usedBy": [
+        "client-pc/src/services/calendar.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomCalendarDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "CreateHotel",
+      "rootField": "createHotel",
+      "exportName": "CREATE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 114,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "DeleteBanner",
+      "rootField": "deleteBanner",
+      "exportName": "DELETE_BANNER",
+      "definition": "client-pc/src/graphql/banner.ts",
+      "line": 46,
+      "usedBy": [
+        "client-pc/src/services/banner.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Banners/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "DeleteFacility",
+      "rootField": "deleteFacility",
+      "exportName": "DELETE_FACILITY",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 74,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "DeleteHotel",
+      "rootField": "deleteHotel",
+      "exportName": "DELETE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 139,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "DeleteRoomType",
+      "rootField": "deleteRoomType",
+      "exportName": "DELETE_ROOM_TYPE",
+      "definition": "client-pc/src/graphql/roomType.ts",
+      "line": 31,
+      "usedBy": [
+        "client-pc/src/services/roomType.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "EmailLogin",
+      "rootField": "emailLogin",
+      "exportName": "EMAIL_LOGIN",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 64,
+      "usedBy": [
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "EmailRegister",
+      "rootField": "emailRegister",
+      "exportName": "EMAIL_REGISTER",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 81,
+      "usedBy": [
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "HardDeleteFacility",
+      "rootField": "hardDeleteFacility",
+      "exportName": "HARD_DELETE_FACILITY",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 90,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Login",
+      "rootField": "login",
+      "exportName": "LOGIN",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Offline",
+      "rootField": "offlineHotel",
+      "exportName": "OFFLINE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 243,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Publish",
+      "rootField": "publishHotel",
+      "exportName": "PUBLISH_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 230,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Register",
+      "rootField": "register",
+      "exportName": "REGISTER",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 20,
+      "usedBy": [
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Reject",
+      "rootField": "rejectHotel",
+      "exportName": "REJECT_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 216,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "RequestOffline",
+      "rootField": "requestOffline",
+      "exportName": "REQUEST_OFFLINE",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 174,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "Restore",
+      "rootField": "restoreHotel",
+      "exportName": "RESTORE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 256,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "SendEmailCode",
+      "rootField": "sendEmailCode",
+      "exportName": "SEND_EMAIL_CODE",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 55,
+      "usedBy": [
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "SetBannerEnabled",
+      "rootField": "setBannerEnabled",
+      "exportName": "SET_BANNER_ENABLED",
+      "definition": "client-pc/src/graphql/banner.ts",
+      "line": 36,
+      "usedBy": [
+        "client-pc/src/services/banner.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Banners/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "SetFacilityEnabled",
+      "rootField": "setFacilityEnabled",
+      "exportName": "SET_FACILITY_ENABLED",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 58,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "SetHotelImages",
+      "rootField": "setHotelImages",
+      "exportName": "SET_HOTEL_IMAGES",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 187,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "SubmitHotel",
+      "rootField": "submitHotelForReview",
+      "exportName": "SUBMIT_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 148,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpdateHotel",
+      "rootField": "updateHotel",
+      "exportName": "UPDATE_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 126,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpdateMe",
+      "rootField": "updateMe",
+      "exportName": "UPDATE_ME",
+      "definition": "client-pc/src/graphql/user.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/user.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Profile/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpdateRoomOps",
+      "rootField": "updateRoomOps",
+      "exportName": "UPDATE_ROOM_OPS",
+      "definition": "client-pc/src/graphql/roomType.ts",
+      "line": 40,
+      "usedBy": [
+        "client-pc/src/services/roomType.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpsertBanner",
+      "rootField": "upsertBanner",
+      "exportName": "UPSERT_BANNER",
+      "definition": "client-pc/src/graphql/banner.ts",
+      "line": 20,
+      "usedBy": [
+        "client-pc/src/services/banner.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Banners/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpsertFacility",
+      "rootField": "upsertFacility",
+      "exportName": "UPSERT_FACILITY",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 46,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "UpsertRoomType",
+      "rootField": "upsertRoomType",
+      "exportName": "UPSERT_ROOM_TYPE",
+      "definition": "client-pc/src/graphql/roomType.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/roomType.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "mutation",
+      "operationName": "WithdrawHotel",
+      "rootField": "withdrawHotel",
+      "exportName": "WITHDRAW_HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 161,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "AdminDashboardStats",
+      "rootField": "adminDashboardStats",
+      "exportName": "ADMIN_DASHBOARD_STATS",
+      "definition": "client-pc/src/graphql/stats.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/stats.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Dashboard/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "AllBannersQuery",
+      "rootField": "allBannersQuery",
+      "exportName": "ALL_BANNERS",
+      "definition": "client-pc/src/graphql/banner.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/banner.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Banners/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "AllFacilities",
+      "rootField": "allFacilities",
+      "exportName": "ALL_FACILITIES",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 24,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "AuditRecords",
+      "rootField": "auditRecords",
+      "exportName": "AUDIT_RECORDS",
+      "definition": "client-pc/src/graphql/audit.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/services/auditRecords.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/AuditRecords/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "Facilities",
+      "rootField": "facilities",
+      "exportName": "FACILITIES",
+      "definition": "client-pc/src/graphql/facility.ts",
+      "line": 6,
+      "usedBy": [
+        "client-pc/src/services/facility.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Facilities/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "GetOssInfo",
+      "rootField": "getOssInfo",
+      "exportName": "GET_OSS_INFO",
+      "definition": "client-pc/src/graphql/oss.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/componenets/OSSImageUpload/index.tsx",
+        "client-pc/src/services/oss.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/admin/Banners/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "Hotel",
+      "rootField": "hotel",
+      "exportName": "HOTEL",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 64,
+      "usedBy": [
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx",
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "Hotels",
+      "rootField": "hotels",
+      "exportName": "HOTELS",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 3,
+      "usedBy": [
+        "client-pc/src/containers/admin/Banners/index.tsx",
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/Banners/index.tsx",
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "Me",
+      "rootField": "me",
+      "exportName": "ME",
+      "definition": "client-pc/src/graphql/auth.ts",
+      "line": 37,
+      "usedBy": [
+        "client-pc/src/componenets/RouteGuard/index.tsx",
+        "client-pc/src/services/auth.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/Layout/index.tsx",
+        "client-pc/src/containers/Login/index.tsx",
+        "client-pc/src/containers/Profile/index.tsx",
+        "client-pc/src/containers/Register/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "MerchantRoomTypeCalendar",
+      "rootField": "merchantRoomTypeCalendar",
+      "exportName": "MERCHANT_ROOMTYPE_CALENDAR",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 16,
+      "usedBy": [
+        "client-pc/src/services/calendar.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomCalendarDrawer/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "MyHotels",
+      "rootField": "myHotels",
+      "exportName": "MY_HOTELS",
+      "definition": "client-pc/src/graphql/hotel.ts",
+      "line": 38,
+      "usedBy": [
+        "client-pc/src/services/hotel.ts"
+      ],
+      "pageConsumers": [
+        "client-pc/src/containers/admin/HotelList/components/HotelDetail/index.tsx",
+        "client-pc/src/containers/admin/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/BasicInfoForm/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/components/RoomTypeEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelEdit/index.tsx",
+        "client-pc/src/containers/merchant/HotelList/index.tsx",
+        "client-pc/src/containers/merchant/Monitor/index.tsx",
+        "client-pc/src/containers/merchant/RoomManagement/index.tsx"
+      ],
+      "schemaRootFieldPresent": true
+    },
+    {
+      "client": "PC",
+      "kind": "query",
+      "operationName": "RoomTypeCalendar",
+      "rootField": "roomTypeCalendar",
+      "exportName": "ROOMTYPE_CALENDAR",
+      "definition": "client-pc/src/graphql/calendar.ts",
+      "line": 3,
+      "usedBy": [],
+      "pageConsumers": [],
+      "schemaRootFieldPresent": false
+    }
+  ]
+}

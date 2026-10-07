@@ -1,0 +1,626 @@
+{
+  "baselineSchema": "docs/refactor/p1/baseline/schema.graphql",
+  "inventory": "docs/refactor/p1/reports/graphql-operations.json",
+  "totals": {
+    "operations": 61,
+    "valid": 59,
+    "invalid": 2,
+    "usedInvalid": 1
+  },
+  "results": [
+    {
+      "client": "Mobile",
+      "operationName": "CancelOrder",
+      "kind": "mutation",
+      "rootField": "cancelOrder",
+      "definition": "client-mobile/src/graphql/order.ts:55",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "CreateOrder",
+      "kind": "mutation",
+      "rootField": "createOrder",
+      "definition": "client-mobile/src/graphql/order.ts:23",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "EmailLogin",
+      "kind": "mutation",
+      "rootField": "emailLogin",
+      "definition": "client-mobile/src/graphql/auth.ts:67",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "EmailRegister",
+      "kind": "mutation",
+      "rootField": "emailRegister",
+      "definition": "client-mobile/src/graphql/auth.ts:80",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "Login",
+      "kind": "mutation",
+      "rootField": "login",
+      "definition": "client-mobile/src/graphql/auth.ts:16",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "Register",
+      "kind": "mutation",
+      "rootField": "register",
+      "definition": "client-mobile/src/graphql/auth.ts:29",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "SendEmailCode",
+      "kind": "mutation",
+      "rootField": "sendEmailCode",
+      "definition": "client-mobile/src/graphql/auth.ts:58",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "GetBanners",
+      "kind": "query",
+      "rootField": "bannersQuery",
+      "definition": "client-mobile/src/graphql/banner-h5.ts:8",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "GetFacilitiesForH5",
+      "kind": "query",
+      "rootField": "getFacilitiesForH5",
+      "definition": "client-mobile/src/graphql/facility-h5.ts:27",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "GetHomeConfig",
+      "kind": "query",
+      "rootField": "homeConfig",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts:15",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "GetTagsForH5",
+      "kind": "query",
+      "rootField": "getTagsForH5",
+      "definition": "client-mobile/src/graphql/facility-h5.ts:59",
+      "used": true,
+      "status": "INVALID",
+      "errors": [
+        "Cannot query field \"getTagsForH5\" on type \"Query\"."
+      ]
+    },
+    {
+      "client": "Mobile",
+      "operationName": "HotelMinPriceCalendar",
+      "kind": "query",
+      "rootField": "hotelMinPriceCalendar",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts:189",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "Me",
+      "kind": "query",
+      "rootField": "me",
+      "definition": "client-mobile/src/graphql/auth.ts:42",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "MyOrders",
+      "kind": "query",
+      "rootField": "myOrders",
+      "definition": "client-mobile/src/graphql/order.ts:32",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "OrderDetail",
+      "kind": "query",
+      "rootField": "order",
+      "definition": "client-mobile/src/graphql/order.ts:46",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "PoiList",
+      "kind": "query",
+      "rootField": "poiList",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts:174",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "Mobile",
+      "operationName": "SearchHotels",
+      "kind": "query",
+      "rootField": "searchHotels",
+      "definition": "client-mobile/src/graphql/hotel-h5.ts:76",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Approve",
+      "kind": "mutation",
+      "rootField": "approveHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:204",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "BatchSetRoomTypePrice",
+      "kind": "mutation",
+      "rootField": "batchSetRoomTypePrice",
+      "definition": "client-pc/src/graphql/calendar.ts:29",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "BatchSetRoomTypeStock",
+      "kind": "mutation",
+      "rootField": "batchSetRoomTypeStock",
+      "definition": "client-pc/src/graphql/calendar.ts:47",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "ClearRoomTypePrice",
+      "kind": "mutation",
+      "rootField": "clearRoomTypePrice",
+      "definition": "client-pc/src/graphql/calendar.ts:38",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "ClearRoomTypeStock",
+      "kind": "mutation",
+      "rootField": "clearRoomTypeStock",
+      "definition": "client-pc/src/graphql/calendar.ts:56",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "CreateHotel",
+      "kind": "mutation",
+      "rootField": "createHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:114",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "DeleteBanner",
+      "kind": "mutation",
+      "rootField": "deleteBanner",
+      "definition": "client-pc/src/graphql/banner.ts:46",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "DeleteFacility",
+      "kind": "mutation",
+      "rootField": "deleteFacility",
+      "definition": "client-pc/src/graphql/facility.ts:74",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "DeleteHotel",
+      "kind": "mutation",
+      "rootField": "deleteHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:139",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "DeleteRoomType",
+      "kind": "mutation",
+      "rootField": "deleteRoomType",
+      "definition": "client-pc/src/graphql/roomType.ts:31",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "EmailLogin",
+      "kind": "mutation",
+      "rootField": "emailLogin",
+      "definition": "client-pc/src/graphql/auth.ts:64",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "EmailRegister",
+      "kind": "mutation",
+      "rootField": "emailRegister",
+      "definition": "client-pc/src/graphql/auth.ts:81",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "HardDeleteFacility",
+      "kind": "mutation",
+      "rootField": "hardDeleteFacility",
+      "definition": "client-pc/src/graphql/facility.ts:90",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Login",
+      "kind": "mutation",
+      "rootField": "login",
+      "definition": "client-pc/src/graphql/auth.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Offline",
+      "kind": "mutation",
+      "rootField": "offlineHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:243",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Publish",
+      "kind": "mutation",
+      "rootField": "publishHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:230",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Register",
+      "kind": "mutation",
+      "rootField": "register",
+      "definition": "client-pc/src/graphql/auth.ts:20",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Reject",
+      "kind": "mutation",
+      "rootField": "rejectHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:216",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "RequestOffline",
+      "kind": "mutation",
+      "rootField": "requestOffline",
+      "definition": "client-pc/src/graphql/hotel.ts:174",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Restore",
+      "kind": "mutation",
+      "rootField": "restoreHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:256",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "SendEmailCode",
+      "kind": "mutation",
+      "rootField": "sendEmailCode",
+      "definition": "client-pc/src/graphql/auth.ts:55",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "SetBannerEnabled",
+      "kind": "mutation",
+      "rootField": "setBannerEnabled",
+      "definition": "client-pc/src/graphql/banner.ts:36",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "SetFacilityEnabled",
+      "kind": "mutation",
+      "rootField": "setFacilityEnabled",
+      "definition": "client-pc/src/graphql/facility.ts:58",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "SetHotelImages",
+      "kind": "mutation",
+      "rootField": "setHotelImages",
+      "definition": "client-pc/src/graphql/hotel.ts:187",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "SubmitHotel",
+      "kind": "mutation",
+      "rootField": "submitHotelForReview",
+      "definition": "client-pc/src/graphql/hotel.ts:148",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpdateHotel",
+      "kind": "mutation",
+      "rootField": "updateHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:126",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpdateMe",
+      "kind": "mutation",
+      "rootField": "updateMe",
+      "definition": "client-pc/src/graphql/user.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpdateRoomOps",
+      "kind": "mutation",
+      "rootField": "updateRoomOps",
+      "definition": "client-pc/src/graphql/roomType.ts:40",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpsertBanner",
+      "kind": "mutation",
+      "rootField": "upsertBanner",
+      "definition": "client-pc/src/graphql/banner.ts:20",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpsertFacility",
+      "kind": "mutation",
+      "rootField": "upsertFacility",
+      "definition": "client-pc/src/graphql/facility.ts:46",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "UpsertRoomType",
+      "kind": "mutation",
+      "rootField": "upsertRoomType",
+      "definition": "client-pc/src/graphql/roomType.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "WithdrawHotel",
+      "kind": "mutation",
+      "rootField": "withdrawHotel",
+      "definition": "client-pc/src/graphql/hotel.ts:161",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "AdminDashboardStats",
+      "kind": "query",
+      "rootField": "adminDashboardStats",
+      "definition": "client-pc/src/graphql/stats.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "AllBannersQuery",
+      "kind": "query",
+      "rootField": "allBannersQuery",
+      "definition": "client-pc/src/graphql/banner.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "AllFacilities",
+      "kind": "query",
+      "rootField": "allFacilities",
+      "definition": "client-pc/src/graphql/facility.ts:24",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "AuditRecords",
+      "kind": "query",
+      "rootField": "auditRecords",
+      "definition": "client-pc/src/graphql/audit.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Facilities",
+      "kind": "query",
+      "rootField": "facilities",
+      "definition": "client-pc/src/graphql/facility.ts:6",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "GetOssInfo",
+      "kind": "query",
+      "rootField": "getOssInfo",
+      "definition": "client-pc/src/graphql/oss.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Hotel",
+      "kind": "query",
+      "rootField": "hotel",
+      "definition": "client-pc/src/graphql/hotel.ts:64",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Hotels",
+      "kind": "query",
+      "rootField": "hotels",
+      "definition": "client-pc/src/graphql/hotel.ts:3",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "Me",
+      "kind": "query",
+      "rootField": "me",
+      "definition": "client-pc/src/graphql/auth.ts:37",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "MerchantRoomTypeCalendar",
+      "kind": "query",
+      "rootField": "merchantRoomTypeCalendar",
+      "definition": "client-pc/src/graphql/calendar.ts:16",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "MyHotels",
+      "kind": "query",
+      "rootField": "myHotels",
+      "definition": "client-pc/src/graphql/hotel.ts:38",
+      "used": true,
+      "status": "VALID",
+      "errors": []
+    },
+    {
+      "client": "PC",
+      "operationName": "RoomTypeCalendar",
+      "kind": "query",
+      "rootField": "roomTypeCalendar",
+      "definition": "client-pc/src/graphql/calendar.ts:3",
+      "used": false,
+      "status": "INVALID",
+      "errors": [
+        "Cannot query field \"roomTypeCalendar\" on type \"Query\"."
+      ]
+    }
+  ]
+}
