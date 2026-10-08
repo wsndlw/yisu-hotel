@@ -1,7 +1,8 @@
 # P3：数据库模型与 Alembic 基线
 
-> 状态：LOCAL DONE / REMOTE CI PENDING
+> 状态：DONE
 > 启动日期：2026-10-08
+> 完成日期：2026-10-08
 > 负责人：厉飞雨
 
 ## 交付物
@@ -18,7 +19,7 @@
 | 数据字典与 ER 说明 | `data-dictionary.md` | 已完成 |
 | 新库/旧库/回滚运行手册 | `migration-runbook.md` | 已完成 |
 | 完整 dump 迁移与恢复演练 | `migration-validation.md` | 已完成 |
-| CI 空库迁移和 drift 门禁 | `.github/workflows/python-backend.yml` | 已配置，等待远程记录 |
+| CI 空库迁移和 drift 门禁 | `.github/workflows/python-backend.yml` | 已通过远程 CI |
 
 ## P3 结构决策
 
@@ -44,6 +45,13 @@
 - [x] 迁移后备份可恢复到另一隔离数据库，revision 和 14 表行数一致。
 - [x] 日期列为 `DATE`；金额列精度保持 `DECIMAL(10,2)`/`DECIMAL(12,2)`。
 - [x] Ruff、Mypy、Pytest 和覆盖率门禁通过。
-- [ ] 远程 CI 的质量、空库迁移、schema drift 和镜像构建全部通过。
+- [x] 远程 CI 的质量、空库迁移、schema drift 和镜像构建全部通过。
 
-远程 CI 成功后，P3 才从 `LOCAL DONE / REMOTE CI PENDING` 更新为 `DONE`。
+## 远程 CI 记录
+
+- GitHub Actions：[#5](https://github.com/wsndlw/yisu-hotel/actions/runs/37768596124)
+- 验证提交：`61e068b`（`fix(p3): align empty schema coordinate types`）
+- 结果：成功；quality job 约 1 分 5 秒，image job 约 17 秒，总耗时约 1 分 30 秒。
+- 覆盖门禁：Ruff、Mypy、22 项 Pytest（95.46% 覆盖率）、MySQL 8.4 空库迁移、结构验证、`alembic check` 和 Docker 镜像构建。
+
+至此 P3 的本地验证、迁移演练和远程门禁均已完成。

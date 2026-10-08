@@ -63,3 +63,10 @@
 ## 5. 结论
 
 P3 已证明以下路径可重复：空库初始化、旧结构升级、完整 dump 升级、迁移后备份与独立恢复。生产或共享环境仍必须按 `migration-runbook.md` 重新执行备份、隔离演练和人工批准，不得直接复用本地结论。
+
+## 6. 远程流水线复核
+
+- GitHub Actions 运行：[#5](https://github.com/wsndlw/yisu-hotel/actions/runs/37768596124)。
+- 验证提交：`61e068b`。
+- 结果：质量检查、MySQL 8.4 空库迁移、schema drift 检查和 Docker 镜像构建全部成功。
+- 完成时间：2026-10-08。
