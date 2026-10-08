@@ -1,0 +1,51 @@
+name: Python backend quality gate
+
+on:
+  pull_request:
+    paths:
+      - "server-python/**"
+      - "docs/refactor/p1/baseline/schema.graphql"
+      - ".github/workflows/python-backend.yml"
+  push:
+    branches: [main, master, feat/customer-order-api]
+    paths:
+      - "server-python/**"
+      - "docs/refactor/p1/baseline/schema.graphql"
+      - ".github/workflows/python-backend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server-python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: python -m pip install uv==0.11.13
+      - name: Install locked dependencies
+        run: uv sync --frozen --all-groups
+      - name: Check formatting
+        run: uv run ruff format --check .
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run mypy app tests
+      - name: Test with coverage
+        run: uv run pytest
+      - name: Audit dependencies
+        run: uv run pip-audit
+
+  image:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build --file server-python/Dockerfile --tag yisu-hotel-python:p2 .

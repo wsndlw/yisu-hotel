@@ -1,0 +1,75 @@
+[project]
+name = "yisu-hotel-server"
+version = "0.1.0"
+description = "Production-oriented Python backend for the Yisu Hotel platform"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "ariadne>=1.1,<2",
+  "asyncmy>=0.2.10,<1",
+  "cryptography>=50,<51",
+  "fastapi>=0.115,<1",
+  "pydantic-settings>=2.7,<3",
+  "redis>=5.2,<8",
+  "sqlalchemy[asyncio]>=2.0.36,<3",
+  "structlog>=24.4,<27",
+  "starlette>=1.3.1,<2",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28,<1",
+  "mypy>=1.14,<2",
+  "pip-audit>=2.8,<3",
+  "pre-commit>=4.0,<5",
+  "pytest>=8.3,<10",
+  "pytest-asyncio>=0.25,<2",
+  "pytest-cov>=6.0,<8",
+  "ruff>=0.9,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["app", "tests"]
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = [
+  "--strict-config",
+  "--strict-markers",
+  "--cov=app",
+  "--cov-report=term-missing",
+  "--cov-fail-under=75",
+]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
