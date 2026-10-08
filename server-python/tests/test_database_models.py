@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from importlib import import_module
 
 from alembic.config import Config
 from alembic.script import ScriptDirectory
@@ -103,3 +104,29 @@ def test_alembic_has_one_linear_head() -> None:
 
     assert scripts.get_heads() == ["20261008_0002"]
     assert scripts.get_revision("20261008_0002").down_revision == "20261008_0001"
+
+
+def test_every_added_check_constraint_has_a_preflight_rejection_predicate() -> None:
+    migration = import_module("migrations.versions.20261008_0002_schema_hardening")
+    definitions = migration.CHECK_CONSTRAINTS
+
+    assert len(definitions) == 25
+    assert len({(table, name) for table, name, *_rest in definitions}) == len(definitions)
+    assert all(
+        condition and invalid_condition and message
+        for _, _, condition, invalid_condition, message in definitions
+    )
+
+    covered_names = {name for _, name, *_rest in definitions}
+    assert {
+        "ck_users_email_verify_fail_count_nonnegative",
+        "ck_users_login_fail_count_nonnegative",
+        "ck_hotels_latitude_range",
+        "ck_hotels_longitude_range",
+        "ck_hotel_images_sort_order_nonnegative",
+        "ck_poi_latitude_range",
+        "ck_poi_longitude_range",
+        "ck_poi_base_score_nonnegative",
+        "ck_banners_sort_nonnegative",
+        "ck_banners_time_window",
+    }.issubset(covered_names)

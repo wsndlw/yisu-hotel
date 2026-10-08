@@ -15,6 +15,189 @@ down_revision: str | None = "20261008_0001"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
+CheckConstraintDefinition = tuple[str, str, str, str, str]
+
+# Keep the database constraint and its preflight rejection predicate together. MySQL
+# DDL is not transactional, so every bad row must be rejected before upgrade() runs
+# its first structural operation.
+CHECK_CONSTRAINTS: tuple[CheckConstraintDefinition, ...] = (
+    (
+        "users",
+        "ck_users_email_verify_fail_count_nonnegative",
+        "emailVerifyFailCount >= 0",
+        "emailVerifyFailCount < 0",
+        "negative user email verification failure count",
+    ),
+    (
+        "users",
+        "ck_users_login_fail_count_nonnegative",
+        "loginFailCount >= 0",
+        "loginFailCount < 0",
+        "negative user login failure count",
+    ),
+    (
+        "hotels",
+        "ck_hotels_status_range",
+        "status BETWEEN 0 AND 4",
+        "status NOT BETWEEN 0 AND 4",
+        "invalid hotel status",
+    ),
+    (
+        "hotels",
+        "ck_hotels_star_range",
+        "starLevel IS NULL OR starLevel BETWEEN 0 AND 10",
+        "starLevel IS NOT NULL AND starLevel NOT BETWEEN 0 AND 10",
+        "invalid hotel star level",
+    ),
+    (
+        "hotels",
+        "ck_hotels_mini_price_nonnegative",
+        "miniPrice IS NULL OR miniPrice >= 0",
+        "miniPrice < 0",
+        "negative hotel minimum price",
+    ),
+    (
+        "hotels",
+        "ck_hotels_favorite_count_nonnegative",
+        "favoriteCount IS NULL OR favoriteCount >= 0",
+        "favoriteCount < 0",
+        "negative hotel favorite count",
+    ),
+    (
+        "hotels",
+        "ck_hotels_score_range",
+        "score IS NULL OR score BETWEEN 0 AND 5",
+        "score IS NOT NULL AND score NOT BETWEEN 0 AND 5",
+        "invalid hotel score",
+    ),
+    (
+        "hotels",
+        "ck_hotels_latitude_range",
+        "latitude IS NULL OR latitude BETWEEN -90 AND 90",
+        "latitude IS NOT NULL AND latitude NOT BETWEEN -90 AND 90",
+        "invalid hotel latitude",
+    ),
+    (
+        "hotels",
+        "ck_hotels_longitude_range",
+        "longitude IS NULL OR longitude BETWEEN -180 AND 180",
+        "longitude IS NOT NULL AND longitude NOT BETWEEN -180 AND 180",
+        "invalid hotel longitude",
+    ),
+    (
+        "hotel_images",
+        "ck_hotel_images_sort_order_nonnegative",
+        "sortOrder >= 0",
+        "sortOrder < 0",
+        "negative hotel image sort order",
+    ),
+    (
+        "room_types",
+        "ck_room_types_base_price_nonnegative",
+        "basePrice >= 0",
+        "basePrice < 0",
+        "negative room type base price",
+    ),
+    (
+        "room_types",
+        "ck_room_types_max_guests_positive",
+        "maxGuests IS NULL OR maxGuests > 0",
+        "maxGuests IS NOT NULL AND maxGuests <= 0",
+        "non-positive room type guest limit",
+    ),
+    (
+        "room_types",
+        "ck_room_types_stock_nonnegative",
+        "stock IS NULL OR stock >= 0",
+        "stock < 0",
+        "negative room type stock",
+    ),
+    (
+        "room_types",
+        "ck_room_types_area_nonnegative",
+        "area IS NULL OR area >= 0",
+        "area < 0",
+        "negative room type area",
+    ),
+    (
+        "room_types",
+        "ck_room_types_sort_order_nonnegative",
+        "sortOrder >= 0",
+        "sortOrder < 0",
+        "negative room type sort order",
+    ),
+    (
+        "calendar_price",
+        "ck_calendar_price_price_nonnegative",
+        "price >= 0",
+        "price < 0",
+        "negative calendar price",
+    ),
+    (
+        "calendar_stock",
+        "ck_calendar_stock_stock_nonnegative",
+        "stock >= 0",
+        "stock < 0",
+        "negative calendar stock",
+    ),
+    (
+        "poi",
+        "ck_poi_latitude_range",
+        "latitude IS NULL OR latitude BETWEEN -90 AND 90",
+        "latitude IS NOT NULL AND latitude NOT BETWEEN -90 AND 90",
+        "invalid POI latitude",
+    ),
+    (
+        "poi",
+        "ck_poi_longitude_range",
+        "longitude IS NULL OR longitude BETWEEN -180 AND 180",
+        "longitude IS NOT NULL AND longitude NOT BETWEEN -180 AND 180",
+        "invalid POI longitude",
+    ),
+    (
+        "poi",
+        "ck_poi_base_score_nonnegative",
+        "baseScore >= 0",
+        "baseScore < 0",
+        "negative POI base score",
+    ),
+    (
+        "banners",
+        "ck_banners_sort_nonnegative",
+        "sort >= 0",
+        "sort < 0",
+        "negative banner sort order",
+    ),
+    (
+        "banners",
+        "ck_banners_time_window",
+        "endAt IS NULL OR startAt IS NULL OR endAt > startAt",
+        "endAt IS NOT NULL AND startAt IS NOT NULL AND endAt <= startAt",
+        "invalid banner time window",
+    ),
+    (
+        "orders",
+        "ck_orders_stay_dates_ordered",
+        "checkOut > checkIn",
+        "checkOut <= checkIn",
+        "invalid order stay range",
+    ),
+    (
+        "orders",
+        "ck_orders_guest_count_positive",
+        "guestCount > 0",
+        "guestCount <= 0",
+        "non-positive order guest count",
+    ),
+    (
+        "orders",
+        "ck_orders_total_amount_nonnegative",
+        "totalAmount >= 0",
+        "totalAmount < 0",
+        "negative order total amount",
+    ),
+)
+
 
 def reject_rows(query: str, message: str) -> None:
     if context.is_offline_mode():
@@ -115,36 +298,11 @@ def preflight() -> None:
     for query, message in orphan_checks:
         reject_rows(query, message)
 
-    value_checks = (
-        ("SELECT COUNT(*) FROM hotels WHERE status NOT BETWEEN 0 AND 4", "invalid hotel status"),
-        (
-            "SELECT COUNT(*) FROM hotels WHERE starLevel IS NOT NULL "
-            "AND starLevel NOT BETWEEN 0 AND 10",
-            "invalid hotel star level",
-        ),
-        (
-            "SELECT COUNT(*) FROM hotels WHERE (miniPrice IS NOT NULL AND miniPrice < 0) "
-            "OR (favoriteCount IS NOT NULL AND favoriteCount < 0) "
-            "OR (score IS NOT NULL AND score NOT BETWEEN 0 AND 5)",
-            "invalid hotel price, favorite count, or score",
-        ),
-        (
-            "SELECT COUNT(*) FROM room_types WHERE basePrice < 0 "
-            "OR (maxGuests IS NOT NULL AND maxGuests <= 0) "
-            "OR (stock IS NOT NULL AND stock < 0) OR sortOrder < 0 "
-            "OR (area IS NOT NULL AND area < 0)",
-            "invalid room type numeric value",
-        ),
-        ("SELECT COUNT(*) FROM calendar_price WHERE price < 0", "negative calendar price"),
-        ("SELECT COUNT(*) FROM calendar_stock WHERE stock < 0", "negative calendar stock"),
-        (
-            "SELECT COUNT(*) FROM orders WHERE guestCount <= 0 OR totalAmount < 0 "
-            "OR checkOut <= checkIn",
-            "invalid order guest count, amount, or stay range",
-        ),
-    )
-    for query, message in value_checks:
-        reject_rows(query, message)
+    for table, _name, _condition, invalid_condition, message in CHECK_CONSTRAINTS:
+        reject_rows(
+            f"SELECT COUNT(*) FROM `{table}` WHERE {invalid_condition}",
+            message,
+        )
 
 
 def upgrade() -> None:
@@ -297,74 +455,7 @@ def upgrade() -> None:
         ondelete="RESTRICT",
     )
 
-    checks = (
-        ("users", "ck_users_email_verify_fail_count_nonnegative", "emailVerifyFailCount >= 0"),
-        ("users", "ck_users_login_fail_count_nonnegative", "loginFailCount >= 0"),
-        ("hotels", "ck_hotels_status_range", "status BETWEEN 0 AND 4"),
-        (
-            "hotels",
-            "ck_hotels_star_range",
-            "starLevel IS NULL OR starLevel BETWEEN 0 AND 10",
-        ),
-        (
-            "hotels",
-            "ck_hotels_mini_price_nonnegative",
-            "miniPrice IS NULL OR miniPrice >= 0",
-        ),
-        (
-            "hotels",
-            "ck_hotels_favorite_count_nonnegative",
-            "favoriteCount IS NULL OR favoriteCount >= 0",
-        ),
-        ("hotels", "ck_hotels_score_range", "score IS NULL OR score BETWEEN 0 AND 5"),
-        (
-            "hotels",
-            "ck_hotels_latitude_range",
-            "latitude IS NULL OR latitude BETWEEN -90 AND 90",
-        ),
-        (
-            "hotels",
-            "ck_hotels_longitude_range",
-            "longitude IS NULL OR longitude BETWEEN -180 AND 180",
-        ),
-        ("hotel_images", "ck_hotel_images_sort_order_nonnegative", "sortOrder >= 0"),
-        ("room_types", "ck_room_types_base_price_nonnegative", "basePrice >= 0"),
-        (
-            "room_types",
-            "ck_room_types_max_guests_positive",
-            "maxGuests IS NULL OR maxGuests > 0",
-        ),
-        (
-            "room_types",
-            "ck_room_types_stock_nonnegative",
-            "stock IS NULL OR stock >= 0",
-        ),
-        ("room_types", "ck_room_types_area_nonnegative", "area IS NULL OR area >= 0"),
-        ("room_types", "ck_room_types_sort_order_nonnegative", "sortOrder >= 0"),
-        ("calendar_price", "ck_calendar_price_price_nonnegative", "price >= 0"),
-        ("calendar_stock", "ck_calendar_stock_stock_nonnegative", "stock >= 0"),
-        (
-            "poi",
-            "ck_poi_latitude_range",
-            "latitude IS NULL OR latitude BETWEEN -90 AND 90",
-        ),
-        (
-            "poi",
-            "ck_poi_longitude_range",
-            "longitude IS NULL OR longitude BETWEEN -180 AND 180",
-        ),
-        ("poi", "ck_poi_base_score_nonnegative", "baseScore >= 0"),
-        ("banners", "ck_banners_sort_nonnegative", "sort >= 0"),
-        (
-            "banners",
-            "ck_banners_time_window",
-            "endAt IS NULL OR startAt IS NULL OR endAt > startAt",
-        ),
-        ("orders", "ck_orders_stay_dates_ordered", "checkOut > checkIn"),
-        ("orders", "ck_orders_guest_count_positive", "guestCount > 0"),
-        ("orders", "ck_orders_total_amount_nonnegative", "totalAmount >= 0"),
-    )
-    for table, name, condition in checks:
+    for table, name, condition, _invalid_condition, _message in CHECK_CONSTRAINTS:
         op.create_check_constraint(name, table, condition)
 
 

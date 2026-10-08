@@ -67,8 +67,8 @@ jobs:
         run: uv run mypy app tests scripts
       - name: Test with coverage
         run: uv run pytest
-      - name: Migrate empty MySQL database
-        run: uv run alembic upgrade head
+      - name: Verify preflight rejects invalid legacy data before DDL
+        run: uv run python -m scripts.verify_migration_preflight
       - name: Verify migrated schema
         run: uv run python -m scripts.verify_database
       - name: Check model and migration drift

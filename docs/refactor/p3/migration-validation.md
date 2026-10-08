@@ -70,3 +70,13 @@ P3 已证明以下路径可重复：空库初始化、旧结构升级、完整 d
 - 验证提交：`61e068b`。
 - 结果：质量检查、MySQL 8.4 空库迁移、schema drift 检查和 Docker 镜像构建全部成功。
 - 完成时间：2026-10-08。
+
+## 7. CHECK 预检阻断整改
+
+- 原问题复现：旧库存在 `hotels.latitude = 999` 时，旧 migration 在部分日期列、外键和 CHECK 已落库后才失败，revision 仍停留在 `20261008_0001`。
+- 修复：25 个 CHECK 约束与对应违规条件合并为同一份 `CHECK_CONSTRAINTS` 清单，`preflight()` 在首个 DDL 前逐项检查。
+- 回归范围：酒店经纬度、POI 经纬度与评分、用户登录/邮箱失败次数、酒店图片排序、Banner 排序和时间范围，共 10 个无效值场景。
+- 失败原子性验证：每个场景执行前后分别抓取 Alembic revision、全部列定义、表约束和索引；10 次比较均完全一致。
+- 可重跑验证：逐项修正坏数据后，同一个 baseline 数据库可直接升级到 `20261008_0002`。
+- 最终结构：14 张业务表、16 个 FOREIGN KEY、25 个 CHECK；`alembic check` 返回 `No new upgrade operations detected`。
+- 隔离数据库：`yisu_p3_preflight_fix_20261008`，验证完成后已删除，不包含原始业务数据。
