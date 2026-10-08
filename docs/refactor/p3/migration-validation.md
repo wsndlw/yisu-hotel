@@ -80,3 +80,4 @@ P3 已证明以下路径可重复：空库初始化、旧结构升级、完整 d
 - 可重跑验证：逐项修正坏数据后，同一个 baseline 数据库可直接升级到 `20261008_0002`。
 - 最终结构：14 张业务表、16 个 FOREIGN KEY、25 个 CHECK；`alembic check` 返回 `No new upgrade operations detected`。
 - 隔离数据库：`yisu_p3_preflight_fix_20261008`，验证完成后已删除，不包含原始业务数据。
+- 整改远程复验：[GitHub Actions #6](https://github.com/wsndlw/yisu-hotel/actions/runs/37782424146)，提交 `e496962`，quality 与 image jobs 均成功。
