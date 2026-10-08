@@ -1,7 +1,8 @@
 # P2：Python 工程骨架和质量门禁
 
-> 状态：READY FOR REVIEW（远程 CI 证据待补）
+> 状态：DONE
 > 启动日期：2026-10-07
+> 完成日期：2026-10-08
 > 负责人：厉飞雨
 
 ## 交付物
@@ -18,7 +19,7 @@
 | Ruff/Mypy/Pytest/Coverage/pip-audit | `pyproject.toml`、`uv.lock` | 本机门禁通过 |
 | 非 root 多阶段镜像 | `server-python/Dockerfile` | 已构建验证，运行用户为 UID/GID 10001 |
 | Compose 开发环境 | `server-python/compose.yaml` | 已启动验证，API/MySQL/Redis 均健康 |
-| CI 门禁 | `.github/workflows/python-backend.yml` | 已实现，待远程运行 |
+| CI 门禁 | `.github/workflows/python-backend.yml` | 远程 quality/image 作业全部通过 |
 
 ## P2 出口条件
 
@@ -30,9 +31,9 @@
 - [x] 缺失必需配置的失败路径有自动化测试。
 - [x] `/health/live` 和 `/health/ready` 的成功/失败路径有自动化测试。
 - [x] Docker 镜像成功构建并确认以非 root 用户运行。
-- [x] 本地等价质量门禁有可审计验证证据；远程 CI 首次运行待提交后确认。
+- [x] 远程 CI 的质量检查与生产镜像构建全部通过。
 
-P2 已完成本地质量与容器门禁并进入 `READY FOR REVIEW`。代码提交并取得远程 CI 成功记录后，可标记 `DONE`。
+P2 已完成本地质量、容器和远程 CI 门禁，阶段状态为 `DONE`。
 
 ## 2026-10-07 本地验证证据
 
@@ -49,6 +50,7 @@ P2 已完成本地质量与容器门禁并进入 `READY FOR REVIEW`。代码提�
 | 运行时冒烟 | `/health/live` 200；依赖不可用时 `/health/ready` 503；GraphQL `__typename` 200 |
 | Docker/Compose | 三个服务均 healthy；`/health/ready` 200，MySQL/Redis 均为 up |
 | 镜像安全 | API 以 `10001:10001` 运行；镜像无 `.env`，不含 pytest 等开发依赖 |
+| 远程 CI | [GitHub Actions #1](https://github.com/wsndlw/yisu-hotel/actions/runs/37737143093) 成功；quality 31 秒、image 14 秒 |
 
 安全审计首次发现 `starlette 0.52.1` 存在公开漏洞，因此将 Ariadne 升级到 1.1.1、Starlette 升级到 1.7.0，并在升级后重跑全部门禁。最终锁文件只引用官方 PyPI。
 
