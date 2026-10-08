@@ -7,6 +7,8 @@ import structlog
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 REQUEST_ID_HEADER = b"x-request-id"
+REQUEST_ID_HEADER_NAME = "X-Request-ID"
+REQUEST_ID_STATE_KEY = "request_id"
 REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 request_id_context: ContextVar[str | None] = ContextVar("request_id", default=None)
 
@@ -15,7 +17,16 @@ def current_request_id() -> str:
     return request_id_context.get() or "unavailable"
 
 
-def _request_id_from_scope(scope: Scope) -> str:
+def request_id_from_scope(scope: Scope) -> str:
+    state = scope.get("state")
+    if isinstance(state, dict):
+        request_id = state.get(REQUEST_ID_STATE_KEY)
+        if isinstance(request_id, str) and REQUEST_ID_PATTERN.fullmatch(request_id):
+            return request_id
+    return current_request_id()
+
+
+def _request_id_from_headers(scope: Scope) -> str:
     for name, value in scope.get("headers", []):
         if name.lower() == REQUEST_ID_HEADER:
             candidate = bytes(value).decode("ascii", errors="ignore")
@@ -36,7 +47,9 @@ class RequestContextMiddleware:
             await self.app(scope, receive, send)
             return
 
-        request_id = _request_id_from_scope(scope)
+        request_id = _request_id_from_headers(scope)
+        state = scope.setdefault("state", {})
+        state[REQUEST_ID_STATE_KEY] = request_id
         token: Token[str | None] = request_id_context.set(request_id)
         start = time.perf_counter()
         status_code = 500
@@ -45,7 +58,11 @@ class RequestContextMiddleware:
             nonlocal status_code
             if message["type"] == "http.response.start":
                 status_code = int(message["status"])
-                headers = list(message.get("headers", []))
+                headers = [
+                    (name, value)
+                    for name, value in message.get("headers", [])
+                    if name.lower() != REQUEST_ID_HEADER
+                ]
                 headers.append((REQUEST_ID_HEADER, request_id.encode("ascii")))
                 message["headers"] = headers
             await send(message)

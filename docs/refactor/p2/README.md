@@ -42,8 +42,8 @@ P2 已完成本地质量、容器和远程 CI 门禁，阶段状态为 `DONE`。
 | Python 运行时 | CPython 3.12.15 |
 | 锁文件复现 | `uv sync --frozen --all-groups`，78 个包检查通过 |
 | Ruff | 18 个文件格式检查通过，lint 通过 |
-| Mypy | strict 模式，17 个源文件通过 |
-| Pytest/Coverage | 16 项测试通过；总覆盖率 92.74%，门槛 75% |
+| Mypy | strict 模式，18 个源文件通过 |
+| Pytest/Coverage | 17 项测试通过；总覆盖率 92.83%，门槛 75% |
 | pre-commit | format、lint、mypy、pytest 四个 hook 全部通过 |
 | 依赖审计 | `pip-audit`：`No known vulnerabilities found` |
 | 缺失配置 | 清空环境后导入应用以退出码 1 失败，并列出 11 个必填变量 |
