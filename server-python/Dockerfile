@@ -20,6 +20,9 @@ RUN groupadd --system --gid 10001 appgroup \
 WORKDIR /workspace/server-python
 COPY --from=builder --chown=appuser:appgroup /workspace/server-python/.venv .venv
 COPY --chown=appuser:appgroup server-python/app app
+COPY --chown=appuser:appgroup server-python/alembic.ini alembic.ini
+COPY --chown=appuser:appgroup server-python/migrations migrations
+COPY --chown=appuser:appgroup server-python/scripts scripts
 COPY --chown=appuser:appgroup docs/refactor/p1/baseline/schema.graphql \
     /workspace/docs/refactor/p1/baseline/schema.graphql
 USER 10001:10001

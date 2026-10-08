@@ -1,6 +1,6 @@
 # 易宿酒店 Python 后端
 
-P2 工程骨架，采用 Python 3.12、FastAPI、Ariadne、SQLAlchemy 2、Redis 和 `uv`。GraphQL Schema 直接读取 P1 冻结基线，不在本阶段实现业务 resolver。
+P3 数据层工程，采用 Python 3.12、FastAPI、Ariadne、SQLAlchemy 2、Alembic、MySQL、Redis 和 `uv`。GraphQL Schema 直接读取 P1 冻结基线；业务 resolver 从 P4 开始迁移。
 
 ## 一条命令启动完整开发环境
 
@@ -43,7 +43,7 @@ make check
 ```bash
 uv run ruff format --check .
 uv run ruff check .
-uv run mypy app tests
+uv run mypy app tests scripts
 uv run pytest
 uv run pip-audit
 ```
@@ -77,3 +77,18 @@ uv run --directory server-python pre-commit run --all-files --config server-pyth
 - `CORS_ORIGINS`（JSON 数组）
 
 `.env` 已被 Git 忽略。镜像不会复制 `.env`、测试文件或开发工具，容器以 UID/GID `10001` 的非 root 用户运行，并使用只读根文件系统。
+
+## 数据库迁移
+
+应用启动不会自动建表或修改表结构。所有数据库结构变化必须通过 Alembic：
+
+```bash
+uv run alembic current
+uv run alembic upgrade head
+uv run alembic check
+uv run python -m scripts.verify_database
+```
+
+全新数据库直接执行 `upgrade head`。现有数据库不能直接运行或随意 `stamp`；必须先按 [P3 迁移手册](../docs/refactor/p3/migration-runbook.md) 完成备份、结构核对、数据预检，再标记 `20261008_0001` 并升级。
+
+业务日期已经从 `VARCHAR(10)` 收紧为 MySQL `DATE`，金额继续使用 `DECIMAL`/Python `Decimal`。迁移发现非法日期、重复邮箱、过长标识、孤儿关系或非法业务数值时会立即失败，不会静默截断或跳过。

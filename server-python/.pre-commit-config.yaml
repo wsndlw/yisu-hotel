@@ -13,7 +13,7 @@ repos:
         pass_filenames: false
       - id: mypy
         name: mypy strict
-        entry: uv run --directory server-python --frozen mypy app tests
+        entry: uv run --directory server-python --frozen mypy app tests scripts
         language: system
         pass_filenames: false
       - id: pytest

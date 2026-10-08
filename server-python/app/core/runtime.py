@@ -4,9 +4,10 @@ from typing import cast
 
 from redis.asyncio import Redis
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.core.config import Settings
+from app.db.session import create_database_engine
 
 HealthCheck = Callable[[], Awaitable[None]]
 CloseRuntime = Callable[[], Awaitable[None]]
@@ -23,12 +24,7 @@ class RuntimeDependencies:
 
 
 def create_runtime(settings: Settings) -> RuntimeDependencies:
-    engine: AsyncEngine = create_async_engine(
-        settings.database_url,
-        pool_pre_ping=True,
-        pool_size=settings.db_pool_size,
-        echo=settings.db_echo,
-    )
+    engine: AsyncEngine = create_database_engine(settings)
     redis_client = Redis.from_url(str(settings.redis_url), decode_responses=True)
 
     async def check_database() -> None:

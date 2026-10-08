@@ -19,6 +19,34 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: yisu_ci
+          MYSQL_ROOT_PASSWORD: ci-root-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci-root-password --silent"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
+    env:
+      ENVIRONMENT: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-root-password
+      DB_NAME: yisu_ci
+      DB_POOL_SIZE: 2
+      DB_ECHO: "false"
+      REDIS_URL: redis://127.0.0.1:6379/0
+      JWT_SECRET: ci-only-secret-with-at-least-32-characters
+      JWT_EXPIRES_IN: 1h
+      JWT_ISSUER: yisu-ci
+      JWT_AUDIENCE: yisu-ci
+      CORS_ORIGINS: '["http://localhost:5173"]'
     defaults:
       run:
         working-directory: server-python
@@ -36,9 +64,15 @@ jobs:
       - name: Lint
         run: uv run ruff check .
       - name: Type check
-        run: uv run mypy app tests
+        run: uv run mypy app tests scripts
       - name: Test with coverage
         run: uv run pytest
+      - name: Migrate empty MySQL database
+        run: uv run alembic upgrade head
+      - name: Verify migrated schema
+        run: uv run python -m scripts.verify_database
+      - name: Check model and migration drift
+        run: uv run alembic check
       - name: Audit dependencies
         run: uv run pip-audit
 
@@ -48,4 +82,4 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Build production image
-        run: docker build --file server-python/Dockerfile --tag yisu-hotel-python:p2 .
+        run: docker build --file server-python/Dockerfile --tag yisu-hotel-python:p3 .

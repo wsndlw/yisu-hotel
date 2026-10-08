@@ -1,4 +1,4 @@
-.PHONY: sync format lint typecheck test audit check dev compose-up compose-down
+.PHONY: sync format lint typecheck test audit check dev migration-current migration-up migration-check database-verify compose-up compose-down
 
 sync:
 	uv sync --frozen --all-groups
@@ -11,7 +11,7 @@ lint:
 	uv run ruff check .
 
 typecheck:
-	uv run mypy app tests
+	uv run mypy app tests scripts
 
 test:
 	uv run pytest
@@ -23,6 +23,18 @@ check: lint typecheck test audit
 
 dev:
 	uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+
+migration-current:
+	uv run alembic current
+
+migration-up:
+	uv run alembic upgrade head
+
+migration-check:
+	uv run alembic check
+
+database-verify:
+	uv run python -m scripts.verify_database
 
 compose-up:
 	docker compose up --build
