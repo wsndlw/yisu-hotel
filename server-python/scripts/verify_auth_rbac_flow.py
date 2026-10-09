@@ -24,6 +24,7 @@ from app.modules.auth.service import AuthService
 from app.modules.user.service import UserService
 
 EMAIL = "p4-rbac-email@example.com"
+LOCK_EMAIL = "p4-rbac-lock@example.com"
 GRAPHQL_EMAIL = "p4-rbac-graphql@example.com"
 PASSWORD_USERNAME = "p4-rbac-password"
 
@@ -99,7 +100,7 @@ async def run() -> None:
     store = RedisEmailCodeStore(redis)
 
     try:
-        for email in (EMAIL, GRAPHQL_EMAIL):
+        for email in (EMAIL, LOCK_EMAIL, GRAPHQL_EMAIL):
             await store.clear(email)
         await login_limiter.reset(PASSWORD_USERNAME)
         await assert_empty_database(session_factory)
@@ -124,6 +125,21 @@ async def run() -> None:
         await auth.send_email_code(EMAIL)
         logged_in_email, _ = await auth.email_login(email=EMAIL, code=sender.codes[EMAIL])
         assert logged_in_email.id == email_user.id
+
+        await auth.send_email_code(LOCK_EMAIL)
+        for _ in range(settings.email_code_fail_max_count - 1):
+            try:
+                await email_codes.verify_code(LOCK_EMAIL, "000000")
+            except AppError as error:
+                assert error.code == "EMAIL_CODE_INVALID"
+            else:
+                raise AssertionError("invalid email code was accepted")
+        try:
+            await email_codes.verify_code(LOCK_EMAIL, "000000")
+        except AppError as error:
+            assert error.code == "EMAIL_CODE_LOCKED"
+        else:
+            raise AssertionError("email code lock was not enforced")
 
         password_user, _ = await auth.register(
             username=PASSWORD_USERNAME,
@@ -202,7 +218,7 @@ async def run() -> None:
                 delete(User).where(User.username.in_([EMAIL, GRAPHQL_EMAIL, PASSWORD_USERNAME]))
             )
             await session.commit()
-        for email in (EMAIL, GRAPHQL_EMAIL):
+        for email in (EMAIL, LOCK_EMAIL, GRAPHQL_EMAIL):
             await store.clear(email)
         await login_limiter.reset(PASSWORD_USERNAME)
         await redis.aclose()
