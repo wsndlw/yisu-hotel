@@ -34,6 +34,10 @@ if stored ~= ARGV[1] then
   local max_fail_count = tonumber(ARGV[2])
   if fail_count >= max_fail_count then
     redis.call('HSET', KEYS[1], 'fail_count', fail_count, 'lock_until', now + tonumber(ARGV[3]))
+    local current_ttl = redis.call('TTL', KEYS[1])
+    if current_ttl < tonumber(ARGV[3]) then
+      redis.call('EXPIRE', KEYS[1], tonumber(ARGV[3]))
+    end
     return -3
   end
   redis.call('HSET', KEYS[1], 'fail_count', fail_count)
