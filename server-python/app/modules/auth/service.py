@@ -22,6 +22,9 @@ from app.modules.user.service import UserService
 
 
 class AuthService:
+    REGISTRATION_FAILURE_CODE = "REGISTRATION_FAILED"
+    REGISTRATION_FAILURE_MESSAGE = "注册失败，请检查注册信息"
+
     def __init__(
         self,
         settings: Settings,
@@ -62,14 +65,19 @@ class AuthService:
 
         selected_role = self._registration_role(role)
         if await self.users.find_by_username(normalized_username) is not None:
-            raise AppError(code="ACCOUNT_EXISTS", message="用户名已存在", status_code=409)
+            raise self._registration_conflict()
 
-        user = await self.users.create_user(
-            username=normalized_username,
-            password_hash=hash_password(normalized_password),
-            role=selected_role,
-            email=normalized_email,
-        )
+        try:
+            user = await self.users.create_user(
+                username=normalized_username,
+                password_hash=hash_password(normalized_password),
+                role=selected_role,
+                email=normalized_email,
+            )
+        except AppError as error:
+            if error.code in {"ACCOUNT_EXISTS", "EMAIL_EXISTS"}:
+                raise self._registration_conflict() from error
+            raise
         token = issue_access_token(self.settings, user.id, user.role.value)
         return user, token
 
@@ -131,20 +139,25 @@ class AuthService:
     ) -> User:
         normalized_email = await self._verify_email_code(email, code)
         if await self.users.find_by_email(normalized_email) is not None:
-            raise AppError(code="EMAIL_EXISTS", message="该邮箱已注册", status_code=409)
+            raise self._registration_conflict()
         normalized_password = str(password)
         if len(normalized_password) < 6:
             raise AppError(code="INVALID_PASSWORD", message="密码至少 6 位", status_code=400)
         selected_role = self._registration_role(role)
         username = self._email_username(normalized_email)
         if await self.users.find_by_username(username) is not None:
-            raise AppError(code="ACCOUNT_EXISTS", message="账号已存在", status_code=409)
-        return await self.users.create_user(
-            username=username,
-            password_hash=hash_password(normalized_password),
-            role=selected_role,
-            email=normalized_email,
-        )
+            raise self._registration_conflict()
+        try:
+            return await self.users.create_user(
+                username=username,
+                password_hash=hash_password(normalized_password),
+                role=selected_role,
+                email=normalized_email,
+            )
+        except AppError as error:
+            if error.code in {"ACCOUNT_EXISTS", "EMAIL_EXISTS"}:
+                raise self._registration_conflict() from error
+            raise
 
     async def _verify_email_code(self, email: str, code: str) -> str:
         if self.email_codes is None:
@@ -160,6 +173,14 @@ class AuthService:
         if len(email) <= 64:
             return email
         return f"email-{hashlib.sha256(email.encode('utf-8')).hexdigest()[:48]}"
+
+    @classmethod
+    def _registration_conflict(cls) -> AppError:
+        return AppError(
+            code=cls.REGISTRATION_FAILURE_CODE,
+            message=cls.REGISTRATION_FAILURE_MESSAGE,
+            status_code=400,
+        )
 
     @staticmethod
     def _registration_role(role: Any) -> UserRole:

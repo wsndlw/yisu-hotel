@@ -161,12 +161,20 @@ async def graphql_context(request: Request, _data: Any = None) -> dict[str, Any]
 
 
 def graphql_error_formatter(error: GraphQLError, debug: bool = False) -> dict[str, Any]:
-    formatted = format_error(error, debug)
-    extensions = dict(formatted.get("extensions") or {})
-    if isinstance(error.original_error, AppError):
-        extensions["code"] = error.original_error.code
-        extensions["statusCode"] = error.original_error.status_code
-    extensions.setdefault("code", "GRAPHQL_ERROR")
+    # Never let Ariadne's debug formatter serialize resolver exceptions. GraphQL
+    # errors may contain passwords, tokens, SQL text, or Python tracebacks.
+    formatted = format_error(error, debug=False)
+    original_error = error.original_error
+    extensions: dict[str, Any] = {}
+    if isinstance(original_error, AppError):
+        extensions["code"] = original_error.code
+        extensions["statusCode"] = original_error.status_code
+    elif original_error is not None:
+        formatted["message"] = "Internal server error"
+        extensions["code"] = "GRAPHQL_ERROR"
+    else:
+        extensions.update(formatted.get("extensions") or {})
+        extensions.setdefault("code", "GRAPHQL_ERROR")
     extensions["requestId"] = current_request_id()
     formatted["extensions"] = extensions
     return formatted
@@ -176,6 +184,8 @@ def create_graphql_app(settings: Settings) -> GraphQL:
     return GraphQL(
         build_schema(settings),
         context_value=graphql_context,
-        debug=settings.environment == "development",
+        # Resolver exceptions are always sanitized; development mode must not
+        # turn credentials or database details into a GraphQL response.
+        debug=False,
         error_formatter=graphql_error_formatter,
     )

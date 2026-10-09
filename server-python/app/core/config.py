@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     email_password: SecretStr | None = None
     email_from: str | None = None
     email_secure: bool = True
+    email_code_hash_secret: SecretStr | None = None
     email_code_ttl_seconds: int = Field(default=300, ge=60, le=900)
     email_send_interval_seconds: int = Field(default=60, ge=1, le=3600)
     email_code_fail_max_count: int = Field(default=5, ge=1, le=20)
@@ -81,6 +82,11 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def reject_unsafe_production_configuration(self) -> Self:
+        if (
+            self.email_code_hash_secret is not None
+            and len(self.email_code_hash_secret.get_secret_value()) < 32
+        ):
+            raise ValueError("EMAIL_CODE_HASH_SECRET must be at least 32 characters")
         if self.jwt_legacy_compatibility_enabled and self.jwt_legacy_compatibility_until is None:
             raise ValueError(
                 "JWT_LEGACY_COMPATIBILITY_UNTIL is required when legacy JWT "
@@ -101,6 +107,8 @@ class Settings(BaseSettings):
             raise ValueError("DB_PASSWORD must not use the development placeholder in production")
         if self.db_echo:
             raise ValueError("DB_ECHO must be disabled in production")
+        if self.email_code_hash_secret is None:
+            raise ValueError("EMAIL_CODE_HASH_SECRET is required in production")
         return self
 
     @property
@@ -121,6 +129,11 @@ class Settings(BaseSettings):
     @property
     def cors_origin_strings(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.cors_origins]
+
+    @property
+    def email_code_hash_secret_value(self) -> str:
+        """Return the HMAC secret used to protect short verification codes."""
+        return (self.email_code_hash_secret or self.jwt_secret).get_secret_value()
 
 
 @lru_cache(maxsize=1)

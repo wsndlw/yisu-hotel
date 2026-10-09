@@ -55,6 +55,7 @@ jobs:
       JWT_EXPIRES_IN: 1h
       JWT_ISSUER: yisu-ci
       JWT_AUDIENCE: yisu-ci
+      EMAIL_CODE_HASH_SECRET: ci-email-code-hash-secret-with-at-least-32-characters
       CORS_ORIGINS: '["http://localhost:5173"]'
     defaults:
       run:

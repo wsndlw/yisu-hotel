@@ -13,11 +13,13 @@ from app.db.enums import UserRole
 from app.modules.auth.email_codes import EmailCodeService
 from app.modules.auth.mailer import EmailSender
 from app.modules.auth.rbac import (
+    ROLE_PERMISSIONS,
     Permission,
     Principal,
     require_permission,
     require_permissions,
     require_resource_owner,
+    require_roles,
 )
 from app.modules.auth.service import AuthService
 
@@ -275,19 +277,61 @@ async def test_email_code_lock_expires_and_allows_a_new_attempt(settings: Any) -
 
 
 def test_rbac_matrix_and_resource_ownership() -> None:
-    customer = Principal("customer-1", UserRole.CUSTOMER)
-    merchant = Principal("merchant-1", UserRole.MERCHANT)
-    admin = Principal("admin-1", UserRole.ADMIN)
+    expected = {
+        UserRole.CUSTOMER: {
+            Permission.PROFILE_READ,
+            Permission.PROFILE_UPDATE,
+            Permission.ORDER_CREATE,
+            Permission.ORDER_READ_OWN,
+            Permission.ORDER_CANCEL_OWN,
+        },
+        UserRole.MERCHANT: {
+            Permission.PROFILE_READ,
+            Permission.PROFILE_UPDATE,
+            Permission.HOTEL_CREATE,
+            Permission.HOTEL_READ_OWN,
+            Permission.HOTEL_UPDATE_OWN,
+            Permission.HOTEL_DELETE_OWN,
+            Permission.HOTEL_SUBMIT,
+            Permission.ROOM_MANAGE_OWN,
+            Permission.CALENDAR_MANAGE_OWN,
+        },
+        UserRole.ADMIN: set(Permission),
+    }
+    assert {role: set(permissions) for role, permissions in ROLE_PERMISSIONS.items()} == expected
 
-    assert require_permission(customer, Permission.ORDER_CREATE) == customer
-    assert require_permission(merchant, Permission.HOTEL_CREATE) == merchant
-    assert require_permission(admin, Permission.AUDIT_READ) == admin
-    with pytest.raises(AppError, match="没有执行此操作"):
-        require_permission(customer, Permission.HOTEL_CREATE)
-    assert require_resource_owner(customer, "customer-1") == customer
-    assert require_resource_owner(admin, "other-user") == admin
-    with pytest.raises(AppError, match="其他用户"):
-        require_resource_owner(customer, "other-user")
+    principals = {
+        UserRole.CUSTOMER: Principal("customer-1", UserRole.CUSTOMER),
+        UserRole.MERCHANT: Principal("merchant-1", UserRole.MERCHANT),
+        UserRole.ADMIN: Principal("admin-1", UserRole.ADMIN),
+    }
+    for role, principal in principals.items():
+        for permission in Permission:
+            if permission in expected[role]:
+                assert require_permission(principal, permission) == principal
+            else:
+                with pytest.raises(AppError) as forbidden:
+                    require_permission(principal, permission)
+                assert forbidden.value.code == "FORBIDDEN"
+
+    assert (
+        require_roles(principals[UserRole.CUSTOMER], UserRole.CUSTOMER)
+        == principals[UserRole.CUSTOMER]
+    )
+    with pytest.raises(AppError) as wrong_role:
+        require_roles(principals[UserRole.CUSTOMER], UserRole.MERCHANT)
+    assert wrong_role.value.code == "FORBIDDEN"
+    assert (
+        require_resource_owner(principals[UserRole.CUSTOMER], "customer-1")
+        == principals[UserRole.CUSTOMER]
+    )
+    assert (
+        require_resource_owner(principals[UserRole.ADMIN], "other-user")
+        == principals[UserRole.ADMIN]
+    )
+    with pytest.raises(AppError) as cross_user:
+        require_resource_owner(principals[UserRole.CUSTOMER], "other-user")
+    assert cross_user.value.code == "FORBIDDEN"
 
 
 @pytest.mark.asyncio

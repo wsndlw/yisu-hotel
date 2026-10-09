@@ -22,6 +22,7 @@ def valid_values() -> dict[str, object]:
         "jwt_expires_in": "7d",
         "jwt_issuer": "yisu-test",
         "jwt_audience": "yisu-test-clients",
+        "email_code_hash_secret": "test-email-code-hash-secret-with-at-least-32-characters",
         "cors_origins": ["http://localhost:5173"],
         "graphql_schema_path": Path("schema.graphql"),
     }
@@ -101,6 +102,24 @@ def test_production_rejects_database_echo() -> None:
     values["db_echo"] = True
 
     with pytest.raises(ValidationError, match="DB_ECHO"):
+        Settings(_env_file=None, **values)  # type: ignore[arg-type]
+
+
+def test_production_requires_dedicated_email_code_hash_secret() -> None:
+    values = valid_values()
+    values["environment"] = "production"
+    values["jwt_secret"] = "a-secure-production-shaped-secret-value"
+    values.pop("email_code_hash_secret")
+
+    with pytest.raises(ValidationError, match="EMAIL_CODE_HASH_SECRET"):
+        Settings(_env_file=None, **values)  # type: ignore[arg-type]
+
+
+def test_email_code_hash_secret_must_be_long_enough() -> None:
+    values = valid_values()
+    values["email_code_hash_secret"] = "too-short"
+
+    with pytest.raises(ValidationError, match="EMAIL_CODE_HASH_SECRET"):
         Settings(_env_file=None, **values)  # type: ignore[arg-type]
 
 

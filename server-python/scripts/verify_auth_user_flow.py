@@ -117,7 +117,8 @@ async def run() -> None:
         try:
             await auth.register(username=FIXTURE_UPDATED_USERNAME, password="TestOnly!2026")
         except AppError as error:
-            assert error.code == "ACCOUNT_EXISTS"
+            assert error.code == "REGISTRATION_FAILED"
+            assert "存在" not in error.message
         else:
             raise AssertionError("duplicate username was accepted")
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import re
 import secrets
 import time
@@ -57,8 +58,12 @@ def _email_identity(email: str) -> str:
     return hashlib.sha256(email.encode("utf-8")).hexdigest()
 
 
-def _code_digest(email: str, code: str) -> str:
-    return hashlib.sha256(f"{email}:{code}".encode()).hexdigest()
+def _code_digest(secret: str, email: str, code: str) -> str:
+    return hmac.new(
+        secret.encode("utf-8"),
+        f"{email}:{code}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 class RedisEmailCodeStore:
@@ -191,7 +196,7 @@ class EmailCodeService:
         code = f"{secrets.randbelow(1_000_000):06d}"
         await self.store.issue(
             normalized,
-            _code_digest(normalized, code),
+            _code_digest(self.settings.email_code_hash_secret_value, normalized, code),
             self.settings.email_code_ttl_seconds,
         )
         try:
@@ -218,7 +223,11 @@ class EmailCodeService:
             )
         result = await self.store.verify(
             normalized,
-            _code_digest(normalized, code.strip()),
+            _code_digest(
+                self.settings.email_code_hash_secret_value,
+                normalized,
+                code.strip(),
+            ),
             max_fail_count=self.settings.email_code_fail_max_count,
             lock_seconds=self.settings.email_code_lock_seconds,
             single_use=self.settings.email_code_single_use,

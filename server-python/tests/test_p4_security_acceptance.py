@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -20,6 +21,8 @@ from app.core.errors import AppError
 from app.core.runtime import RuntimeDependencies
 from app.db.enums import UserRole
 from app.main import create_app
+from app.modules.auth.admin import AdminProvisioningService
+from app.modules.auth.email_codes import _code_digest
 from app.modules.auth.limits import RedisAttemptLimiter
 from app.modules.auth.rbac import (
     Permission,
@@ -89,13 +92,18 @@ class FakeAttemptRedis:
 
 
 class FakeUserLookup:
-    def __init__(self, user: Any) -> None:
+    def __init__(self, user: SimpleNamespace | None) -> None:
         self.user = user
 
-    async def find_by_id(self, _user_id: str) -> Any:
+    async def find_by_id(self, _user_id: str) -> SimpleNamespace | None:
         return self.user
 
-    async def find_by_username(self, _username: str) -> None:
+    async def find_by_username(self, _username: str) -> SimpleNamespace | None:
+        return self.user
+
+    async def find_by_email(self, email: str) -> SimpleNamespace | None:
+        if self.user is not None and getattr(self.user, "email", None) == email:
+            return self.user
         return None
 
 
@@ -113,6 +121,31 @@ class EmptySession:
 class EmptySessionFactory:
     def __call__(self) -> EmptySession:
         return EmptySession()
+
+
+class FakeAdminUsers:
+    def __init__(self) -> None:
+        self.user: SimpleNamespace | None = None
+
+    async def find_by_username(self, _username: str) -> SimpleNamespace | None:
+        return self.user
+
+    async def create_user(
+        self,
+        *,
+        username: str,
+        password_hash: str,
+        role: UserRole,
+        email: str | None = None,
+    ) -> SimpleNamespace:
+        self.user = SimpleNamespace(
+            id="admin-1",
+            username=username,
+            password_hash=password_hash,
+            role=role,
+            email=email,
+        )
+        return self.user
 
 
 async def noop_close() -> None:
@@ -156,6 +189,17 @@ def test_expired_and_tampered_tokens_are_rejected(settings: Settings) -> None:
     assert tampered_error.value.code == "TOKEN_INVALID"
 
 
+def test_email_code_digest_is_keyed_and_not_a_plain_sha256_code_hash(
+    settings: Settings,
+) -> None:
+    raw_digest = hashlib.sha256(b"safe@example.com:123456").hexdigest()
+    digest = _code_digest(settings.email_code_hash_secret_value, "safe@example.com", "123456")
+    assert digest != raw_digest
+    assert _code_digest("secret-a", "safe@example.com", "123456") != _code_digest(
+        "secret-b", "safe@example.com", "123456"
+    )
+
+
 @pytest.mark.parametrize("authorization", [None, "", "Basic token", "Bearer", "Bearer   "])
 def test_malformed_bearer_headers_are_not_accepted(authorization: str | None) -> None:
     with pytest.raises(AppError) as error:
@@ -197,6 +241,53 @@ async def test_registration_cannot_create_admin_or_cross_user_resources(settings
     with pytest.raises(AppError) as cross_user:
         require_resource_owner(customer, "customer-2")
     assert cross_user.value.code == "FORBIDDEN"
+
+
+@pytest.mark.asyncio
+async def test_registration_conflict_does_not_disclose_account_existence(
+    settings: Settings,
+) -> None:
+    existing = SimpleNamespace(id="user-1", username="existing", email="existing@example.com")
+    auth = AuthService(settings, cast(Any, FakeUserLookup(existing)))
+
+    with pytest.raises(AppError) as duplicate:
+        await auth.register(username="existing", password="TestOnly!2026")
+    assert duplicate.value.code == "REGISTRATION_FAILED"
+    assert "存在" not in duplicate.value.message
+
+
+@pytest.mark.asyncio
+async def test_admin_provisioning_requires_strong_password_and_emits_safe_identity() -> None:
+    users = FakeAdminUsers()
+    provisioning = AdminProvisioningService(cast(Any, users))
+
+    with pytest.raises(AppError) as weak_password:
+        await provisioning.create_admin(
+            username="admin",
+            password="short",
+            actor="ops-ticket-1",
+            reason="break-glass test",
+        )
+    assert weak_password.value.code == "ADMIN_PASSWORD_WEAK"
+
+    user = await provisioning.create_admin(
+        username="admin",
+        password="StrongAdmin!2026",
+        actor="ops-ticket-1",
+        reason="break-glass test",
+    )
+    assert user.role is UserRole.ADMIN
+    assert user.password_hash != "StrongAdmin!2026"
+    assert user.password_hash.startswith("$2b$")
+
+    with pytest.raises(AppError) as duplicate:
+        await provisioning.create_admin(
+            username="admin",
+            password="StrongAdmin!2026",
+            actor="ops-ticket-2",
+            reason="duplicate test",
+        )
+    assert duplicate.value.code == "ADMIN_ALREADY_EXISTS"
 
 
 @pytest.mark.asyncio
@@ -265,9 +356,10 @@ def test_serialized_user_and_graphql_errors_do_not_leak_secrets() -> None:
             "Internal server error",
             original_error=RuntimeError("passwordHash=$2b$10$secret"),
         ),
-        debug=False,
+        debug=True,
     )
     formatted_text = json.dumps(formatted, ensure_ascii=False)
+    assert formatted["message"] == "Internal server error"
     assert "passwordHash" not in formatted_text
     assert "$2b$" not in formatted_text
     assert "stacktrace" not in formatted_text
