@@ -312,7 +312,10 @@ async def test_login_lock_expires_and_allows_a_new_attempt() -> None:
 
 
 @pytest.mark.asyncio
-async def test_protected_graphql_field_rejects_missing_auth(settings: Settings) -> None:
+async def test_protected_graphql_field_rejects_missing_auth(
+    settings: Settings,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     runtime = RuntimeDependencies(
         checks={},
         close=noop_close,
@@ -330,6 +333,12 @@ async def test_protected_graphql_field_rejects_missing_auth(settings: Settings) 
     assert response.status_code == 400
     assert payload["errors"][0]["extensions"]["code"] == "UNAUTHENTICATED"
     assert "stacktrace" not in json.dumps(payload, ensure_ascii=False)
+
+    captured = capsys.readouterr()
+    log_output = captured.out + captured.err
+    assert "graphql_execution_error" in log_output
+    assert "Traceback" not in log_output
+    assert "请先登录" not in log_output
 
 
 def test_serialized_user_and_graphql_errors_do_not_leak_secrets() -> None:

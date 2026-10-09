@@ -16,7 +16,7 @@
 | 验证码锁定/解锁 | 错误次数达到阈值返回 `EMAIL_CODE_LOCKED`，锁定到期后可重新发送并验证 | `test_email_code_failures_lock_the_challenge`、`test_email_code_lock_expires_and_allows_a_new_attempt` |
 | 密码登录锁定/解锁 | 连续密码失败后返回 `AUTH_LOCKED`，锁定到期后允许新尝试 | `test_login_lock_expires_and_allows_a_new_attempt` |
 | 验证码摘要 | 摘要使用密钥化 HMAC，不能用公开邮箱和 6 位验证码离线复原 | `test_email_code_digest_is_keyed_and_not_a_plain_sha256_code_hash` |
-| 敏感信息 | 响应和 GraphQL 错误不包含密码哈希、验证码或堆栈 | `test_serialized_user_and_graphql_errors_do_not_leak_secrets` |
+| 敏感信息 | 响应和 GraphQL 错误日志不包含密码哈希、验证码、异常文本或堆栈 | `test_serialized_user_and_graphql_errors_do_not_leak_secrets`、`test_protected_graphql_field_rejects_missing_auth` |
 
 ## 本地执行
 

@@ -1,8 +1,10 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
+import structlog
 from ariadne import MutationType, QueryType, format_error, make_executable_schema
 from ariadne.asgi import GraphQL
+from ariadne.utils import unwrap_graphql_error
 from graphql import GraphQLError, GraphQLSchema
 from starlette.requests import Request
 
@@ -17,6 +19,29 @@ from app.modules.user.service import UserService
 
 query = QueryType()
 mutation = MutationType()
+
+
+class _SafeGraphQLLogger:
+    """Log GraphQL failures without serializing exception text or tracebacks.
+
+    Ariadne calls ``logger.error(error, exc_info=error)`` for resolver errors.
+    Its default logger therefore writes the original exception and traceback,
+    which can contain credentials, SQL, or other request data. Keep the
+    operational signal, but emit only stable metadata through structlog.
+    """
+
+    def __init__(self) -> None:
+        self._structured_logger = structlog.get_logger("app.graphql")
+
+    def error(self, error: Any, *_args: Any, **_kwargs: Any) -> None:
+        original_error = unwrap_graphql_error(error)
+        event_fields: dict[str, Any] = {
+            "error_type": type(original_error or error).__name__,
+            "request_id": current_request_id(),
+        }
+        if isinstance(original_error, AppError):
+            event_fields["code"] = original_error.code
+        self._structured_logger.error("graphql_execution_error", **event_fields)
 
 
 def _services(context: dict[str, Any]) -> tuple[AuthService, UserService]:
@@ -187,5 +212,8 @@ def create_graphql_app(settings: Settings) -> GraphQL:
         # Resolver exceptions are always sanitized; development mode must not
         # turn credentials or database details into a GraphQL response.
         debug=False,
+        # Ariadne's default logger includes resolver exception text and
+        # tracebacks. Use the redacting adapter for HTTP and WebSocket paths.
+        logger=cast(Any, _SafeGraphQLLogger()),
         error_formatter=graphql_error_formatter,
     )
