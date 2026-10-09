@@ -109,7 +109,7 @@ def test_production_requires_dedicated_email_code_hash_secret() -> None:
     values = valid_values()
     values["environment"] = "production"
     values["jwt_secret"] = "a-secure-production-shaped-secret-value"
-    values.pop("email_code_hash_secret")
+    values["email_code_hash_secret"] = None
 
     with pytest.raises(ValidationError, match="EMAIL_CODE_HASH_SECRET"):
         Settings(_env_file=None, **values)  # type: ignore[arg-type]
