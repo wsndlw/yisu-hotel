@@ -26,6 +26,10 @@ class UserService:
         async with self.session_factory() as session:
             return await session.scalar(select(User).where(User.username == username))
 
+    async def find_by_email(self, email: str) -> User | None:
+        async with self.session_factory() as session:
+            return await session.scalar(select(User).where(User.email == email))
+
     async def create_user(
         self,
         *,

@@ -48,6 +48,21 @@ class Settings(BaseSettings):
     jwt_legacy_compatibility_enabled: bool = False
     jwt_legacy_compatibility_until: datetime | None = None
 
+    email_delivery_enabled: bool = False
+    email_host: str | None = None
+    email_port: int = Field(default=465, ge=1, le=65535)
+    email_user: str | None = None
+    email_password: SecretStr | None = None
+    email_from: str | None = None
+    email_secure: bool = True
+    email_code_ttl_seconds: int = Field(default=300, ge=60, le=900)
+    email_send_interval_seconds: int = Field(default=60, ge=1, le=3600)
+    email_code_fail_max_count: int = Field(default=5, ge=1, le=20)
+    email_code_lock_seconds: int = Field(default=600, ge=60, le=86400)
+    email_code_single_use: bool = True
+    login_fail_max_count: int = Field(default=5, ge=1, le=20)
+    login_fail_lock_seconds: int = Field(default=600, ge=60, le=86400)
+
     cors_origins: list[AnyHttpUrl] = Field(min_length=1)
     graphql_schema_path: Path = Path("../docs/refactor/p1/baseline/schema.graphql")
     health_check_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
@@ -70,6 +85,10 @@ class Settings(BaseSettings):
             raise ValueError(
                 "JWT_LEGACY_COMPATIBILITY_UNTIL is required when legacy JWT "
                 "compatibility is enabled"
+            )
+        if self.email_delivery_enabled and (not self.email_host or not self.email_from):
+            raise ValueError(
+                "EMAIL_HOST and EMAIL_FROM are required when email delivery is enabled"
             )
         if self.environment != "production":
             return self

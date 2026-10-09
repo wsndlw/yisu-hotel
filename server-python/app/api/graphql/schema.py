@@ -9,6 +9,9 @@ from starlette.requests import Request
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.core.request_id import current_request_id
+from app.modules.auth.email_codes import EmailCodeService
+from app.modules.auth.limits import RedisAttemptLimiter
+from app.modules.auth.rbac import Permission, require_permissions
 from app.modules.auth.service import AuthService
 from app.modules.user.service import UserService
 
@@ -17,6 +20,11 @@ mutation = MutationType()
 
 
 def _services(context: dict[str, Any]) -> tuple[AuthService, UserService]:
+    cached_auth = context.get("auth_service")
+    cached_users = context.get("user_service")
+    if isinstance(cached_auth, AuthService) and isinstance(cached_users, UserService):
+        return cached_auth, cached_users
+
     settings: Settings = context["settings"]
     session_factory = context.get("session_factory")
     if session_factory is None:
@@ -26,7 +34,15 @@ def _services(context: dict[str, Any]) -> tuple[AuthService, UserService]:
             status_code=503,
         )
     users = UserService(session_factory)
-    return AuthService(settings, users), users
+    return (
+        AuthService(
+            settings,
+            users,
+            email_codes=context.get("email_code_service"),
+            login_limiter=context.get("login_limiter"),
+        ),
+        users,
+    )
 
 
 def _auth_payload(access_token: str, user: Any) -> dict[str, Any]:
@@ -41,6 +57,7 @@ async def register(_obj: Any, info: Any, input: dict[str, Any]) -> dict[str, Any
         password=input.get("password", ""),
         role=input.get("role"),
         email=input.get("email"),
+        email_code=input.get("emailCode"),
     )
     return {"code": 200, "message": "注册成功", "data": _auth_payload(access_token, user)}
 
@@ -56,6 +73,7 @@ async def login(_obj: Any, info: Any, input: dict[str, Any]) -> dict[str, Any]:
 
 
 @query.field("me")
+@require_permissions(Permission.PROFILE_READ)
 async def me(_obj: Any, info: Any) -> dict[str, Any]:
     auth, _users = _services(info.context)
     user = await auth.current_user(info.context["request"])
@@ -63,11 +81,40 @@ async def me(_obj: Any, info: Any) -> dict[str, Any]:
 
 
 @mutation.field("updateMe")
+@require_permissions(Permission.PROFILE_UPDATE)
 async def update_me(_obj: Any, info: Any, input: dict[str, Any]) -> dict[str, Any]:
     auth, users = _services(info.context)
     current_user = await auth.current_user(info.context["request"])
     user = await users.update_current_user(current_user.id, input)
     return {"code": 200, "message": "更新成功", "data": UserService.serialize(user)}
+
+
+@mutation.field("sendEmailCode")
+async def send_email_code(_obj: Any, info: Any, email: str) -> dict[str, Any]:
+    auth, _users = _services(info.context)
+    await auth.send_email_code(email)
+    return {"code": 200, "message": "验证码已发送", "data": None}
+
+
+@mutation.field("emailLogin")
+async def email_login(_obj: Any, info: Any, email: str, code: str) -> dict[str, Any]:
+    auth, _users = _services(info.context)
+    user, access_token = await auth.email_login(email=email, code=code)
+    return {"code": 200, "message": "登录成功", "data": _auth_payload(access_token, user)}
+
+
+@mutation.field("emailRegister")
+async def email_register(
+    _obj: Any,
+    info: Any,
+    email: str,
+    code: str,
+    password: str,
+    role: str | None = None,
+) -> dict[str, Any]:
+    auth, _users = _services(info.context)
+    user = await auth.email_register(email=email, code=code, password=password, role=role)
+    return {"code": 200, "message": "注册成功", "data": user.id}
 
 
 def load_schema_source(path: Path) -> str:
@@ -84,12 +131,33 @@ def build_schema(settings: Settings) -> GraphQLSchema:
 
 
 async def graphql_context(request: Request, _data: Any = None) -> dict[str, Any]:
-    return {
+    runtime = request.app.state.runtime
+    settings: Settings = request.app.state.settings
+    session_factory = runtime.session_factory
+    context: dict[str, Any] = {
         "request": request,
         "request_id": current_request_id(),
-        "settings": request.app.state.settings,
-        "session_factory": request.app.state.runtime.session_factory,
+        "settings": settings,
+        "session_factory": session_factory,
+        "email_code_service": EmailCodeService(settings, runtime.redis, runtime.email_sender),
     }
+    if runtime.redis is not None:
+        context["login_limiter"] = RedisAttemptLimiter(
+            runtime.redis,
+            "login",
+            settings.login_fail_max_count,
+            settings.login_fail_lock_seconds,
+        )
+    if session_factory is not None:
+        users = UserService(session_factory)
+        context["user_service"] = users
+        context["auth_service"] = AuthService(
+            settings,
+            users,
+            email_codes=context["email_code_service"],
+            login_limiter=context.get("login_limiter"),
+        )
+    return context
 
 
 def graphql_error_formatter(error: GraphQLError, debug: bool = False) -> dict[str, Any]:

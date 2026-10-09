@@ -32,6 +32,15 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=20
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
     env:
       ENVIRONMENT: test
       DB_HOST: 127.0.0.1
@@ -71,6 +80,8 @@ jobs:
         run: uv run python -m scripts.verify_migration_preflight
       - name: Verify P4 password and user flow
         run: uv run python -m scripts.verify_auth_user_flow
+      - name: Verify P4 email codes and RBAC flow
+        run: uv run python -m scripts.verify_auth_rbac_flow
       - name: Verify migrated schema
         run: uv run python -m scripts.verify_database
       - name: Check model and migration drift

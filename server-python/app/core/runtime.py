@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
 from app.db.session import create_database_engine, create_session_factory
+from app.modules.auth.mailer import EmailSender, create_email_sender
 
 HealthCheck = Callable[[], Awaitable[None]]
 CloseRuntime = Callable[[], Awaitable[None]]
@@ -22,6 +23,8 @@ class RuntimeDependencies:
     checks: Mapping[str, HealthCheck]
     close: CloseRuntime = _no_op_close
     session_factory: async_sessionmaker[AsyncSession] | None = None
+    redis: Redis | None = None
+    email_sender: EmailSender | None = None
 
 
 def create_runtime(settings: Settings) -> RuntimeDependencies:
@@ -44,4 +47,6 @@ def create_runtime(settings: Settings) -> RuntimeDependencies:
         checks={"database": check_database, "redis": check_redis},
         close=close,
         session_factory=session_factory,
+        redis=redis_client,
+        email_sender=create_email_sender(settings),
     )

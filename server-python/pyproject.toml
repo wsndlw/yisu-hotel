@@ -47,6 +47,7 @@ ignore = ["S101"]
 "tests/**/*.py" = ["S105", "S106"]
 "migrations/**/*.py" = ["S608"]
 "scripts/verify_auth_user_flow.py" = ["S106"]
+"scripts/verify_auth_rbac_flow.py" = ["S105", "S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
