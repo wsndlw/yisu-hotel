@@ -69,6 +69,8 @@ jobs:
         run: uv run pytest
       - name: Verify preflight rejects invalid legacy data before DDL
         run: uv run python -m scripts.verify_migration_preflight
+      - name: Verify P4 password and user flow
+        run: uv run python -m scripts.verify_auth_user_flow
       - name: Verify migrated schema
         run: uv run python -m scripts.verify_database
       - name: Check model and migration drift

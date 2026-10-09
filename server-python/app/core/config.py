@@ -1,5 +1,5 @@
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     jwt_expires_in: timedelta = Field(default=timedelta(days=7), gt=timedelta(0))
     jwt_issuer: str = Field(min_length=1)
     jwt_audience: str = Field(min_length=1)
+    jwt_legacy_compatibility_enabled: bool = False
+    jwt_legacy_compatibility_until: datetime | None = None
 
     cors_origins: list[AnyHttpUrl] = Field(min_length=1)
     graphql_schema_path: Path = Path("../docs/refactor/p1/baseline/schema.graphql")
@@ -64,6 +66,11 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def reject_unsafe_production_configuration(self) -> Self:
+        if self.jwt_legacy_compatibility_enabled and self.jwt_legacy_compatibility_until is None:
+            raise ValueError(
+                "JWT_LEGACY_COMPATIBILITY_UNTIL is required when legacy JWT "
+                "compatibility is enabled"
+            )
         if self.environment != "production":
             return self
 
