@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import time
 from types import SimpleNamespace
 from typing import Any, cast
@@ -85,6 +86,7 @@ class FakeRedis:
             challenge["fail_count"] = str(fail_count)
             if fail_count >= int(max_fail):
                 challenge["lock_until"] = str(int(now) + int(lock_seconds))
+                self.expiries[key] = time.time() + int(lock_seconds)
                 return -3
             return -1
         if single_use == "1":
@@ -237,6 +239,39 @@ async def test_email_code_failures_lock_the_challenge(settings: Any) -> None:
     with pytest.raises(AppError) as locked:
         await service.verify_code("lock@example.com", "000000")
     assert locked.value.code == "EMAIL_CODE_LOCKED"
+
+
+@pytest.mark.asyncio
+async def test_email_code_lock_expires_and_allows_a_new_attempt(settings: Any) -> None:
+    fake_redis = FakeRedis()
+    sender = RecordingSender()
+    service = EmailCodeService(
+        settings.model_copy(
+            update={
+                "email_code_ttl_seconds": 60,
+                "email_send_interval_seconds": 1,
+                "email_code_fail_max_count": 2,
+                "email_code_lock_seconds": 1,
+            }
+        ),
+        cast(Redis, fake_redis),
+        cast(EmailSender, sender),
+    )
+    await service.send_code("unlock@example.com")
+
+    with pytest.raises(AppError) as first_invalid:
+        await service.verify_code("unlock@example.com", "000000")
+    assert first_invalid.value.code == "EMAIL_CODE_INVALID"
+    with pytest.raises(AppError) as locked:
+        await service.verify_code("unlock@example.com", "000000")
+    assert locked.value.code == "EMAIL_CODE_LOCKED"
+
+    await asyncio.sleep(1.05)
+    await service.send_code("unlock@example.com")
+    assert (
+        await service.verify_code("unlock@example.com", sender.codes["unlock@example.com"])
+        == "unlock@example.com"
+    )
 
 
 def test_rbac_matrix_and_resource_ownership() -> None:

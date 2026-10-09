@@ -97,6 +97,7 @@ def bearer_token(authorization: str | None) -> str:
     if not authorization:
         raise AppError(code="UNAUTHENTICATED", message="请先登录", status_code=401)
     scheme, separator, token = authorization.partition(" ")
+    token = token.strip()
     if scheme.lower() != "bearer" or not separator or not token:
         raise AppError(code="UNAUTHENTICATED", message="请先登录", status_code=401)
-    return token.strip()
+    return token
