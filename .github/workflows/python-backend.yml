@@ -7,7 +7,7 @@ on:
       - "docs/refactor/p1/baseline/schema.graphql"
       - ".github/workflows/python-backend.yml"
   push:
-    branches: [main, master, feat/customer-order-api]
+    branches: [main, master, feat/customer-order-api, PM_TASK-P4_auth]
     paths:
       - "server-python/**"
       - "docs/refactor/p1/baseline/schema.graphql"
@@ -95,4 +95,4 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Build production image
-        run: docker build --file server-python/Dockerfile --tag yisu-hotel-python:p3 .
+        run: docker build --file server-python/Dockerfile --tag yisu-hotel-python:p4 .
